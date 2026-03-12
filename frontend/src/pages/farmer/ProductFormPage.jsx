@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { productsAPI, aiAPI } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Upload, ArrowLeft, Lightbulb, X, Sparkles, Plus, Image as ImageIcon, MapPin, Tag, Package, HelpCircle } from 'lucide-react';
@@ -30,6 +31,7 @@ export const ProductFormPage = () => {
   const { id } = useParams();
   const isEditing = !!id;
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -144,6 +146,7 @@ export const ProductFormPage = () => {
         minOrder: parseInt(formData.minOrder) || 1,
         available: parseInt(formData.available),
         location: formData.location,
+        farmerId: user?.id,
         images: formData.images.length > 0 ? formData.images : ['/placeholder.svg'],
       };
 
