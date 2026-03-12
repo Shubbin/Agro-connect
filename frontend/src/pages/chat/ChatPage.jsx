@@ -14,6 +14,7 @@ export const ChatPage = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeMediaType, setActiveMediaType] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
@@ -22,6 +23,14 @@ export const ChatPage = () => {
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const timerRef = useRef(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+
+  const getMediaUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace('/api', '');
+    return `${baseUrl}${path}`;
+  };
 
   // Poll for conversations
   useEffect(() => {
@@ -39,13 +48,6 @@ export const ChatPage = () => {
       } finally {
         setIsLoading(false);
       }
-    };
-
-    const getMediaUrl = (path) => {
-      if (!path) return '';
-      if (path.startsWith('http')) return path;
-      const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace('/api', '');
-      return `${baseUrl}${path}`;
     };
 
     fetchConversations();
@@ -139,7 +141,7 @@ export const ChatPage = () => {
       try {
         const uploadRes = await uploadAPI.uploadFile(mediaFile);
         mediaUrl = uploadRes.url;
-        mediaType = uploadRes.type;
+        mediaType = activeMediaType || uploadRes.type;
       } catch (error) {
         console.error('Upload failed:', error);
         return;
@@ -151,7 +153,7 @@ export const ChatPage = () => {
       content: message,
       senderId: user.id,
       mediaUrl,
-      mediaType
+      mediaType: mediaType || 'text'
     };
 
     try {
@@ -160,6 +162,8 @@ export const ChatPage = () => {
       setMessage('');
       setMediaFile(null);
       setMediaPreview(null);
+      setActiveMediaType(null);
+      setShowAttachMenu(false);
 
       // Optimistic update
       const tempId = Date.now().toString();
@@ -207,7 +211,7 @@ export const ChatPage = () => {
         )}>
           <div className="p-8 border-b border-border/30">
              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Channels</h2>
+                <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">My Chats</h2>
                 <div className="w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer">
                    <MoreHorizontal className="w-5 h-5" />
                 </div>
@@ -216,7 +220,7 @@ export const ChatPage = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input 
                   type="text" 
-                  placeholder="Search communications..." 
+                  placeholder="Search chats..." 
                   className="w-full h-12 pl-11 pr-4 glass-premium bg-secondary/50 border-border/30 rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 />
              </div>
@@ -266,7 +270,7 @@ export const ChatPage = () => {
             ))}
             {conversations.length === 0 && (
               <div className="p-8 text-center text-muted-foreground">
-                <p className="text-sm font-medium">No active channels.</p>
+                <p className="text-sm font-medium">No chats found.</p>
               </div>
             )}
           </div>
@@ -299,7 +303,7 @@ export const ChatPage = () => {
                       <div className="flex items-center gap-3">
                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                             <Store className="w-3 h-3 text-primary" />
-                            Direct Producer Interface
+                            Direct Chat
                          </span>
                       </div>
                    </div>
@@ -308,7 +312,7 @@ export const ChatPage = () => {
                 <div className="flex items-center gap-4">
                    <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary/30 rounded-full border border-border/50">
                       <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Real-time Sync Active</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Online</span>
                    </div>
                    <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl border border-border/30 hover:bg-white transition-all">
                       <MoreHorizontal className="w-6 h-6" />
@@ -376,10 +380,28 @@ export const ChatPage = () => {
 
               {/* Terminal Input Protocol */}
               <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background via-background/95 to-transparent">
-                <div className="max-w-4xl mx-auto relative group">
-                  <div className="absolute inset-x-0 bottom-0 h-2 bg-primary/20 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                  {/* Media Preview Area */}
-                  {mediaPreview && (
+                <div className="max-w-4xl mx-auto space-y-4">
+                  
+                  {/* Quick Replies */}
+                  {!mediaPreview && !message && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide animate-fade-in">
+                       {['Yes, available', 'What is your offer?', 'I can deliver today', 'Send me the location'].map((reply) => (
+                         <button 
+                           key={reply}
+                           onClick={() => setMessage(reply)}
+                           className="whitespace-nowrap px-4 py-2 bg-white/80 backdrop-blur-md border border-border/50 rounded-full text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:border-primary/30 transition-all shadow-sm"
+                         >
+                           {reply}
+                         </button>
+                       ))}
+                    </div>
+                  )}
+
+                  <div className="relative group">
+                    <div className="absolute inset-x-0 bottom-0 h-2 bg-primary/20 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    
+                    {/* Media Preview Area */}
+                    {mediaPreview && (
                     <div className="absolute bottom-full left-0 mb-4 animate-fade-in-up">
                       <div className="glass-premium bg-white/90 p-4 rounded-3xl border border-primary/20 relative group shadow-2xl">
                         <button 
@@ -405,20 +427,62 @@ export const ChatPage = () => {
                     </div>
                   )}
 
+                  {/* Attachment Menu */}
+                  {showAttachMenu && !mediaPreview && (
+                    <div className="absolute bottom-full left-0 mb-4 animate-scale-in">
+                       <div className="glass-premium bg-white/95 p-3 rounded-[2rem] border border-primary/20 shadow-2xl flex flex-col gap-2 min-w-[200px]">
+                          {[
+                            { id: 'image', icon: ImageIcon, label: 'Send Photo', accept: 'image/*' },
+                            { id: 'video', icon: Film, label: 'Send Video', accept: 'video/*' },
+                            { id: 'audio', icon: Mic, label: 'Send Audio', accept: 'audio/*' },
+                            { id: 'doc', icon: Paperclip, label: 'Send Document', accept: '.pdf,.doc,.docx,.txt' },
+                            { id: 'offer', icon: ShieldCheck, label: 'Send Price Offer', accept: null },
+                            { id: 'product', icon: Store, label: 'Share Product', accept: null },
+                          ].map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                if (item.id === 'offer') {
+                                  setMessage('I would like to offer this product for ₦...');
+                                  setShowAttachMenu(false);
+                                } else if (item.id === 'product') {
+                                  setMessage('Check out my product: [Link to Product]');
+                                  setShowAttachMenu(false);
+                                } else {
+                                  setActiveMediaType(item.id);
+                                  fileInputRef.current.accept = item.accept;
+                                  fileInputRef.current.click();
+                                  setShowAttachMenu(false);
+                                }
+                              }}
+                              className="flex items-center gap-4 p-4 hover:bg-primary/5 rounded-2xl transition-all group/item"
+                            >
+                               <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-muted-foreground group-hover/item:text-primary group-hover/item:bg-white transition-all">
+                                  <item.icon className="w-5 h-5" />
+                               </div>
+                               <span className="text-sm font-black text-foreground tracking-tight">{item.label}</span>
+                            </button>
+                          ))}
+                       </div>
+                    </div>
+                  )}
+
                   <div className="glass-premium bg-white/80 border-primary/20 rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-4 flex items-center gap-2 md:gap-4 shadow-2xl shadow-primary/10 relative z-10">
                     <input 
                       type="file" 
                       className="hidden" 
                       ref={fileInputRef} 
                       onChange={handleFileSelect}
-                      accept="image/*,video/*,audio/*"
                     />
                     
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="w-12 h-12 rounded-2xl text-muted-foreground hover:text-primary transition-all shrink-0"
-                      onClick={() => fileInputRef.current.click()}
+                      className={cn(
+                        "w-12 h-12 rounded-2xl transition-all shrink-0",
+                        showAttachMenu ? "bg-primary text-white" : "text-muted-foreground hover:text-primary"
+                      )}
+                      onClick={() => setShowAttachMenu(!showAttachMenu)}
                     >
                       <Paperclip className="w-6 h-6" />
                     </Button>
@@ -463,15 +527,16 @@ export const ChatPage = () => {
                   </div>
                 </div>
               </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
                <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-8">
                   <Store className="w-12 h-12 text-primary" />
                </div>
-               <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase mb-4">Secure Communication Node</h3>
+               <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase mb-4">Chat with Farmers</h3>
                <p className="text-xl text-muted-foreground font-medium max-w-md mx-auto">
-                 Select a transmission channel from the sidebar to begin direct negotiation with producers.
+                 Pick a chat from the left to start talking to farmers and buy products.
                </p>
             </div>
           )}
