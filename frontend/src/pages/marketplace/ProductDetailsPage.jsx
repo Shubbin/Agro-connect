@@ -17,6 +17,7 @@ export const ProductDetailsPage = () => {
   const [showOffer, setShowOffer] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
   
+  const { user, isAuthenticated } = useAuth();
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -51,6 +52,16 @@ export const ProductDetailsPage = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please create an account or login to add items to your cart.',
+        variant: 'destructive',
+      });
+      navigate('/signup', { state: { from: `/product/${product.id}` } });
+      return;
+    }
+
     try {
       await addItem(product.id, quantity);
       toast({

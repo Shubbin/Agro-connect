@@ -1,15 +1,18 @@
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { VerificationBadge } from '@/components/ui/VerificationBadge';
 
 
 
 export const ProductCard = ({product }) => {
+  const { isAuthenticated } = useAuth();
   const { addItem } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-NG', {
@@ -23,6 +26,16 @@ export const ProductCard = ({product }) => {
     e.preventDefault();
     e.stopPropagation();
     
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please create an account or login to add items to your cart.',
+        variant: 'destructive',
+      });
+      navigate('/signup', { state: { from: '/marketplace' } });
+      return;
+    }
+
     try {
       if (!product || !product.id) return;
       await addItem(product.id, product.minOrder || 1);

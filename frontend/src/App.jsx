@@ -32,6 +32,9 @@ import ProductsPage from "./pages/farmer/ProductsPage";
 import ProductFormPage from "./pages/farmer/ProductFormPage";
 import FarmerOrdersPage from "./pages/farmer/OrdersPage";
 
+// Auth
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -55,27 +58,27 @@ const App = () => (
               <Route path="/marketplace" element={<MarketplacePage />} />
               <Route path="/product/:id" element={<ProductDetailsPage />} />
               
-              {/* Buyer */}
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/payment-success" element={<PaymentSuccessPage />} />
-              <Route path="/payment-failed" element={<PaymentFailedPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
+              {/* Buyer (Protected) */}
+              <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+              <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+              <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
+              <Route path="/payment-failed" element={<ProtectedRoute><PaymentFailedPage /></ProtectedRoute>} />
+              <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
               
-              {/* Profile */}
-              <Route path="/profile" element={<ProfilePage />} />
+              {/* Profile (Protected) */}
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               
-              {/* Chat & AI */}
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/ai-assistant" element={<AIAssistantPage />} />
+              {/* Chat & AI (Protected) */}
+              <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+              <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistantPage /></ProtectedRoute>} />
               
-              {/* Farmer */}
-              <Route path="/farmer/dashboard" element={<FarmerDashboardPage />} />
-              <Route path="/farmer/wallet" element={<WalletPage />} />
-              <Route path="/farmer/products" element={<ProductsPage />} />
-              <Route path="/farmer/products/new" element={<ProductFormPage />} />
-              <Route path="/farmer/products/:id/edit" element={<ProductFormPage />} />
-              <Route path="/farmer/orders" element={<FarmerOrdersPage />} />
+              {/* Farmer (Protected & Role Gated) */}
+              <Route path="/farmer/dashboard" element={<ProtectedRoute requireFarmer={true}><FarmerDashboardPage /></ProtectedRoute>} />
+              <Route path="/farmer/wallet" element={<ProtectedRoute requireFarmer={true}><WalletPage /></ProtectedRoute>} />
+              <Route path="/farmer/products" element={<ProtectedRoute requireFarmer={true}><ProductsPage /></ProtectedRoute>} />
+              <Route path="/farmer/products/new" element={<ProtectedRoute requireFarmer={true}><ProductFormPage /></ProtectedRoute>} />
+              <Route path="/farmer/products/:id/edit" element={<ProtectedRoute requireFarmer={true}><ProductFormPage /></ProtectedRoute>} />
+              <Route path="/farmer/orders" element={<ProtectedRoute requireFarmer={true}><FarmerOrdersPage /></ProtectedRoute>} />
               
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
