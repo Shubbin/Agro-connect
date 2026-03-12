@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AgroDirect Design System - Nigerian-Inspired Green & White */
+
+@layer base {
+  :root {
+    /* Premium Brand Palette - Nigerian Inspired but Modernized */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
+
+    /* Enhanced Vibrant Primary */
+    --primary: 155 90% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft, Layered Secondary */
+    --secondary: 155 50% 96%;
+    --secondary-foreground: 155 80% 20%;
+
+    /* Muted & Accents */
+    --muted: 215 25% 95%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 155 100% 25%;
+    --accent-foreground: 0 0% 100%;
+
+    --border: 215 20% 90%;
+    --input: 215 20% 90%;
+    --ring: 155 90% 32%;
+
+    --radius: 1rem;
+
+    /* Premium Custom Tokens */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+  }
+
+  .dark {
+    --background: 220 30% 6%;
+    --foreground: 210 20% 98%;
+    --card: 220 30% 8%;
+    --card-foreground: 210 20% 98%;
+    --primary: 155 80% 45%;
+    --secondary: 155 30% 12%;
+    --border: 220 30% 15%;
+    --glass-bg: rgba(15, 20, 25, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer components {
+  /* Premium Glassmorphism */
+  .glass-premium {
+    background-color: hsla(var(--background), 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsla(var(--border), 0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    background: var(--glass-bg);
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-dark, var(--primary))));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Input Field */
+  .input-agro {
+  display: flex;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: hsl(var(--input));
+  background-color: hsl(var(--background));
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.input-agro:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
+
+  /* Sophisticated Card */
+  .card-premium {
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+    @apply hover:shadow-premium hover:-translate-y-2;
+  }
+
+  /* Animated Primary Button */
+  .btn-premium {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-dark, var(--primary))));
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+    position: relative; /* Added from original @apply */
+    overflow: hidden; /* Added from original @apply */
+  }
+
+  .btn-premium:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .btn-premium:active { /* Added from original @apply */
+    transform: scale(0.95);
+  }
+  
+  .btn-premium::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full;
+    animation: shimmer-premium 3s infinite;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+  
+  .shadow-premium {
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1), 0 0 20px -5px hsl(var(--primary) / 0.2);
+  }
+}
+
+@keyframes shimmer-premium {
+  0% { transform: translateX(-100%) rotate(10deg); }
+  50%, 100% { transform: translateX(200%) rotate(10deg); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

@@ -1,48 +1,50 @@
-# Welcome to your Lovable project
+# Agro Direct Connect
+
+Connecting farmers directly to consumers.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+A modern web application for direct agricultural trade.
 
 ## How can I edit this code?
 
-There are several ways of editing your application.
+### Use your preferred IDE
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you want to work locally using your own IDE, you can clone this repo and push changes.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+### Running the Development Environment
 
+The project is split into a **React Frontend** and a **PHP Backend**.
+
+#### Step 1: Install Dependencies
+Run this in the root folder to install frontend dependencies:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm run frontend:install
 ```
 
-**Edit a file directly in GitHub**
+#### Step 2: Start the Backend (PHP)
+From the root folder, run:
+```sh
+npm run api:serve
+```
+*Requires PHP installed on your system. This starts the API on http://localhost:3000.*
+
+#### Step 3: Start the Frontend (React)
+Open a new terminal and run:
+```sh
+npm run dev
+```
+*This starts the Vite dev server. You can now access the app in your browser.*
+
+### Edit a file directly in GitHub
 
 - Navigate to the desired file(s).
 - Click the "Edit" button (pencil icon) at the top right of the file view.
 - Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
+### Use GitHub Codespaces
 
 - Navigate to the main page of your repository.
 - Click on the "Code" button (green button) near the top right.
@@ -50,24 +52,39 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Core Features
 
-This project is built with:
+### 🤖 AI Agricultural Intelligence
+- **Deep Market Insights**: Powered by **Groq Llama-3.3-70b**, providing real-time pricing analysis and trend predictions.
+- **Dedicated AI Assistant**: Direct access to AgroBot for help with logistics, crop management, and trade negotiation.
+- **Smart Onboarding**: Context-aware tips for both farmers and buyers to optimize their experience.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 💬 Rich Communication Protocol
+- **Media Messaging**: Seamlessly share images and videos of produce directly in the chat.
+- **Voice Notes**: Integrated audio recording for hands-free communication during field operations.
+- **Real-time Sync**: Bi-directional polling for instant message delivery and status updates.
 
-## How can I deploy this project?
+### 💳 Financial Ledger
+- **Escrow System**: Funds are held securely until delivery is confirmed by the buyer.
+- **Real-time Balance**: Farmers can track available liquidity and pending settlements.
+- **Automated Payouts**: Direct settlement to bank accounts via the payout terminal.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Technical Architecture
 
-## Can I connect a custom domain to my Lovable project?
+### Frontend
+- **Framework**: React 18 with Vite
+- **Styling**: Tailwind CSS & Vanilla CSS for premium glassmorphism
+- **Icons**: Lucide React
+- **State Management**: React Context & Hooks
 
-Yes, you can!
+### Backend
+- **Engine**: PHP 8.x
+- **Database**: SQLite (Data sovereignty and high portability)
+- **AI Core**: Groq Cloud API (Llama-3.3-70b-versatile)
+- **File System**: Local storage for media assets with static serving
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## How to use the project
+... (standard steps below) ...
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Edit a file directly in GitHub
+...
