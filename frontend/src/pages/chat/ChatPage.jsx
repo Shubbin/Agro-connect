@@ -190,7 +190,7 @@ export const ChatPage = () => {
 
   if (isLoading) {
     return (
-      <MainLayout hideFooter>
+      <MainLayout hideFooter hideAI>
         <div className="h-screen flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
@@ -198,8 +198,53 @@ export const ChatPage = () => {
     );
   }
 
+  const VoiceMessage = ({ url, isMe }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef(null);
+    const [progress, setProgress] = useState(0);
+
+    const togglePlay = () => {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    };
+
+    return (
+      <div className={cn(
+        "flex items-center gap-3 p-2 rounded-2xl min-w-[200px]",
+        isMe ? "bg-primary/10" : "bg-secondary/50"
+      )}>
+        <button 
+          onClick={togglePlay}
+          className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+            isMe ? "bg-white text-primary" : "bg-primary text-white"
+          )}
+        >
+          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+        </button>
+        <div className="flex-1 h-1.5 bg-background/50 rounded-full overflow-hidden">
+          <div 
+            className={cn("h-full transition-all duration-300", isMe ? "bg-primary" : "bg-primary")} 
+            style={{ width: `${progress}%` }} 
+          />
+        </div>
+        <audio 
+          ref={audioRef} 
+          src={url} 
+          onTimeUpdate={() => setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100)}
+          onEnded={() => setIsPlaying(false)}
+          className="hidden"
+        />
+      </div>
+    );
+  };
+
   return (
-    <MainLayout hideFooter>
+    <MainLayout hideFooter hideAI>
       <div className="h-[calc(100vh-4.5rem)] flex bg-background relative overflow-hidden">
         {/* Ambient background effect */}
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
@@ -336,12 +381,19 @@ export const ChatPage = () => {
                               <User className="w-4 h-4 text-muted-foreground" />
                            </div>
                         )}
-                        <div className={cn(
-                          "px-4 md:px-6 py-3 md:py-4 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl transition-all duration-500", 
+                         <div className={cn(
+                          "px-4 md:px-5 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] shadow-sm transition-all duration-300 relative", 
                           isMe 
-                            ? "bg-primary text-white rounded-br-none shadow-primary/10 hover:shadow-primary/20" 
-                            : "bg-white text-foreground border border-border/50 rounded-bl-none shadow-black/5 hover:border-primary/20"
+                            ? "bg-[#E7FFDB] text-foreground rounded-tr-none border border-[#d1e9c2]" 
+                            : "bg-white text-foreground border border-border/40 rounded-tl-none"
                         )}>
+                           {/* Bubble tail effect for WhatsApp look */}
+                           <div className={cn(
+                             "absolute top-0 w-3 h-3 transition-colors",
+                             isMe 
+                               ? "-right-1.5 bg-[#E7FFDB] border-r border-t border-[#d1e9c2] rotate-[15deg] rounded-tr-[2px]" 
+                               : "-left-1.5 bg-white border-l border-t border-border/40 -rotate-[15deg] rounded-tl-[2px]"
+                           )} />
                           {msg.media_url && (
                             <div className="mb-3 overflow-hidden rounded-xl">
                               {msg.media_type === 'image' && (
@@ -357,19 +409,23 @@ export const ChatPage = () => {
                                   <source src={getMediaUrl(msg.media_url)} />
                                 </video>
                               )}
-                              {msg.media_type === 'audio' && (
-                                <audio controls className="w-full max-w-[240px]">
-                                  <source src={getMediaUrl(msg.media_url)} />
-                                </audio>
-                              )}
+                               {msg.media_type === 'audio' && (
+                                <VoiceMessage url={getMediaUrl(msg.media_url)} isMe={isMe} />
+                               )}
                             </div>
                           )}
                           {msg.content && <p className="text-base font-medium leading-relaxed">{msg.content}</p>}
-                          <div className={cn(
-                            "text-[9px] font-black uppercase tracking-widest mt-2 block", 
-                            isMe ? "text-white/60" : "text-muted-foreground"
+                           <div className={cn(
+                            "text-[10px] font-bold mt-1.5 flex items-center justify-end gap-1.5", 
+                            isMe ? "text-primary/70" : "text-muted-foreground/60"
                           )}>
                             {formatTime(msg.timestamp)}
+                            {isMe && (
+                              <div className="flex -space-x-1">
+                                <div className="w-2.5 h-2.5 text-primary">✓</div>
+                                <div className="w-2.5 h-2.5 text-primary">✓</div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -503,29 +559,32 @@ export const ChatPage = () => {
                       />
                     )}
 
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={cn(
-                          "w-12 h-12 rounded-2xl transition-all shrink-0",
-                          isRecording ? "bg-red-500 text-white hover:bg-red-600 scale-110 shadow-lg shadow-red-200" : "text-muted-foreground hover:text-primary"
-                        )}
-                        onClick={isRecording ? stopRecording : startRecording}
-                      >
-                        {isRecording ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-                      </Button>
-                      
-                      <Button 
-                        onClick={handleSend} 
-                        disabled={!message.trim() && !mediaFile}
-                        className="w-14 h-14 rounded-2xl btn-premium shadow-lg shadow-primary/20 group-active:scale-95 transition-all shrink-0"
-                      >
-                        <Send className="w-6 h-6 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                       <Button 
+                         variant="ghost" 
+                         size="icon" 
+                         className={cn(
+                           "w-10 h-10 md:w-11 md:h-11 rounded-xl transition-all shrink-0",
+                           isRecording ? "bg-red-500 text-white hover:bg-red-600 scale-105 shadow-md shadow-red-200" : "text-muted-foreground hover:text-primary"
+                         )}
+                         onClick={isRecording ? stopRecording : startRecording}
+                       >
+                         {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                       </Button>
+                       
+                       <Button 
+                         onClick={handleSend} 
+                         disabled={!message.trim() && !mediaFile}
+                         size="icon"
+                         className="w-10 h-10 md:w-11 md:h-11 rounded-xl btn-premium shadow-md shadow-primary/10 active:scale-95 transition-all shrink-0"
+                       >
+                         <Send className="w-5 h-5 text-white" />
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+  </div>
               </div>
             </div>
           </>

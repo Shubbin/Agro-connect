@@ -5,7 +5,7 @@ import { OfflineIndicator } from '@/components/ui/OfflineIndicator';
 
 
 
-export const MainLayout = ({children, hideFooter = false }) => {
+export const MainLayout = ({children, hideFooter = false, hideAI = false }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -13,7 +13,7 @@ export const MainLayout = ({children, hideFooter = false }) => {
         {children}
       </main>
       {!hideFooter && <Footer />}
-      <AIAssistantButton />
+      {!hideAI && <AIAssistantButton />}
       <OfflineIndicator />
     </div>
   );
