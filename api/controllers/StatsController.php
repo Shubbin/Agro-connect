@@ -14,11 +14,22 @@ class StatsController
 
     public function getSummary()
     {
+        $volumeRaw = $this->db->query("SELECT SUM(total) FROM orders WHERE status != 'cancelled'")->fetchColumn() ?: 0;
+        
+        // Format volume (e.g., 50000 -> 50k)
+        if ($volumeRaw >= 1000000) {
+            $volume = '₦' . round($volumeRaw / 1000000, 1) . 'M+';
+        } elseif ($volumeRaw >= 1000) {
+            $volume = '₦' . round($volumeRaw / 1000, 1) . 'k+';
+        } else {
+            $volume = '₦' . number_format($volumeRaw);
+        }
+
         $stats = [
-            'farmers' => $this->getCount('users', "role = 'farmer'"),
-            'products' => $this->getCount('products'),
-            'states' => $this->getUniqueCount('products', 'location'),
-            'volume' => '₦500k+' // Mocking this part as we don't have many real orders yet, but making it realistic
+            'farmers' => (int)$this->getCount('users', "role = 'farmer'"),
+            'products' => (int)$this->getCount('products'),
+            'states' => (int)$this->getUniqueCount('products', 'location'),
+            'volume' => $volume
         ];
 
         echo json_encode($stats);

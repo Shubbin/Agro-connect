@@ -8,6 +8,53 @@ import { cn } from '@/lib/utils';
 
 import { productsAPI, statsAPI } from '@/services/api';
 
+const StatCounter = ({ end, duration = 2000, prefix = '', suffix = '' }) => {
+  const [count, setCount] = React.useState(0);
+
+  // Derive display values outside useEffect to avoid scoping errors
+  const displaySuffix = suffix || (typeof end === 'string' ? end.replace(/[0-9.₦,]/g, '') : '');
+  const displayPrefix = prefix || (typeof end === 'string' ? (end.startsWith('₦') ? '₦' : '') : '');
+
+  React.useEffect(() => {
+    let start = 0;
+    // Extract numeric part if it's a string like "₦500k+"
+    const endValue = typeof end === 'string' 
+      ? parseFloat(end.replace(/[^0-9.]/g, '')) 
+      : end;
+    
+    const increment = endValue / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= endValue) {
+        setCount(endValue);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [end, duration]);
+
+  const formatNumber = (num) => {
+    if (num >= 1000 && count === end) return num; // Stay as provided string if it's the end and high
+    return num;
+  };
+
+  // Special handling for the end string to keep it exactly as backend sent (e.g. "₦500k+")
+  if (count >= parseFloat(String(end).replace(/[^0-9.]/g, ''))) {
+    return <span>{end}</span>;
+  }
+
+  return (
+    <span>
+      {displayPrefix}
+      {count.toLocaleString()}
+      {displaySuffix}
+    </span>
+  );
+};
+
 export const HomePage = () => {
   const [products, setProducts] = React.useState([]);
   const [statsData, setStatsData] = React.useState(null);
@@ -73,7 +120,7 @@ export const HomePage = () => {
             <div className="flex-1 relative hidden lg:block animate-fade-in">
               <div className="relative z-10 card-premium p-4 rotate-3 hover:rotate-0 transition-all duration-700">
                 <img 
-                  src="https://images.unsplash.com/photo-1595841696677-5231766a5e12?q=80&w=800" 
+                  src="/hero-farming.png" 
                   alt="Fresh farming" 
                   className="rounded-xl w-full h-[500px] object-cover"
                 />
@@ -210,19 +257,69 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Impact Stats */}
-      <section className="py-32 bg-background border-y border-border/50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-16 text-center">
+      {/* Impact Stats - Redesigned for Visual WoW */}
+      <section className="py-32 bg-background relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary/[0.02] -skew-y-3 origin-right" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl lg:text-6xl font-black text-foreground tracking-tighter mb-4">The Pulse of Nigeria's Agriculture</h2>
+            <div className="w-24 h-2 bg-primary mx-auto rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { val: statsData?.farmers || '1.2K+', lab: 'Active Farmers' },
-              { val: statsData?.products || '500+', lab: 'Quality Crops' },
-              { val: statsData?.states || '36', lab: 'States Reached' },
-              { val: statsData?.volume || '₦85M+', lab: 'Total Trade' },
+              { 
+                val: statsData?.farmers || '16', 
+                lab: 'Active Farmers', 
+                img: '/stat-farmers.png',
+                desc: 'Verified agriculture partners'
+              },
+              { 
+                val: statsData?.products || '121', 
+                lab: 'Quality Crops', 
+                img: '/stat-crops.png',
+                desc: 'Seasonal fresh harvests'
+              },
+              { 
+                val: statsData?.states || '16', 
+                lab: 'States Reached', 
+                img: '/stat-reach.png',
+                desc: 'Nationwide logistics network'
+              },
+              { 
+                val: statsData?.volume || '₦500k+', 
+                lab: 'Total Trade', 
+                img: '/stat-trade.png',
+                desc: 'Direct market throughput'
+              },
             ].map((s, i) => (
-              <div key={i} className="group">
-                <div className="text-5xl lg:text-7xl font-black text-foreground mb-4 group-hover:scale-110 transition-transform duration-500">{s.val}</div>
-                <div className="text-primary font-black uppercase tracking-widest text-sm">{s.lab}</div>
+              <div key={i} className="group relative h-[400px] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-700 hover:scale-[1.02] hover:-translate-y-2">
+                {/* Background Image */}
+                <img 
+                  src={s.img} 
+                  alt={s.lab} 
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                {/* Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
+                  <div className="space-y-2">
+                    <div className="text-5xl lg:text-6xl font-black tracking-tighter drop-shadow-lg scale-90 group-hover:scale-100 origin-left transition-transform duration-500">
+                      {!loading && <StatCounter end={s.val} />}
+                    </div>
+                    <div>
+                      <h4 className="text-primary font-black uppercase tracking-widest text-sm mb-1">{s.lab}</h4>
+                      <p className="text-white/60 text-xs font-medium leading-relaxed opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                        {s.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Glassy border effect on hover */}
+                <div className="absolute inset-0 border-2 border-white/0 group-hover:border-primary/50 rounded-[2.5rem] transition-colors duration-500 pointer-events-none" />
               </div>
             ))}
           </div>
