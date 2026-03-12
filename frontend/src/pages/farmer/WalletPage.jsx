@@ -229,44 +229,44 @@ export const WalletPage = () => {
                ) : (
                  <div className="divide-y divide-border/30">
                    {transactions.map((txn) => (
-                     <div key={txn.id} className="p-8 flex items-center gap-8 hover:bg-primary/[0.01] transition-all group">
-                       <div className={cn(
-                         "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                         txn.type === 'credit' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
-                       )}>
-                         {getTypeIcon(txn.type)}
-                       </div>
-                       
-                       <div className="flex-1 min-w-0">
-                         <p className="text-lg font-black text-foreground tracking-tight truncate group-hover:text-primary transition-colors">
-                           {txn.description}
-                         </p>
-                         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">
-                           {txn.date}
-                         </p>
-                       </div>
-                       
-                       <div className="text-right">
-                         <p className={cn(
-                           "text-xl font-black tracking-tighter mb-1",
-                           txn.type === 'credit' ? 'text-green-600' : 'text-foreground'
-                         )}>
-                           {txn.type === 'credit' ? '+' : '-'}{formatPrice(txn.amount)}
-                         </p>
-                         <div className="flex items-center gap-2 justify-end">
-                            <span className={cn(
-                               "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
-                               txn.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                               txn.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                               'bg-red-500/10 text-red-600 border-red-500/20'
-                            )}>
-                               {txn.status}
-                            </span>
-                         </div>
-                       </div>
-                       
-                       <ChevronRight className="w-5 h-5 text-muted-foreground/20 group-hover:translate-x-1 group-hover:text-primary/40 transition-all hidden sm:block" />
-                     </div>
+                      <div key={txn.id} className="p-4 sm:p-8 flex items-center gap-4 sm:gap-8 hover:bg-primary/[0.01] transition-all group">
+                        <div className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                          txn.type === 'credit' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                        )}>
+                          {getTypeIcon(txn.type)}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="text-lg font-black text-foreground tracking-tight truncate group-hover:text-primary transition-colors">
+                            {txn.description}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">
+                            {txn.date}
+                          </p>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className={cn(
+                            "text-lg sm:text-xl font-black tracking-tighter mb-1",
+                            txn.type === 'credit' ? 'text-green-600' : 'text-foreground'
+                          )}>
+                            {txn.type === 'credit' ? '+' : '-'}{formatPrice(txn.amount)}
+                          </p>
+                          <div className="flex items-center gap-2 justify-end">
+                             <span className={cn(
+                                "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+                                txn.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                                txn.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                'bg-red-500/10 text-red-600 border-red-500/20'
+                             )}>
+                                {txn.status}
+                             </span>
+                          </div>
+                        </div>
+                        
+                        <ChevronRight className="w-5 h-5 text-muted-foreground/20 group-hover:translate-x-1 group-hover:text-primary/40 transition-all hidden sm:block" />
+                      </div>
                    ))}
                  </div>
                )}
@@ -301,7 +301,7 @@ export const WalletPage = () => {
             <div className="space-y-8 relative z-10">
               <div className="group">
                 <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                  Settlement Amount (₦)
+                   Settlement Amount (₦)
                 </label>
                 <div className="relative">
                   <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-muted-foreground opacity-30">₦</span>
