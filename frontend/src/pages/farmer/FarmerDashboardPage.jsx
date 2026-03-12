@@ -50,10 +50,10 @@ export const FarmerDashboardPage = () => {
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
                 <Leaf className="w-3 h-3" />
-                Operational Overview
+                Farm Summary
               </div>
               <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9] max-w-xl">
-                 Farmer <span className="text-gradient">Control Center</span>
+                 Farmer <span className="text-gradient">Dashboard</span>
               </h1>
               <div className="flex items-center gap-4">
                  <p className="text-xl text-muted-foreground font-medium max-w-md">
@@ -65,7 +65,7 @@ export const FarmerDashboardPage = () => {
             <Link to="/farmer/products/new" className="group">
               <Button size="xl" className="rounded-2xl btn-premium h-16 px-8 text-lg font-black tracking-tight">
                 <Plus className="w-6 h-6 mr-3 group-hover:rotate-90 transition-transform duration-500" />
-                List New Harvest
+                Add New Product
               </Button>
             </Link>
           </div>
@@ -80,7 +80,7 @@ export const FarmerDashboardPage = () => {
                   <Sparkles className="w-8 h-8 text-white" />
                </div>
                <div className="flex-1 space-y-1">
-                  <h3 className="text-xl font-black text-foreground tracking-tight">Market Insight Alert</h3>
+                  <h3 className="text-xl font-black text-foreground tracking-tight">Market News</h3>
                   <p className="text-muted-foreground font-medium leading-relaxed">
                     Local mango prices are up <span className="text-primary font-bold">15%</span> this week in Kaduna. Consider updating your listings to maximize profit.
                   </p>
@@ -92,10 +92,10 @@ export const FarmerDashboardPage = () => {
           {/* Core Metrics Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             {[
-              { icon: Package, label: 'Active Harvests', value: stats.products, sub: 'Product Listings', color: 'primary', trend: '+2' },
-              { icon: ShoppingCart, label: 'Direct Orders', value: stats.orders, sub: 'Recent Sales', color: 'blue', trend: '+5' },
-              { icon: Wallet, label: 'Liquid Balance', value: formatPrice(stats.balance), sub: 'Available for Payout', color: 'green', trend: 'Verified' },
-              { icon: Wallet, label: 'Pending Yield', value: formatPrice(stats.pending), sub: 'In Escrow Settlement', color: 'amber', trend: 'Locked' },
+              { icon: Package, label: 'Products for Sale', value: stats.products, sub: 'Product Listings', color: 'primary', trend: '+2' },
+              { icon: ShoppingCart, label: 'New Orders', value: stats.orders, sub: 'Recent Sales', color: 'blue', trend: '+5' },
+              { icon: Wallet, label: 'Money You Can Withdraw', value: formatPrice(stats.balance), sub: 'Available for Payout', color: 'green', trend: 'Verified' },
+              { icon: Wallet, label: 'Money Coming Soon', value: formatPrice(stats.pending), sub: 'In Escrow Settlement', color: 'amber', trend: 'Locked' },
             ].map((stat, i) => (
               <div key={i} className="glass-premium p-8 rounded-[2rem] border-border/50 group hover:border-primary/50 transition-all duration-500 relative overflow-hidden active:scale-[0.98]">
                  <div className="absolute bottom-[-10%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
@@ -117,9 +117,9 @@ export const FarmerDashboardPage = () => {
           {/* Quick Action Navigation */}
           <div className="grid lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             {[
-              { title: 'Inventory Control', icon: Package, desc: 'Manage listings, yields, and pricing strategies.', link: '/farmer/products', color: 'primary' },
-              { title: 'Sales Ledger', icon: ShoppingCart, desc: 'Track order fulfillment and buyer communications.', link: '/farmer/orders', color: 'blue' },
-              { title: 'Financial Vault', icon: Wallet, desc: 'Process settlements and manage payouts safely.', link: '/farmer/wallet', color: 'green' }
+              { title: 'Your Store', icon: Package, desc: 'Manage your products and prices.', link: '/farmer/products', color: 'primary' },
+              { title: 'Sales Record', icon: ShoppingCart, desc: 'Track your sales and talk to buyers.', link: '/farmer/orders', color: 'blue' },
+              { title: 'Money & Payments', icon: Wallet, desc: 'Manage your money and withdrawals.', link: '/farmer/wallet', color: 'green' }
             ].map((action, i) => (
               <Link key={i} to={action.link} className="glass-premium p-10 rounded-[2.5rem] border-border/50 hover:border-primary/50 transition-all duration-500 group relative overflow-hidden active:scale-[0.98]">
                  <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500">
@@ -131,7 +131,7 @@ export const FarmerDashboardPage = () => {
                  <h3 className="text-2xl font-black text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors">{action.title}</h3>
                  <p className="text-muted-foreground font-medium mb-8 leading-relaxed">{action.desc}</p>
                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all">
-                    Launch Application
+                    Open
                     <ArrowRight className="w-4 h-4" />
                  </div>
               </Link>
@@ -147,9 +147,9 @@ export const FarmerDashboardPage = () => {
                   <MessageCircle className="w-10 h-10 text-primary" />
                </div>
                <div className="flex-1 space-y-1 relative z-10">
-                  <h3 className="text-2xl font-black text-foreground tracking-tight">Direct Buyer Interface</h3>
+                  <h3 className="text-2xl font-black text-foreground tracking-tight">Chat with Buyers</h3>
                   <p className="text-muted-foreground font-medium leading-relaxed">
-                    Real-time negotiation and direct-to-buyer relationship portal.
+                    Talk directly to buyers and close deals.
                   </p>
                </div>
                <Button size="icon" className="w-14 h-14 rounded-2xl btn-premium shadow-primary/20 shrink-0">
@@ -164,9 +164,9 @@ export const FarmerDashboardPage = () => {
                   <ShieldCheck className="w-10 h-10 text-amber-500" />
                </div>
                <div className="flex-1 space-y-1 relative z-10">
-                  <h3 className="text-2xl font-black text-foreground tracking-tight">Verification Center</h3>
+                  <h3 className="text-2xl font-black text-foreground tracking-tight">Get Trusted Badge</h3>
                   <p className="text-muted-foreground font-medium leading-relaxed">
-                    Elevate your status to "Verified Producer" to unlock premium features and higher trust.
+                    Get verified to build more trust with buyers.
                   </p>
                </div>
                <Button size="xl" variant="outline" className="rounded-2xl border-amber-500/20 hover:bg-amber-500/10 text-amber-500 font-black tracking-tight shrink-0">

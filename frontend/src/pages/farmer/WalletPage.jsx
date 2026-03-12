@@ -132,19 +132,19 @@ export const WalletPage = () => {
             <div className="space-y-4">
                <Link to="/farmer/dashboard" className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4">
                   <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                  Control Center
+                  Dashboard
                </Link>
                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                  Capital <span className="text-gradient">Ledger</span>
+                  My <span className="text-gradient">Wallet</span>
                </h1>
                <p className="text-xl text-muted-foreground font-medium max-w-md">
-                 Real-time treasury management and transaction settlement.
+                 Manage your money and see all your transactions in one place.
                </p>
             </div>
             <div className="flex gap-4">
                <Button variant="outline" className="h-16 px-6 rounded-2xl border-border/50 font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-white transition-all">
                   <Download className="w-4 h-4" />
-                  Export Statement
+                  Download History
                </Button>
             </div>
           </div>
@@ -162,12 +162,12 @@ export const WalletPage = () => {
                            <Wallet className="w-8 h-8 text-white" />
                         </div>
                         <div>
-                           <p className="text-white/70 text-xs font-black uppercase tracking-widest">Liquid Capital</p>
+                           <p className="text-white/70 text-xs font-black uppercase tracking-widest">Available Money</p>
                            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tighter">{formatPrice(balance.available)}</h2>
                         </div>
                      </div>
                      <div className="px-4 py-2 bg-white/10 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-                        Secured Assets
+                        Safe & Secure
                      </div>
                   </div>
                   
@@ -176,11 +176,11 @@ export const WalletPage = () => {
                         className="h-16 sm:h-20 flex-1 w-full sm:w-auto rounded-[1.25rem] sm:rounded-[1.5rem] bg-white text-primary hover:bg-white/90 text-lg font-black tracking-tight"
                         onClick={() => setShowWithdrawModal(true)}
                       >
-                        Request Payout
+                        Withdraw Money
                       </Button>
                      <div className="flex items-center gap-3 text-white/70">
                         <ShieldCheck className="w-5 h-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Instant Settlement Enabled</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Instant Payout Enabled</span>
                      </div>
                   </div>
                </div>
@@ -194,12 +194,12 @@ export const WalletPage = () => {
                   <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6">
                      <Clock className="w-6 h-6 text-amber-600" />
                   </div>
-                  <p className="text-muted-foreground text-xs font-black uppercase tracking-widest mb-1">Escrowed Funds</p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-foreground tracking-tighter">{formatPrice(balance.pending)}</h3>
-               </div>
-               <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-8 border-t border-border/30 pt-6 italic">
-                 Awaiting recipient delivery confirmation. Settlement executes 24h post-verification.
-               </p>
+                   <p className="text-muted-foreground text-xs font-black uppercase tracking-widest mb-1">Money in Waiting</p>
+                   <h3 className="text-3xl sm:text-4xl font-black text-foreground tracking-tighter">{formatPrice(balance.pending)}</h3>
+                </div>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-8 border-t border-border/30 pt-6 italic">
+                  Waiting for the buyer to receive their order. You'll get your money 24 hours after they confirm.
+                </p>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export const WalletPage = () => {
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
              <div className="flex items-center justify-between mb-8 px-4">
                 <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
-                   Transaction Log
+                   Money History
                 </h2>
                 <div className="flex items-center gap-2">
                    <Button variant="ghost" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[10px]">
@@ -223,8 +223,8 @@ export const WalletPage = () => {
                    <div className="w-20 h-20 bg-secondary rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
                      <Wallet className="w-8 h-8 text-muted-foreground opacity-30" />
                    </div>
-                   <p className="text-xl font-black text-muted-foreground tracking-tight">No Transactions Recorded</p>
-                   <p className="text-sm text-muted-foreground/60 font-medium">System activity will manifest here once initialized.</p>
+                    <p className="text-xl font-black text-muted-foreground tracking-tight">No Money History Found</p>
+                    <p className="text-sm text-muted-foreground/60 font-medium">Your transactions will show up here as you buy and sell.</p>
                  </div>
                ) : (
                  <div className="divide-y divide-border/30">
@@ -284,7 +284,7 @@ export const WalletPage = () => {
              </div>
 
              <div className="flex items-center justify-between mb-10">
-                <h3 className="text-3xl font-black text-foreground tracking-tight">Payout Terminal</h3>
+                 <h3 className="text-3xl font-black text-foreground tracking-tight">Withdraw Money</h3>
                 <button 
                   onClick={() => setShowWithdrawModal(false)}
                   className="w-12 h-12 glass-premium rounded-2xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-90"
@@ -294,14 +294,14 @@ export const WalletPage = () => {
              </div>
             
             <div className="glass-premium bg-primary/[0.03] rounded-3xl p-6 mb-10 border-primary/10">
-              <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Maximum Available Liquidity</p>
+               <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Total Money You Can Withdraw</p>
               <p className="text-4xl font-black text-gradient tracking-tighter">{formatPrice(balance.available)}</p>
             </div>
 
             <div className="space-y-8 relative z-10">
               <div className="group">
                 <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                   Settlement Amount (₦)
+                    Amount to Withdraw (₦)
                 </label>
                 <div className="relative">
                   <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-muted-foreground opacity-30">₦</span>
@@ -321,14 +321,14 @@ export const WalletPage = () => {
                     <Building2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Default Settlement Channel</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Where your money goes</p>
                     <p className="text-sm font-black text-foreground">GTBank • Trans-Regional Terminal **** 1234</p>
                   </div>
                 </div>
               </div>
 
               <p className="text-[10px] text-muted-foreground font-medium text-center px-4">
-                Authorized payouts are processed through the regional clearing house within 24 standard business hours.
+                 Your withdrawal will be processed and sent to your bank account within 24 hours.
               </p>
             </div>
 
@@ -343,7 +343,7 @@ export const WalletPage = () => {
                       <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
                       Executing...
                    </div>
-                ) : 'Authorize Payout'}
+                 ) : 'Confirm Withdrawal'}
               </Button>
             </div>
           </div>

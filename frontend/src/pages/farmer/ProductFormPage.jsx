@@ -197,13 +197,13 @@ export const ProductFormPage = () => {
              <div className="space-y-4">
                 <Link to="/farmer/products" className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4">
                    <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                   Inventory Vault
+                   My Products
                 </Link>
                 <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                   {isEditing ? 'Refine' : 'Initialize'} <span className="text-gradient">Listing</span>
+                   {isEditing ? 'Edit' : 'Post New'} <span className="text-gradient">Product</span>
                 </h1>
                 <p className="text-xl text-muted-foreground font-medium max-w-md">
-                   {isEditing ? 'Optimize your existing harvest data for maximum market visibility.' : 'Configure your new harvest for immediate release to the trade floor.'}
+                   {isEditing ? 'Update your product details to help more buyers find it.' : 'Fill in the details below to put your product up for sale.'}
                 </p>
              </div>
           </div>
@@ -228,7 +228,7 @@ export const ProductFormPage = () => {
                   <div className="grid sm:grid-cols-2 gap-8">
                     <div className="sm:col-span-2 group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Harvest Designation
+                        What are you selling?
                       </label>
                       <input
                         type="text"
@@ -242,19 +242,19 @@ export const ProductFormPage = () => {
 
                     <div className="sm:col-span-2 group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Detailed Description / Quality Profile
+                        Describe your product
                       </label>
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="w-full min-h-[160px] p-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-3xl transition-all resize-none"
-                        placeholder="Provide detailed technical specs, soil conditions, or harvesting methods..."
+                        placeholder="Provide details about your product..."
                       />
                     </div>
 
                     <div className="group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Product Sector
+                        Category
                       </label>
                       <select
                         value={formData.category}
@@ -269,7 +269,7 @@ export const ProductFormPage = () => {
 
                     <div className="group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Geographic Origin
+                        Where is it located?
                       </label>
                       <select
                         value={formData.location}
@@ -295,13 +295,13 @@ export const ProductFormPage = () => {
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                     <Package className="w-6 h-6" />
                   </div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">Economics & Logistics</h2>
+                   <h2 className="text-2xl font-black text-foreground tracking-tight">Price & Shipping</h2>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-8 relative z-10">
                   <div className="group">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                      Unit Valuation (₦)
+                       Price per unit (₦)
                     </label>
                     <input
                       type="number"
@@ -316,7 +316,7 @@ export const ProductFormPage = () => {
 
                   <div className="group">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                      Measurement Protocol
+                       How do you sell it? (Kg, Bag, etc.)
                     </label>
                     <select
                       value={formData.unit}
@@ -331,7 +331,7 @@ export const ProductFormPage = () => {
 
                   <div className="group">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                      Minimum Acquisition Threshold
+                       Minimum you can sell
                     </label>
                     <input
                       type="number"
@@ -345,7 +345,7 @@ export const ProductFormPage = () => {
 
                   <div className="group">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                      Total Available Inventory
+                       How much do you have?
                     </label>
                     <input
                       type="number"
@@ -370,7 +370,7 @@ export const ProductFormPage = () => {
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                     <ImageIcon className="w-6 h-6" />
                   </div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">Visual Documentation</h2>
+                   <h2 className="text-2xl font-black text-foreground tracking-tight">Product Photos</h2>
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-8 relative z-10">
@@ -398,7 +398,7 @@ export const ProductFormPage = () => {
                       <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center mb-3 group-hover/upload:scale-110 transition-transform">
                          <Upload className="w-6 h-6 text-muted-foreground group-hover/upload:text-primary transition-colors" />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inject Asset</span>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Add Photo</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -411,7 +411,7 @@ export const ProductFormPage = () => {
                 </div>
                 
                 <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest px-1">
-                   Limit: 05 Visual Records. Initial entry designates primary display.
+                    Limit: 05 Photos. First photo will be shown on the main page.
                 </p>
               </div>
 
@@ -428,7 +428,7 @@ export const ProductFormPage = () => {
                          Synchronizing...
                       </div>
                     ) : (
-                      isEditing ? 'Commit Changes' : 'Execute Listing'
+                      isEditing ? 'Save Changes' : 'Post Product'
                     )}
                  </Button>
                  <Button
