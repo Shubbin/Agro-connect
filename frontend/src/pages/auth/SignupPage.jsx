@@ -19,7 +19,7 @@ export const SignupPage = () => {
     confirmPassword: '',
   });
 
-  const { register } = useAuth();
+  const { signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -44,7 +44,7 @@ export const SignupPage = () => {
 
     setIsLoading(true);
     try {
-      await register({
+      await signUp({
         email: formData.email,
         password: formData.password,
         name: formData.name,
@@ -53,11 +53,11 @@ export const SignupPage = () => {
       });
       
       toast({
-        title: 'Account created!',
-        description: 'Please check your email to verify your account.',
+        title: 'Signup successful',
+        description: 'Please sign in with your credentials.',
       });
       
-      navigate(role === 'farmer' ? '/farmer/dashboard' : '/marketplace');
+      navigate('/login');
     } catch (error) {
       toast({
         title: 'Registration failed',
@@ -147,7 +147,7 @@ export const SignupPage = () => {
             <div className="space-y-10">
               <div className="space-y-4">
                 <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Start Your <span className="text-gradient">Journey</span>
+                  Create Your <span className="text-gradient">Account</span>
                 </h2>
                 <p className="text-lg text-muted-foreground font-medium">
                   Select your primary role to customize your experience.
@@ -196,9 +196,9 @@ export const SignupPage = () => {
 
               <div className="pt-6 text-center">
                 <p className="text-muted-foreground font-bold">
-                  Already a member?{' '}
+                  Already have an account?{' '}
                   <Link to="/login" className="text-primary hover:underline underline-offset-8 decoration-2">
-                    Sign in to your dashboard
+                    Log in here
                   </Link>
                 </p>
               </div>
@@ -215,10 +215,10 @@ export const SignupPage = () => {
                   Back to Role Selection
                 </button>
                 <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Complete <span className="text-gradient">Profile</span>
+                  Finish <span className="text-gradient">Sign Up</span>
                 </h2>
                 <p className="text-lg text-muted-foreground font-medium uppercase tracking-wider text-[10px]">
-                  Setting up your {role} credentials
+                  Setting up your {role} profile
                 </p>
               </div>
 
@@ -250,7 +250,7 @@ export const SignupPage = () => {
 
                 <div className="space-y-2 group">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Access Password
+                    Password
                   </label>
                   <div className="relative">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -317,7 +317,7 @@ export const SignupPage = () => {
                   className="w-full h-18 rounded-[1.25rem] btn-premium text-lg font-black tracking-tight"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Encrypting Data...' : 'Create My Account'}
+                  {isLoading ? 'Creating Account...' : 'Create My Account'}
                 </Button>
               </div>
 

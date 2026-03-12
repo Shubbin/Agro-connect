@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Leaf, Eye, EyeOff, Mail, Lock, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -8,8 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem('remembered_email') ? true : false);
   const [formData, setFormData] = useState({
-    email: '',
+    email: localStorage.getItem('remembered_email') || '',
     password: '',
   });
 
@@ -22,6 +23,12 @@ export const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      if (rememberMe) {
+        localStorage.setItem('remembered_email', formData.email);
+      } else {
+        localStorage.removeItem('remembered_email');
+      }
+
       await login(formData.email, formData.password);
       
       toast({
@@ -71,17 +78,17 @@ export const LoginPage = () => {
           
           <div className="text-center mb-10 space-y-3">
             <h1 className="text-4xl font-black text-foreground tracking-tighter leading-[0.95]">
-              Access <span className="text-gradient">Portal</span>
+              Log <span className="text-gradient">In</span>
             </h1>
             <p className="text-lg text-muted-foreground font-medium">
-              Authenticate to manage your agro-operations.
+              Log in to manage your farm or shop.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 group">
               <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                Security Identifier (Email)
+                Email Address
               </label>
               <div className="relative">
                 <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -101,13 +108,13 @@ export const LoginPage = () => {
             <div className="space-y-2 group">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                  Access Key (Password)
+                  Password
                 </label>
                 <Link
                   to="/forgot-password"
                   className="text-xs font-bold text-primary hover:underline underline-offset-4"
                 >
-                  Lost Access Key?
+                  Forgot Password?
                 </Link>
               </div>
               <div className="relative">
@@ -132,6 +139,23 @@ export const LoginPage = () => {
               </div>
             </div>
 
+            <div className="flex items-center justify-between px-1">
+              <label className="flex items-center gap-3 cursor-pointer group/check">
+                <div className="relative w-6 h-6">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer appearance-none w-6 h-6 rounded-lg bg-secondary/50 border border-border group-hover/check:border-primary/50 checked:bg-primary checked:border-primary transition-all cursor-pointer shadow-inner"
+                  />
+                  <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                </div>
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover/check:text-foreground transition-colors">
+                  Remember Identifier
+                </span>
+              </label>
+            </div>
+
             <div className="pt-2">
               <Button
                 type="submit"
@@ -139,16 +163,16 @@ export const LoginPage = () => {
                 className="w-full h-18 rounded-2xl btn-premium text-lg font-black tracking-tight"
                 disabled={isLoading}
               >
-                {isLoading ? 'Verifying Credentials...' : 'Secure Authorization'}
+                {isLoading ? 'Checking...' : 'Log In'}
               </Button>
             </div>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border/50 text-center">
             <p className="text-muted-foreground font-bold">
-              New to the ecosystem?{' '}
+              New here?{' '}
               <Link to="/signup" className="text-primary hover:underline underline-offset-8 decoration-2 ml-1">
-                Initialize Account
+                Sign Up
               </Link>
             </p>
           </div>
@@ -157,7 +181,7 @@ export const LoginPage = () => {
         {/* Footer info */}
         <div className="mt-12 text-center space-y-4">
            <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
-             © 2026 AgroDirect Connect • Secure Terminal v2.0
+             © 2026 AgroDirect Connect • Direct Farming
            </p>
         </div>
       </div>

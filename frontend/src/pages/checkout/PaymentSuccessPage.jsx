@@ -15,10 +15,10 @@ export const PaymentSuccessPage = () => {
         </div>
         
         <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter mb-6 uppercase">
-          Authorization <span className="text-gradient">Successful</span>
+          Payment <span className="text-gradient">Successful</span>
         </h1>
         <p className="text-xl text-muted-foreground font-medium mb-12 max-w-md mx-auto italic">
-          Capital transfer verified. The production pipeline has been notified and fulfillment is now in progress.
+          Payment received! The farmer has been notified and your order is being prepared.
         </p>
 
         <div className="glass-premium rounded-[3rem] p-10 mb-12 border-primary/20 shadow-2xl shadow-primary/5 animate-fade-in-up">
@@ -39,13 +39,13 @@ export const PaymentSuccessPage = () => {
         <div className="flex flex-col sm:flex-row gap-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <Link to="/orders" className="flex-1">
             <Button size="xl" className="w-full rounded-2xl btn-premium h-20 text-lg font-black tracking-tight shadow-xl shadow-primary/20">
-              Review Acquisitions
+              View Your Orders
               <ArrowRight className="w-6 h-6 ml-3" />
             </Button>
           </Link>
           <Link to="/marketplace" className="flex-1">
             <Button variant="outline" size="xl" className="w-full rounded-2xl border-border/50 h-20 text-lg font-black tracking-tight hover:bg-white transition-all">
-              Market Terminal
+              Go to Market
             </Button>
           </Link>
         </div>

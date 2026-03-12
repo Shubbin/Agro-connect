@@ -162,7 +162,7 @@ export const ProductsPage = () => {
                     <tr className="bg-primary/[0.02] border-b border-border/50">
                       <th className="text-left px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Product Specification</th>
                       <th className="text-left px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Classification</th>
-                      <th className="text-left px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Valuation</th>
+                      <th className="text-left px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</th>
                       <th className="text-left px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Allocation</th>
                       <th className="text-right px-8 py-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Actions</th>
                     </tr>

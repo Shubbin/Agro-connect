@@ -71,7 +71,7 @@ export const CartPage = () => {
             <div className="space-y-4">
                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
                   <ShoppingCart className="w-3 h-3" />
-                  Acquisition Manifest
+                  Your Cart
                </div>
                <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
                   Your <span className="text-gradient">Cart</span>
@@ -87,8 +87,8 @@ export const CartPage = () => {
             <div className="lg:col-span-2 space-y-10 animate-fade-in-up">
               {/* AI Tip */}
               <AITipCard
-                title="Consolidated Logistics"
-                description="Acquiring multiple items from the same agro-partner optimizes delivery timelines and reduces throughput costs."
+                title="Combined Delivery"
+                description="Buying multiple items from the same partner makes delivery faster and cheaper."
                 className="border-primary/20 bg-primary/[0.02]"
               />
 

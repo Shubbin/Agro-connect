@@ -73,13 +73,13 @@ export const OrdersPage = () => {
           <div className="mb-12 space-y-4 animate-fade-in">
              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
                 <Package className="w-3 h-3" />
-                Purchase History
+                My Orders
              </div>
              <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                My <span className="text-gradient">Acquisitions</span>
+                My <span className="text-gradient">Orders</span>
              </h1>
              <p className="text-xl text-muted-foreground font-medium max-w-xl italic">
-                Track your active logistics and review your past agricultural investments.
+                Track your active deliveries and review your past agricultural purchases.
              </p>
           </div>
 
@@ -97,9 +97,9 @@ export const OrdersPage = () => {
               <div className="w-24 h-24 bg-secondary/50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
                 <Package className="w-12 h-12 text-muted-foreground" />
               </div>
-              <h2 className="text-4xl font-black text-foreground tracking-tight mb-4">The Ledger is Empty</h2>
+              <h2 className="text-4xl font-black text-foreground tracking-tight mb-4">No Orders Found</h2>
               <p className="text-xl text-muted-foreground font-medium mb-10 max-w-md mx-auto">
-                No active order cycles found. Initialize your first acquisition from the marketplace.
+                No active orders found. Make your first purchase from the marketplace.
               </p>
               <Link to="/marketplace">
                 <Button size="xl" className="rounded-2xl btn-premium px-10 h-16 text-lg font-black tracking-tight">
@@ -154,17 +154,17 @@ export const OrdersPage = () => {
                          
                          {order.tracking_number && (
                            <div className="mt-8 flex items-center justify-between px-4 border-t border-border/20 pt-6 animate-fade-in">
-                              <div className="flex items-center gap-4">
+                               <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                   <Truck className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Global Tracking ID</p>
+                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Tracking Number</p>
                                   <p className="font-bold text-foreground font-mono">{order.tracking_number}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">ETA Projection</p>
+                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Estimated Delivery</p>
                                 <p className="font-bold text-foreground">{order.estimated_delivery || 'Calculating...'}</p>
                               </div>
                            </div>

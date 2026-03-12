@@ -62,7 +62,7 @@ export const CartProvider = ({ children }) => {
   const total = items.reduce((sum, item) => {
     const price = item.offeredPrice && item.offerStatus === 'accepted' 
       ? item.offeredPrice 
-      : item.product.price;
+      : (item.product?.price || 0);
     return sum + price * item.quantity;
   }, 0);
 

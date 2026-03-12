@@ -202,6 +202,7 @@ export const ChatPage = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef(null);
     const [progress, setProgress] = useState(0);
+    const [duration, setDuration] = useState(0);
 
     const togglePlay = () => {
       if (isPlaying) {
@@ -212,29 +213,48 @@ export const ChatPage = () => {
       setIsPlaying(!isPlaying);
     };
 
+    const formatDuration = (sec) => {
+      const min = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${min}:${s < 10 ? '0' : ''}${s}`;
+    };
+
     return (
       <div className={cn(
-        "flex items-center gap-3 p-2 rounded-2xl min-w-[200px]",
-        isMe ? "bg-primary/10" : "bg-secondary/50"
+        "flex items-center gap-3 p-3 rounded-2xl min-w-[220px] shadow-inner",
+        isMe ? "bg-primary/5" : "bg-secondary/30"
       )}>
         <button 
           onClick={togglePlay}
           className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-            isMe ? "bg-white text-primary" : "bg-primary text-white"
+            "w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95",
+            isMe ? "bg-primary text-white" : "bg-primary text-white"
           )}
         >
           {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
         </button>
-        <div className="flex-1 h-1.5 bg-background/50 rounded-full overflow-hidden">
-          <div 
-            className={cn("h-full transition-all duration-300", isMe ? "bg-primary" : "bg-primary")} 
-            style={{ width: `${progress}%` }} 
-          />
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 bg-background/50 rounded-full overflow-hidden relative cursor-pointer" 
+               onClick={(e) => {
+                 const rect = e.currentTarget.getBoundingClientRect();
+                 const x = e.clientX - rect.left;
+                 const pct = x / rect.width;
+                 audioRef.current.currentTime = pct * audioRef.current.duration;
+               }}>
+            <div 
+              className="h-full bg-primary transition-all duration-100" 
+              style={{ width: `${progress}%` }} 
+            />
+          </div>
+          <div className="flex justify-between text-[10px] font-bold text-muted-foreground/60">
+            <span>{formatDuration(audioRef.current?.currentTime || 0)}</span>
+            <span>{formatDuration(duration)}</span>
+          </div>
         </div>
         <audio 
           ref={audioRef} 
           src={url} 
+          onLoadedMetadata={() => setDuration(audioRef.current.duration)}
           onTimeUpdate={() => setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100)}
           onEnded={() => setIsPlaying(false)}
           className="hidden"
@@ -382,17 +402,17 @@ export const ChatPage = () => {
                            </div>
                         )}
                          <div className={cn(
-                          "px-4 md:px-5 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] shadow-sm transition-all duration-300 relative", 
+                          "px-4 md:px-5 py-2.5 md:py-3 rounded-[1.25rem] md:rounded-[1.5rem] shadow-md transition-all duration-300 relative", 
                           isMe 
-                            ? "bg-[#E7FFDB] text-foreground rounded-tr-none border border-[#d1e9c2]" 
-                            : "bg-white text-foreground border border-border/40 rounded-tl-none"
+                            ? "bg-[#dcf8c6] text-foreground rounded-tr-none border border-[#c7e5b3]" 
+                            : "bg-white text-foreground border border-border/20 rounded-tl-none shadow-sm"
                         )}>
                            {/* Bubble tail effect for WhatsApp look */}
                            <div className={cn(
                              "absolute top-0 w-3 h-3 transition-colors",
                              isMe 
-                               ? "-right-1.5 bg-[#E7FFDB] border-r border-t border-[#d1e9c2] rotate-[15deg] rounded-tr-[2px]" 
-                               : "-left-1.5 bg-white border-l border-t border-border/40 -rotate-[15deg] rounded-tl-[2px]"
+                               ? "-right-1.5 bg-[#dcf8c6] border-r border-t border-[#c7e5b3] rotate-[15deg] rounded-tr-[2px]" 
+                               : "-left-1.5 bg-white border-l border-t border-border/20 -rotate-[15deg] rounded-tl-[2px]"
                            )} />
                           {msg.media_url && (
                             <div className="mb-3 overflow-hidden rounded-xl">
@@ -523,7 +543,7 @@ export const ChatPage = () => {
                     </div>
                   )}
 
-                  <div className="glass-premium bg-white/80 border-primary/20 rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-4 flex items-center gap-2 md:gap-4 shadow-2xl shadow-primary/10 relative z-10">
+                  <div className="glass-premium bg-white/90 border-primary/20 rounded-[1.5rem] md:rounded-[2.5rem] p-2 md:p-3 flex items-center gap-1.5 md:gap-3 shadow-2xl shadow-primary/10 relative z-10">
                     <input 
                       type="file" 
                       className="hidden" 
@@ -535,59 +555,59 @@ export const ChatPage = () => {
                       variant="ghost" 
                       size="icon" 
                       className={cn(
-                        "w-12 h-12 rounded-2xl transition-all shrink-0",
+                        "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl transition-all shrink-0",
                         showAttachMenu ? "bg-primary text-white" : "text-muted-foreground hover:text-primary"
                       )}
                       onClick={() => setShowAttachMenu(!showAttachMenu)}
                     >
-                      <Paperclip className="w-6 h-6" />
+                      <Paperclip className="w-5 h-5 md:w-6 md:h-6" />
                     </Button>
+                    
+                    <div className="flex-1 flex items-center min-w-0">
+                      {isRecording ? (
+                        <div className="flex-1 flex items-center gap-2 md:gap-4 px-3 md:px-4 bg-red-50 text-red-500 rounded-xl md:rounded-2xl h-10 md:h-12 animate-pulse">
+                          <div className="w-2 h-2 bg-red-500 rounded-full" />
+                          <span className="text-[10px] md:text-xs font-black uppercase tracking-widest truncate">Recording: {recordingTime}s</span>
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                          placeholder="Type a message..."
+                          className="w-full h-10 md:h-12 bg-transparent border-none focus:ring-0 text-sm md:text-base font-medium placeholder:text-muted-foreground/40 placeholder:italic transition-all"
+                        />
+                      )}
+                    </div>
 
-                    {isRecording ? (
-                      <div className="flex-1 flex items-center gap-4 px-4 bg-red-50 text-red-500 rounded-2xl h-12 animate-pulse">
-                        <div className="w-2 h-2 bg-red-500 rounded-full" />
-                        <span className="text-xs font-black uppercase tracking-widest">Recording: {recordingTime}s</span>
-                      </div>
-                    ) : (
-                      <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Type a message..."
-                        className="flex-1 h-10 md:h-12 bg-transparent border-none focus:ring-0 text-sm md:text-base font-medium placeholder:text-muted-foreground/50 placeholder:italic transition-all"
-                      />
-                    )}
-
-                    <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                        <Button 
                          variant="ghost" 
                          size="icon" 
                          className={cn(
-                           "w-10 h-10 md:w-11 md:h-11 rounded-xl transition-all shrink-0",
+                           "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl transition-all shrink-0",
                            isRecording ? "bg-red-500 text-white hover:bg-red-600 scale-105 shadow-md shadow-red-200" : "text-muted-foreground hover:text-primary"
                          )}
                          onClick={isRecording ? stopRecording : startRecording}
                        >
-                         {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                         {isRecording ? <MicOff className="w-5 h-5 md:w-6 md:h-6" /> : <Mic className="w-5 h-5 md:w-6 md:h-6" />}
                        </Button>
                        
                        <Button 
                          onClick={handleSend} 
                          disabled={!message.trim() && !mediaFile}
                          size="icon"
-                         className="w-10 h-10 md:w-11 md:h-11 rounded-xl btn-premium shadow-md shadow-primary/10 active:scale-95 transition-all shrink-0"
+                         className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl btn-premium shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
                        >
-                         <Send className="w-5 h-5 text-white" />
+                         <Send className="w-5 h-5 md:w-6 md:h-6 text-white" />
                        </Button>
                      </div>
                    </div>
                  </div>
                </div>
-  </div>
-              </div>
-            </div>
-          </>
+             </div>
+           </>
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
                <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-8">

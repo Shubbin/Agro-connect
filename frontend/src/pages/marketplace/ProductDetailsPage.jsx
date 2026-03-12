@@ -6,7 +6,7 @@ import { AITipCard } from '@/components/ai/AITipCard';
 import { productsAPI } from '@/services/api';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Star, MapPin, MessageCircle, ShoppingCart, Minus, Plus, Truck, Shield, Clock, ShieldCheck, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, MessageCircle, ShoppingCart, Minus, Plus, Truck, Shield, Clock, ShieldCheck, Heart, Share2, Leaf } from 'lucide-react';
 import { VerificationBadge } from '@/components/ui/VerificationBadge';
 
 export const ProductDetailsPage = () => {
@@ -117,7 +117,7 @@ export const ProductDetailsPage = () => {
               <div className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center group-hover:border-primary/50 transition-colors">
                  <ArrowLeft className="w-4 h-4" />
               </div>
-              Back to Catalog
+              Back to Market
             </button>
             <div className="flex gap-2">
                <Button variant="outline" size="icon" className="rounded-full border-border/50 hover:bg-secondary">
@@ -223,10 +223,12 @@ export const ProductDetailsPage = () => {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="xl" className="rounded-2xl border-primary/20 hover:bg-primary/5 font-black tracking-tight px-10">
-                  <MessageCircle className="w-5 h-5 mr-3" />
-                  Direct Inquiry
-                </Button>
+                <Link to="/chat">
+                  <Button variant="outline" size="xl" className="rounded-2xl border-primary/20 hover:bg-primary/5 font-black tracking-tight px-10">
+                    <MessageCircle className="w-5 h-5 mr-3" />
+                    Chat with Farmer
+                  </Button>
+                </Link>
               </div>
 
               {/* Purchase Controls */}
@@ -253,7 +255,7 @@ export const ProductDetailsPage = () => {
                     </button>
                   </div>
                   <div className="flex-1 text-right sm:text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Estimated Capital Outlay</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Price</p>
                     <div className="text-4xl font-black text-foreground tracking-tighter">
                       {formatPrice(total)}
                     </div>
@@ -263,14 +265,14 @@ export const ProductDetailsPage = () => {
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button className="flex-1 h-20 rounded-[1.5rem] btn-premium text-lg font-black tracking-tight" onClick={handleAddToCart}>
                     <ShoppingCart className="w-6 h-6 mr-3" />
-                    Initialize Acquisition
+                    Buy Now
                   </Button>
                   <Button
                     variant="outline"
                     className="flex-1 h-20 rounded-[1.5rem] border-white/20 glass-premium text-lg font-black tracking-tight hover:bg-white/10"
                     onClick={() => setShowOffer(!showOffer)}
                   >
-                    Negotiate Terms
+                    Make an Offer
                   </Button>
                 </div>
               </div>
@@ -278,7 +280,7 @@ export const ProductDetailsPage = () => {
               {/* Features Grid */}
               <div className="grid grid-cols-3 gap-6 pt-10 border-t border-border/50">
                 {[
-                  { icon: Truck, label: 'Swift Logistics', sub: 'Hub-to-Hub' },
+                  { icon: Truck, label: 'Fast Delivery', sub: 'To your door' },
                   { icon: Shield, label: 'Escrow Lock', sub: 'Secured Capital' },
                   { icon: Clock, label: 'Freshness Seal', sub: 'Harv-to-Gate' }
                 ].map((feat, i) => (

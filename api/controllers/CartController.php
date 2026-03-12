@@ -45,11 +45,78 @@ class CartController
         $stmt->execute([1, $productId, $quantity]);
 
         $itemId = $this->db->lastInsertId();
-        echo json_encode(["id" => $itemId, "product_id" => $productId, "quantity" => $quantity]);
+        
+        // Fetch full item with product details to return to frontend
+        $stmt = $this->db->prepare("SELECT ci.*, p.name, p.price, p.images FROM cart_items ci JOIN products p ON ci.product_id = p.id WHERE ci.id = ?");
+        $stmt->execute([$itemId]);
+        $item = $stmt->fetch();
+        
+        if ($item) {
+            $item['images'] = json_decode($item['images'] ?? '[]', true);
+            $item['product'] = [
+                'id' => $item['product_id'],
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'images' => $item['images']
+            ];
+            echo json_encode($item);
+        } else {
+            echo json_encode(["id" => $itemId, "product_id" => $productId, "quantity" => $quantity]);
+        }
     }
 
-    public function remove()
+    public function update($itemId)
     {
-        // Logic for parts[2] (itemId) would go here in index.php router
+        $input = json_decode(file_get_contents('php://input'), true);
+        $quantity = $input['quantity'];
+
+        $stmt = $this->db->prepare("UPDATE cart_items SET quantity = ? WHERE id = ?");
+        $stmt->execute([$quantity, $itemId]);
+
+        echo json_encode(["success" => true, "id" => $itemId, "quantity" => $quantity]);
+    }
+
+    public function remove($itemId)
+    {
+        $stmt = $this->db->prepare("DELETE FROM cart_items WHERE id = ?");
+        $stmt->execute([$itemId]);
+
+        echo json_encode(["success" => true, "id" => $itemId]);
+    }
+
+    public function clear()
+    {
+        // Mocking user_id = 1
+        $stmt = $this->db->prepare("DELETE FROM cart_items WHERE user_id = ?");
+        $stmt->execute([1]);
+
+        echo json_encode(["success" => true]);
+    }
+
+    public function makeOffer($itemId)
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $offeredPrice = $input['offeredPrice'];
+
+        $stmt = $this->db->prepare("UPDATE cart_items SET offered_price = ?, offer_status = 'pending' WHERE id = ?");
+        $stmt->execute([$offeredPrice, $itemId]);
+
+        // Fetch updated item
+        $stmt = $this->db->prepare("SELECT ci.*, p.name, p.price, p.images FROM cart_items ci JOIN products p ON ci.product_id = p.id WHERE ci.id = ?");
+        $stmt->execute([$itemId]);
+        $item = $stmt->fetch();
+        
+        if ($item) {
+            $item['images'] = json_decode($item['images'] ?? '[]', true);
+            $item['product'] = [
+                'id' => $item['product_id'],
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'images' => $item['images']
+            ];
+            echo json_encode($item);
+        } else {
+            echo json_encode(["success" => true, "id" => $itemId]);
+        }
     }
 }

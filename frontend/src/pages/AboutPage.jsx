@@ -77,7 +77,7 @@ export const AboutPage = () => {
             <div className="flex flex-col items-center text-center space-y-8 animate-fade-in">
               <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-premium border-primary/20 text-[10px] font-black uppercase tracking-[0.2em] text-primary shadow-xl shadow-primary/5">
                 <Leaf className="w-3.5 h-3.5" />
-                The Protocol Narrative
+                Our Mission
               </div>
               <h1 className="text-6xl lg:text-9xl font-black text-foreground tracking-tighter leading-[0.85] uppercase">
                 Direct <span className="text-gradient">Agricultural</span> Synchronization
@@ -98,7 +98,7 @@ export const AboutPage = () => {
               <div>
                 <h2 className="text-5xl font-black text-foreground tracking-tighter mb-8 uppercase">The Mission</h2>
                 <p className="text-2xl text-foreground font-bold leading-snug mb-8">
-                  Empowering Nigerian agrarian producers by dismantling legacy intermediation and establishing sovereign market access.
+                  Helping Nigerian farmers by removing middlemen and giving them direct access to the market.
                 </p>
                 <div className="space-y-6 text-muted-foreground text-lg leading-relaxed font-medium italic border-l-4 border-primary/20 pl-8">
                   <p>
@@ -109,13 +109,13 @@ export const AboutPage = () => {
               <div className="flex flex-col sm:flex-row gap-6">
                 <Link to="/signup">
                   <Button size="xl" className="rounded-2xl btn-premium px-10 h-16 text-lg font-black tracking-tight">
-                    Initialize Partnership
+                    Join Us
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
                 <Link to="/marketplace">
                   <Button variant="outline" size="xl" className="rounded-2xl border-border/50 h-16 px-10 text-lg font-black tracking-tight hover:bg-white transition-all">
-                    Explore Assets
+                    Browse Products
                   </Button>
                 </Link>
               </div>
@@ -127,10 +127,10 @@ export const AboutPage = () => {
                </div>
                <div className="grid grid-cols-2 gap-12 relative z-10">
                 {[
-                  { value: statsData?.farmers || '0', label: 'Verified Partners' },
-                  { value: statsData?.products || '0', label: 'Serialized Assets' },
-                  { value: statsData?.states || '0', label: 'Operational Nodes' },
-                  { value: statsData?.volume || '₦0', label: 'Aggregated Throughput' },
+                  { value: statsData?.farmers || '0', label: 'Farmers' },
+                  { value: statsData?.products || '0', label: 'Products' },
+                  { value: statsData?.states || '0', label: 'Locations' },
+                  { value: statsData?.volume || '₦0', label: 'Total Sales' },
                 ].map((stat) => (
                   <div key={stat.label} className="space-y-2">
                     <p className="text-4xl lg:text-5xl font-black text-gradient tracking-tighter">{stat.value}</p>
@@ -147,9 +147,9 @@ export const AboutPage = () => {
       <section className="py-32 bg-secondary/20 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">Core Philosophies</h2>
+            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">Our Values</h2>
             <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-              The foundational pillars governing our logistical and financial operations.
+              The rules we live by to help farmers and buyers succeed.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -166,32 +166,32 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Protocol Workflow */}
+      {/* How it Works */}
       <section className="py-32 bg-background relative overflow-hidden">
         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-border/20 -z-10 hidden md:block" />
         <div className="container mx-auto px-4">
           <div className="text-center mb-24 animate-fade-in">
-            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">The Workflow</h2>
+            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">How it Works</h2>
             <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-              Streamlined integration phases for market participants.
+              How it works for everyone.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-16 relative">
             {[
               {
                 step: '01',
-                title: 'Onboarding',
-                description: 'Formalize your digital identity within the network as either a Producer or an Acquisitions Expert.',
+                title: 'Sign Up',
+                description: 'Create your account as either a Farmer or a Buyer.',
               },
               {
                 step: '02',
-                title: 'Synchronization',
-                description: 'Browse available agricultural assets, initiate capital contracts, and coordinate logistics in real-time.',
+                title: 'Browse & Order',
+                description: 'Find products you need, place your order, and chat with the farmer.',
               },
               {
                 step: '03',
-                title: 'Settlement',
-                description: 'Finalize acquisitions through our secure escrow protocol and institutional clearing systems.',
+                title: 'Payment & Delivery',
+                description: 'Pay securely and get your farm products delivered to you.',
               },
             ].map((item, idx) => (
               <div key={item.step} className="text-center group animate-fade-in-up" style={{ animationDelay: `${idx * 150}ms` }}>
@@ -210,9 +210,9 @@ export const AboutPage = () => {
       <section className="py-32 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20">
-            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">Strategic Leadership</h2>
+            <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-6">Our Team</h2>
             <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-              Architecting the next generation of Nigerian agrarian commerce.
+              The people building the future of Nigerian farming.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-12 max-w-5xl mx-auto">
@@ -242,9 +242,9 @@ export const AboutPage = () => {
           <div className="max-w-4xl mx-auto glass-premium p-16 rounded-[4rem] border-primary/20 text-center relative overflow-hidden shadow-2xl shadow-primary/5 animate-fade-in-up">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
             
-            <h2 className="text-5xl font-black text-foreground tracking-tighter mb-6 uppercase">Communication Terminal</h2>
+            <h2 className="text-5xl font-black text-foreground tracking-tighter mb-6 uppercase">Contact Us</h2>
             <p className="text-xl text-muted-foreground font-medium mb-16 italic">
-              Synchronize with our administrative centers for professional inquiries and partnership coordination.
+              Get in touch with us for any questions or partnerships.
             </p>
             
             <div className="grid sm:grid-cols-3 gap-12 mb-16">
@@ -279,7 +279,7 @@ export const AboutPage = () => {
             
             <Link to="/signup">
               <Button size="xl" className="rounded-2xl btn-premium h-20 px-12 text-xl font-black tracking-tight shadow-xl shadow-primary/20">
-                Register Connectivity
+                Join the Platform
                 <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
             </Link>

@@ -44,7 +44,7 @@ export const VerifyEmailPage = () => {
                <span className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none block">
                  Agro<span className="text-primary">Direct</span>
                </span>
-               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Protocol Terminal</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Account Verification</span>
             </div>
           </Link>
         </div>
@@ -82,7 +82,7 @@ export const VerifyEmailPage = () => {
               </div>
               <Link to="/login" className="block pt-4">
                 <Button size="xl" className="w-full rounded-2xl btn-premium h-16 text-lg font-black tracking-tight">
-                  Enter Login Terminal
+                  Log In
                 </Button>
               </Link>
             </div>
@@ -94,7 +94,7 @@ export const VerifyEmailPage = () => {
                 <XCircle className="w-12 h-12 text-destructive group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                 <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">Protocol Error</h2>
+                 <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">Error</h2>
                  <p className="text-muted-foreground font-medium mt-2 max-w-xs mx-auto">
                    The provided verification token is invalid or has reached its expiration threshold.
                  </p>
@@ -102,7 +102,7 @@ export const VerifyEmailPage = () => {
               <div className="flex flex-col gap-4">
                  <Link to="/login" className="block pt-4">
                    <Button size="xl" variant="outline" className="w-full rounded-2xl border-border/50 h-16 text-lg font-black tracking-tight hover:bg-white transition-all">
-                     Back to Terminal
+                     Back to Login
                    </Button>
                  </Link>
                  <p className="text-[10px] font-black uppercase text-muted-foreground">Contact support if this persists</p>

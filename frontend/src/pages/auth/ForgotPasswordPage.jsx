@@ -59,17 +59,17 @@ export const ForgotPasswordPage = () => {
             className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-10 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Access Terminal
+            Back to Login
           </button>
 
           {!isSent ? (
             <>
               <div className="mb-10 space-y-3">
                 <h1 className="text-4xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Secure <span className="text-gradient">Recovery</span>
+                  Reset <span className="text-gradient">Password</span>
                 </h1>
                 <p className="text-lg text-muted-foreground font-medium leading-relaxed">
-                  Enter your verified email address to initialize the password reset protocol.
+                  Enter your email address to reset your password.
                 </p>
               </div>
 
@@ -109,9 +109,9 @@ export const ForgotPasswordPage = () => {
                 <Mail className="w-12 h-12 text-primary animate-pulse-gentle" />
               </div>
               <div className="space-y-4">
-                <h2 className="text-3xl font-black text-foreground tracking-tighter">Transmission Sent</h2>
+                <h2 className="text-3xl font-black text-foreground tracking-tighter">Email Sent</h2>
                 <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-                  A secure recovery link has been dispatched to <br />
+                  A reset link has been sent to <br />
                   <span className="text-foreground font-black">{email}</span>
                 </p>
               </div>
@@ -121,7 +121,7 @@ export const ForgotPasswordPage = () => {
                   className="h-14 px-8 rounded-2xl text-muted-foreground hover:text-primary font-bold transition-all"
                   onClick={() => setIsSent(false)}
                 >
-                  Attempt with another address
+                  Try another email
                 </Button>
               </div>
             </div>
@@ -130,7 +130,7 @@ export const ForgotPasswordPage = () => {
 
         <div className="mt-12 text-center">
            <p className="text-muted-foreground text-sm font-medium">
-             Need urgent assistance? <span className="text-primary font-bold hover:underline cursor-pointer transition-all">Contact Operations Support</span>
+             Need help? <span className="text-primary font-bold hover:underline cursor-pointer transition-all">Contact Support</span>
            </p>
         </div>
       </div>

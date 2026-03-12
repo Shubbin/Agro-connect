@@ -86,10 +86,10 @@ export const CheckoutPage = () => {
                   className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4"
                 >
                   <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                  Return to Manifest
+                  Return to Cart
                 </button>
                 <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                   Secure <span className="text-gradient">Settlement</span>
+                   Review & <span className="text-gradient">Pay</span>
                 </h1>
              </div>
              <div className="flex flex-col items-end gap-2 text-right">
@@ -115,7 +115,7 @@ export const CheckoutPage = () => {
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                       <MapPin className="w-6 h-6" />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">Logistics Destination</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">Delivery Address</h2>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-6 relative z-10">
@@ -252,7 +252,7 @@ export const CheckoutPage = () => {
                        <Leaf className="w-32 h-32 text-primary" />
                     </div>
 
-                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-8">Order Manifest</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-8">Order List</h2>
                     
                     {/* Items List */}
                     <div className="space-y-6 mb-10 max-h-80 overflow-y-auto pr-2 custom-scrollbar">

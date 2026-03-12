@@ -43,6 +43,10 @@ export const AuthProvider = ({ children }) => {
     setUser(response.user);
   };
 
+  const signUp = async (data) => {
+    await authAPI.register(data);
+  };
+
   const logout = async () => {
     await authAPI.logout();
     localStorage.removeItem('agro_user');

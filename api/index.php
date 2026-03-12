@@ -84,7 +84,9 @@ if (file_exists($controllerFile)) {
                 $instance->create();
                 break;
             case 'cart':
-                if ($parts[1] === 'add') $instance->add();
+                if (isset($parts[1]) && $parts[1] === 'add') $instance->add();
+                elseif (isset($parts[1]) && $parts[1] === 'clear') $instance->clear();
+                elseif (isset($parts[1]) && $parts[2] === 'offer') $instance->makeOffer($parts[1]);
                 break;
             case 'checkout':
                 $instance->create();
@@ -144,6 +146,29 @@ if (file_exists($controllerFile)) {
             case 'wallet':
                 if ($parts[1] === 'balance') $instance->getBalance();
                 elseif ($parts[1] === 'transactions') $instance->getTransactions();
+                break;
+            default:
+                http_response_code(404);
+        }
+    } elseif ($method === 'PUT') {
+        switch ($parts[0]) {
+            case 'cart':
+                if (is_numeric($parts[1])) $instance->update($parts[1]);
+                break;
+            case 'products':
+                if (is_numeric($parts[1])) $instance->update($parts[1]);
+                break;
+            default:
+                http_response_code(404);
+        }
+    } elseif ($method === 'DELETE') {
+        switch ($parts[0]) {
+            case 'cart':
+                if (is_numeric($parts[1])) $instance->remove($parts[1]);
+                else $instance->clear();
+                break;
+            case 'products':
+                if (is_numeric($parts[1])) $instance->delete($parts[1]);
                 break;
             default:
                 http_response_code(404);

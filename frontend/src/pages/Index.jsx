@@ -54,7 +54,7 @@ export const HomePage = () => {
                 <span className="text-gradient drop-shadow-sm">Future Premium</span>
               </h1>
               <p className="text-xl text-muted-foreground mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                Direct trade between farmers and consumers. Verified quality, fair pricing, and seamless logistics across Nigeria.
+                Direct trade between farmers and consumers. Verified quality, fair pricing, and easy delivery across Nigeria.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
                 <Link to="/marketplace">

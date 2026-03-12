@@ -88,13 +88,13 @@ export const FarmerOrdersPage = () => {
       setOrders(data);
       
       toast({
-        title: 'Protocol Updated',
-        description: `Order successfully transitioned to ${newStatus}.`,
+        title: 'Status Updated',
+        description: `Order is now ${newStatus}.`,
       });
     } catch (error) {
       toast({
-        title: 'System Failure',
-        description: error.message || 'Could not synchronize order status.',
+        title: 'Update Failed',
+        description: error.message || 'Could not update order status.',
         variant: 'destructive',
       });
     }
@@ -129,10 +129,10 @@ export const FarmerOrdersPage = () => {
                   Control Center
                </Link>
                <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                  Fulfillment <span className="text-gradient">Console</span>
+                  Order <span className="text-gradient">List</span>
                </h1>
                <p className="text-xl text-muted-foreground font-medium max-w-md">
-                 Manage active order cycles and logistical synchronization.
+                 Manage your active orders and deliveries.
                </p>
             </div>
             <div className="flex gap-4">
@@ -166,9 +166,9 @@ export const FarmerOrdersPage = () => {
                <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
                   <Box className="w-10 h-10 text-primary" />
                </div>
-               <h3 className="text-3xl font-black text-foreground tracking-tight mb-4">No Cycles Detected</h3>
+               <h3 className="text-3xl font-black text-foreground tracking-tight mb-4">No Orders Yet</h3>
                <p className="text-xl text-muted-foreground font-medium mb-10 max-w-md mx-auto italic">
-                 {filter !== 'all' ? `No data points currently match the '${filter}' status filter.` : 'Logistical pipeline is currently clear. Awaiting new buyer acquisitions.'}
+                 {filter !== 'all' ? `No orders found with status '${filter}'.` : 'No orders yet. Waiting for new customers.'}
                </p>
             </div>
           ) : (
@@ -189,7 +189,7 @@ export const FarmerOrdersPage = () => {
                           </div>
                        </div>
                        <div>
-                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Initialization Timestamp</p>
+                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Order Date</p>
                          <p className="text-xl font-black text-foreground tracking-tight">
                            {new Date(order.createdAt).toLocaleDateString('en-NG', {
                              year: 'numeric',
@@ -210,7 +210,7 @@ export const FarmerOrdersPage = () => {
                         {order.status}
                       </div>
                       <div className="text-right">
-                         <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">Contract Valuation</p>
+                         <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">Total Payment</p>
                          <p className="text-3xl font-black text-primary tracking-tighter">
                            {formatPrice(order.total)}
                          </p>
@@ -229,7 +229,7 @@ export const FarmerOrdersPage = () => {
                        <div className="space-y-8">
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-6">
                              <Truck className="w-4 h-4 text-primary" />
-                             Logistical Documentation
+                             Order Details
                           </h4>
                           
                           <div className="space-y-6">
@@ -263,7 +263,7 @@ export const FarmerOrdersPage = () => {
                             <div className="flex items-start gap-4">
                                <MapPin className="w-5 h-5 text-primary mt-1" />
                                <div>
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Destination Coordinates</p>
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Delivery Address</p>
                                   <p className="text-sm font-bold text-foreground leading-snug">{order.deliveryAddress}</p>
                                </div>
                             </div>
@@ -275,7 +275,7 @@ export const FarmerOrdersPage = () => {
                           <div>
                              <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-8">
                                 <CheckCircle className="w-4 h-4 text-primary" />
-                                Operational Controls
+                                Order Actions
                              </h4>
                              
                              <div className="space-y-4">
@@ -301,7 +301,7 @@ export const FarmerOrdersPage = () => {
                                    className="h-16 w-full rounded-2xl btn-premium text-sm font-black tracking-tight"
                                    onClick={() => handleUpdateStatus(order.id, 'shipped')}
                                  >
-                                   Initiate Logistics Cycle
+                                   Ship Order
                                  </Button>
                                )}
                                {order.status === 'shipped' && (
@@ -309,7 +309,7 @@ export const FarmerOrdersPage = () => {
                                    className="h-16 w-full rounded-2xl btn-premium text-sm font-black tracking-tight"
                                    onClick={() => handleUpdateStatus(order.id, 'delivered')}
                                  >
-                                   Mark Fulfillment Complete
+                                   Mark as Delivered
                                  </Button>
                                )}
                                
