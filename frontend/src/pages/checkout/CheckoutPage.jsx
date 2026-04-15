@@ -86,18 +86,18 @@ export const CheckoutPage = () => {
                   className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4"
                 >
                   <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                  Return to Cart
+                  Go back to Basket
                 </button>
                 <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                   Review & <span className="text-gradient">Pay</span>
+                   Total Bill & <span className="text-gradient">Payment</span>
                 </h1>
              </div>
              <div className="flex flex-col items-end gap-2 text-right">
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
                    <Lock className="w-3 h-3" />
-                   SSL Encrypted Session
+                   Safe Connection
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">Finalize your transaction with end-to-end security.</p>
+                <p className="text-sm text-muted-foreground font-medium">Finish your payment safely.</p>
              </div>
           </div>
 
@@ -115,13 +115,13 @@ export const CheckoutPage = () => {
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                       <MapPin className="w-6 h-6" />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">Delivery Address</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">Where to Deliver</h2>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-6 relative z-10">
                     <div className="sm:col-span-2 group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 px-1">
-                        Street Address / Landmark
+                        Home or Office Address
                       </label>
                       <input
                         type="text"
@@ -134,7 +134,7 @@ export const CheckoutPage = () => {
                     </div>
                     <div className="group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 px-1">
-                        Metropolis / City
+                        Town or City
                       </label>
                       <input
                         type="text"
@@ -147,7 +147,7 @@ export const CheckoutPage = () => {
                     </div>
                     <div className="group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 px-1">
-                        Federal State
+                        State
                       </label>
                       <input
                         type="text"
@@ -160,7 +160,7 @@ export const CheckoutPage = () => {
                     </div>
                     <div className="sm:col-span-2 group">
                       <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 px-1">
-                        Primary Contact Number
+                        Your Phone Number
                       </label>
                       <input
                         type="tel"
@@ -184,7 +184,7 @@ export const CheckoutPage = () => {
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                       <CreditCard className="w-6 h-6" />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">Payment Gateway</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">How to Pay</h2>
                   </div>
 
                   <div className="grid gap-4 relative z-10">
@@ -231,15 +231,15 @@ export const CheckoutPage = () => {
                 <div className="flex items-center justify-center gap-12 py-6 opacity-60">
                   <div className="flex items-center gap-3">
                     <Lock className="w-5 h-5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encryption</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Safe Connection</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Shield className="w-5 h-5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Data Sovereignty</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Privacy Protected</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">PCI-DSS Compliant</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Trust Confirmed</span>
                   </div>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export const CheckoutPage = () => {
                        <Leaf className="w-32 h-32 text-primary" />
                     </div>
 
-                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-8">Order List</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-8">Items you are buying</h2>
                     
                     {/* Items List */}
                     <div className="space-y-6 mb-10 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
@@ -278,13 +278,13 @@ export const CheckoutPage = () => {
                                {formatPrice(item.product.price * item.quantity)}
                              </span>
                           </div>
-                        </div>
+                         </div>
                       ))}
                     </div>
 
                     <div className="space-y-4 pt-8 border-t border-border/50">
                       <div className="flex justify-between items-center text-muted-foreground">
-                        <span className="text-xs font-black uppercase tracking-widest">Subtotal</span>
+                        <span className="text-xs font-black uppercase tracking-widest">Price of items</span>
                         <span className="text-md font-black text-foreground">{formatPrice(total)}</span>
                       </div>
                       <div className="flex justify-between items-center text-muted-foreground">
@@ -294,7 +294,7 @@ export const CheckoutPage = () => {
                       
                       <div className="pt-8 border-t border-border/50 flex justify-between items-end">
                         <div>
-                           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Grand Total</p>
+                           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Total to Pay</p>
                            <span className="text-4xl font-black text-gradient tracking-tighter">
                              {formatPrice(grandTotal)}
                            </span>
@@ -310,15 +310,15 @@ export const CheckoutPage = () => {
                       {isLoading ? (
                         <div className="flex items-center gap-3">
                            <div className="w-5 h-5 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-                           Finalizing...
+                           Processing...
                         </div>
                       ) : (
-                        `Finalize Payment`
+                        `Finish and Pay`
                       )}
                     </Button>
                     
                     <p className="text-center text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-6">
-                       Funds held in Escrow until delivery
+                       We keep your money safe until your goods arrive
                     </p>
                   </div>
                 </div>

@@ -80,10 +80,12 @@ export const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    const userId = user?.id || user?._id;
+    if (!userId) return;
+    
     setIsLoading(true);
     try {
-      const data = await apiRequest(`/profile?userId=${user.id}`);
+      const data = await apiRequest(`/profile?userId=${userId}`);
       setProfile(data);
     } catch (err) {
       console.error('Profile load error:', err);
@@ -175,14 +177,14 @@ export const ProfilePage = () => {
               {/* ── Stats Grid ─────────────────────────────── */}
               {isFarmer ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  <StatCard label="Total Earnings" value={formatNaira(profile.stats?.totalRevenue)} icon={TrendingUp} />
-                  <StatCard label="Escrow Pending" value={formatNaira(profile.stats?.pendingRevenue)} icon={Clock} color="yellow-500" />
-                  <StatCard label="Inventory Value" value={formatNaira(profile.inventoryValue)} icon={Package} />
-                  <StatCard label="Active Products" value={profile.stats?.productCount ?? 0} icon={Layers} />
-                  <StatCard label="Total Orders" value={profile.stats?.totalOrders ?? 0} icon={ShoppingBag} />
+                  <StatCard label="Money Made" value={formatNaira(profile.stats?.totalRevenue)} icon={TrendingUp} />
+                  <StatCard label="Money on the Way" value={formatNaira(profile.stats?.pendingRevenue)} icon={Clock} color="yellow-500" />
+                  <StatCard label="Total Value of Goods" value={formatNaira(profile.inventoryValue)} icon={Package} />
+                  <StatCard label="Items for Sale" value={profile.stats?.productCount ?? 0} icon={Layers} />
+                  <StatCard label="Total Sales" value={profile.stats?.totalOrders ?? 0} icon={ShoppingBag} />
                   <StatCard label="Delivered" value={profile.stats?.deliveredOrders ?? 0} icon={CheckCircle2} color="emerald-500" />
-                  <StatCard label="Delivery Rate" value={`${profile.stats?.deliveryRate ?? 0}%`} icon={BarChart3} />
-                  <StatCard label="Repeat Buyers" value="—" icon={Users} color="blue-500" sub="Coming soon" />
+                  <StatCard label="Success Rate" value={`${profile.stats?.deliveryRate ?? 0}%`} icon={BarChart3} />
+                  <StatCard label="Returning Customers" value="—" icon={Users} color="blue-500" sub="Coming soon" />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -200,7 +202,7 @@ export const ProfilePage = () => {
                       <Zap className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h2 className="font-black text-foreground">AI Insights</h2>
+                      <h2 className="font-black text-foreground">Smart Helper Tips</h2>
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Powered by AgroAI</p>
                     </div>
                   </div>
@@ -213,7 +215,7 @@ export const ProfilePage = () => {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Star className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm font-medium">No insights yet — start trading!</p>
+                      <p className="text-sm font-medium">No tips yet — start trading!</p>
                     </div>
                   )}
                 </div>
@@ -226,8 +228,8 @@ export const ProfilePage = () => {
                         <Award className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h2 className="font-black text-foreground">Top Products</h2>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">By revenue</p>
+                        <h2 className="font-black text-foreground">Best Selling Items</h2>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">By money made</p>
                       </div>
                     </div>
                     {profile.topProducts?.length > 0 ? (
@@ -243,7 +245,7 @@ export const ProfilePage = () => {
                             </div>
                             <div className="text-right">
                               <p className="text-sm font-black text-primary">{formatNaira(p.revenue)}</p>
-                              <p className="text-[10px] text-muted-foreground">{p.order_count} orders</p>
+                              <p className="text-[10px] text-muted-foreground">{p.order_count} sales</p>
                             </div>
                           </div>
                         ))}
@@ -251,9 +253,9 @@ export const ProfilePage = () => {
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">No completed orders yet</p>
+                        <p className="text-sm">No sales yet</p>
                         <Link to="/farmer/products" className="text-primary text-xs font-black hover:underline mt-2 inline-flex items-center gap-1">
-                          Manage Products <ArrowUpRight className="w-3 h-3" />
+                          Manage Goods <ArrowUpRight className="w-3 h-3" />
                         </Link>
                       </div>
                     )}
@@ -266,7 +268,7 @@ export const ProfilePage = () => {
                       </div>
                       <div>
                         <h2 className="font-black text-foreground">Recent Orders</h2>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Your history</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Order history</p>
                       </div>
                     </div>
                     {profile.recentOrders?.length > 0 ? (
@@ -291,9 +293,9 @@ export const ProfilePage = () => {
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">No orders placed yet</p>
+                        <p className="text-sm">No orders yet</p>
                         <Link to="/marketplace" className="text-primary text-xs font-black hover:underline mt-2 inline-flex items-center gap-1">
-                          Browse Marketplace <ArrowUpRight className="w-3 h-3" />
+                          Go to Market <ArrowUpRight className="w-3 h-3" />
                         </Link>
                       </div>
                     )}
@@ -304,15 +306,15 @@ export const ProfilePage = () => {
               {/* ── Quick Links ─────────────────────────────── */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(isFarmer ? [
-                  { label: 'My Products', to: '/farmer/products', icon: Package },
-                  { label: 'My Orders', to: '/farmer/orders', icon: ShoppingBag },
-                  { label: 'Wallet', to: '/farmer/wallet', icon: Wallet },
-                  { label: 'Marketplace', to: '/marketplace', icon: Leaf },
+                  { label: 'My Goods', to: '/farmer/products', icon: Package },
+                  { label: 'My Sales', to: '/farmer/orders', icon: ShoppingBag },
+                  { label: 'My Money', to: '/farmer/wallet', icon: Wallet },
+                  { label: 'The Market', to: '/marketplace', icon: Leaf },
                 ] : [
-                  { label: 'Marketplace', to: '/marketplace', icon: Leaf },
+                  { label: 'The Market', to: '/marketplace', icon: Leaf },
                   { label: 'My Orders', to: '/orders', icon: ShoppingBag },
                   { label: 'Chat', to: '/chat', icon: Users },
-                  { label: 'Cart', to: '/cart', icon: ShoppingBag },
+                  { label: 'Basket', to: '/cart', icon: ShoppingBag },
                 ]).map((link, i) => (
                   <Link key={i} to={link.to}
                     className="glass-premium rounded-2xl p-5 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all group border border-border/30">

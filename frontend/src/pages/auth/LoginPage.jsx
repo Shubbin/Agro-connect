@@ -78,17 +78,17 @@ export const LoginPage = () => {
           
           <div className="text-center mb-10 space-y-3">
             <h1 className="text-4xl font-black text-foreground tracking-tighter leading-[0.95]">
-              Log <span className="text-gradient">In</span>
+              Sign <span className="text-gradient">In</span>
             </h1>
             <p className="text-lg text-muted-foreground font-medium">
-              Log in to manage your farm or shop.
+              Sign in to your account to buy or sell.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 group">
               <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                Email Address
+                Your Email
               </label>
               <div className="relative">
                 <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -100,7 +100,7 @@ export const LoginPage = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full h-18 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg placeholder:font-medium placeholder:text-muted-foreground/50"
-                  placeholder="name@organization.com"
+                  placeholder="name@email.com"
                 />
               </div>
             </div>
@@ -108,13 +108,13 @@ export const LoginPage = () => {
             <div className="space-y-2 group">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                  Password
+                  Your Password
                 </label>
                 <Link
                   to="/forgot-password"
                   className="text-xs font-bold text-primary hover:underline underline-offset-4"
                 >
-                  Forgot Password?
+                  Forgot your password?
                 </Link>
               </div>
               <div className="relative">
@@ -151,7 +151,7 @@ export const LoginPage = () => {
                   <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
                 </div>
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover/check:text-foreground transition-colors">
-                  Remember Identifier
+                  Remember me
                 </span>
               </label>
             </div>
@@ -163,16 +163,16 @@ export const LoginPage = () => {
                 className="w-full h-18 rounded-2xl btn-premium text-lg font-black tracking-tight"
                 disabled={isLoading}
               >
-                {isLoading ? 'Checking...' : 'Log In'}
+                {isLoading ? 'Checking details...' : 'Sign In'}
               </Button>
             </div>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border/50 text-center">
             <p className="text-muted-foreground font-bold">
-              New here?{' '}
+              New to Agro-Direct?{' '}
               <Link to="/signup" className="text-primary hover:underline underline-offset-8 decoration-2 ml-1">
-                Sign Up
+                Join here
               </Link>
             </p>
           </div>

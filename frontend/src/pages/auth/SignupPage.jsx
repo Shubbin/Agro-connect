@@ -91,16 +91,16 @@ export const SignupPage = () => {
         <div className="relative z-10 space-y-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-primary">
             <Sparkles className="w-3.5 h-3.5" />
-            Empowering Nigerian Agriculture
+            Helping Nigerian Farmers Grow
           </div>
           <h1 className="text-6xl font-black text-white leading-[0.9] tracking-tighter max-w-md">
             The Future of <span className="text-gradient">Agro-Commerce</span> Starts Here.
           </h1>
           <div className="grid gap-6">
             {[
-              { icon: User, title: 'Direct Access', desc: 'No middlemen. Deal directly with verified partners.' },
-              { icon: Star, title: 'Grade-A Produce', desc: 'Access the highest quality agricultural exports.' },
-              { icon: ShieldCheck, title: 'Secure Escrow', desc: 'Safeguarded payments for complete peace of mind.' },
+              { icon: User, title: 'Buy Straight from Farmers', desc: 'No middlemen. Buy directly from trusted sellers.' },
+              { icon: Star, title: 'Best Quality Goods', desc: 'Get the best farm products easily.' },
+              { icon: ShieldCheck, title: 'Safe Money Box', desc: 'Your money is safe until your goods arrive.' },
             ].map((feature, i) => (
               <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                 <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
@@ -123,7 +123,7 @@ export const SignupPage = () => {
                  ))}
                  <div className="w-10 h-10 rounded-full border-2 border-foreground bg-primary flex items-center justify-center text-[10px] font-black text-white">+10k</div>
               </div>
-              <p className="text-white/60 text-xs font-medium">Join 10,000+ farmers fueling the ecosystem</p>
+              <p className="text-white/60 text-xs font-medium">Join 10,000+ farmers using this app</p>
            </div>
         </div>
       </div>
@@ -147,10 +147,10 @@ export const SignupPage = () => {
             <div className="space-y-10">
               <div className="space-y-4">
                 <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Create Your <span className="text-gradient">Account</span>
+                  Join <span className="text-gradient">Agro-Direct</span>
                 </h2>
                 <p className="text-lg text-muted-foreground font-medium">
-                  Select your primary role to customize your experience.
+                  Are you a Buyer or a Farmer?
                 </p>
               </div>
 
@@ -159,15 +159,15 @@ export const SignupPage = () => {
                   { 
                     id: 'user', 
                     icon: User, 
-                    title: 'I am a Buyer', 
-                    desc: 'Sourcing premium produce and equipment for business or personal use.',
+                    title: 'I want to buy', 
+                    desc: 'I want to buy fresh food or farm tools.',
                     color: 'blue'
                   },
                   { 
                     id: 'farmer', 
                     icon: Tractor, 
-                    title: 'I am a Farmer', 
-                    desc: 'Scaling my reach and selling direct to verified high-intent buyers.',
+                    title: 'I want to sell', 
+                    desc: 'I want to sell my goods directly to trusted buyers.',
                     color: 'primary'
                   }
                 ].map((option) => (
@@ -198,7 +198,7 @@ export const SignupPage = () => {
                 <p className="text-muted-foreground font-bold">
                   Already have an account?{' '}
                   <Link to="/login" className="text-primary hover:underline underline-offset-8 decoration-2">
-                    Log in here
+                    Sign in here
                   </Link>
                 </p>
               </div>
@@ -212,21 +212,21 @@ export const SignupPage = () => {
                   className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-4 group"
                 >
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  Back to Role Selection
+                  Change Role
                 </button>
                 <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Finish <span className="text-gradient">Sign Up</span>
+                  Tell us <span className="text-gradient">a bit more</span>
                 </h2>
                 <p className="text-lg text-muted-foreground font-medium uppercase tracking-wider text-[10px]">
-                  Setting up your {role} profile
+                  Finishing your {role} setup
                 </p>
               </div>
 
               <div className="grid gap-6">
                 {[
-                   { label: 'Full Legal Name', type: 'text', key: 'name', placeholder: 'Kenedy Okoro', icon: User },
-                   { label: 'Email Address', type: 'email', key: 'email', placeholder: 'kenedy@agrodirect.ng', icon: Mail },
-                   { label: 'Phone Number', type: 'tel', key: 'phone', placeholder: '+234 812 345 6789', icon: Phone }
+                   { label: 'Your Full Name', type: 'text', key: 'name', placeholder: 'Kenedy Okoro', icon: User },
+                   { label: 'Your Email', type: 'email', key: 'email', placeholder: 'kenedy@agrodirect.ng', icon: Mail },
+                   { label: 'Your Phone Number', type: 'tel', key: 'phone', placeholder: '+234 812 345 6789', icon: Phone }
                 ].map((field) => (
                   <div key={field.key} className="space-y-2 group">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -250,7 +250,7 @@ export const SignupPage = () => {
 
                 <div className="space-y-2 group">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Password
+                    Create a Password
                   </label>
                   <div className="relative">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -277,7 +277,7 @@ export const SignupPage = () => {
                 {/* Confirm Password */}
                 <div className="space-y-2 group">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Confirm Password
+                    Type Password Again
                   </label>
                   <div className="relative">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -317,13 +317,13 @@ export const SignupPage = () => {
                   className="w-full h-18 rounded-[1.25rem] btn-premium text-lg font-black tracking-tight"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Creating Account...' : 'Create My Account'}
+                  {isLoading ? 'Joining...' : 'Join Now'}
                 </Button>
               </div>
 
               <div className="text-center">
                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                   By creating an account, you agree to our <span className="text-foreground font-bold hover:text-primary cursor-pointer transition-colors">Terms of Service</span> and <span className="text-foreground font-bold hover:text-primary cursor-pointer transition-colors">Privacy Policy</span>.
+                   By joining, you agree to our <span className="text-foreground font-bold hover:text-primary cursor-pointer transition-colors">Rules</span> and <span className="text-foreground font-bold hover:text-primary cursor-pointer transition-colors">Privacy Rules</span>.
                  </p>
               </div>
             </form>

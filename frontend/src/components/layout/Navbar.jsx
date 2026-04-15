@@ -17,21 +17,21 @@ export const Navbar = () => {
   const navLinks = isAuthenticated
     ? user?.role === 'farmer'
       ? [
-          { href: '/farmer/dashboard', label: 'Dashboard' },
-          { href: '/farmer/products', label: 'My Products' },
-          { href: '/farmer/orders', label: 'Orders' },
-          { href: '/chat', label: 'Messages' },
-          { href: '/ai-assistant', label: 'AI Assistant' },
+          { href: '/farmer/dashboard', label: 'My Home' },
+          { href: '/farmer/products', label: 'My Goods' },
+          { href: '/farmer/orders', label: 'Sales' },
+          { href: '/chat', label: 'Chats' },
+          { href: '/ai-assistant', label: 'Smart Helper' },
         ]
       : [
-          { href: '/marketplace', label: 'Marketplace' },
-          { href: '/orders', label: 'My Orders' },
-          { href: '/chat', label: 'Messages' },
-          { href: '/ai-assistant', label: 'AI Assistant' },
+          { href: '/marketplace', label: 'The Market' },
+          { href: '/orders', label: 'My Buys' },
+          { href: '/chat', label: 'Chats' },
+          { href: '/ai-assistant', label: 'Smart Helper' },
         ]
     : [
-        { href: '/marketplace', label: 'Marketplace' },
-        { href: '/about', label: 'About' },
+        { href: '/marketplace', label: 'The Market' },
+        { href: '/about', label: 'About Us' },
       ];
 
   return (
@@ -94,17 +94,17 @@ export const Navbar = () => {
                     <span className="text-sm font-medium text-foreground">{user?.name?.split(' ')[0]}</span>
                   </Link>
                   <Button variant="ghost" size="sm" onClick={logout}>
-                    Logout
+                    Sign Out
                   </Button>
                 </div>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">Login</Button>
+                  <Button variant="ghost" size="sm">Sign In</Button>
                 </Link>
                 <Link to="/signup">
-                  <Button size="sm">Get Started</Button>
+                  <Button size="sm">Join Us</Button>
                 </Link>
               </>
             )}
@@ -149,7 +149,7 @@ export const Navbar = () => {
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
                       >
                         <ShoppingCart className="w-5 h-5" />
-                        Cart {itemCount > 0 && `(${itemCount})`}
+                        Basket {itemCount > 0 && `(${itemCount})`}
                       </Link>
                     )}
                     <Link
@@ -158,13 +158,13 @@ export const Navbar = () => {
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
                       <User className="w-5 h-5" />
-                      My Profile
+                      Account
                     </Link>
                     <button
                       onClick={() => { logout(); setIsOpen(false); }}
                       className="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-destructive hover:bg-destructive/10"
                     >
-                      Logout
+                      Sign Out
                     </button>
                   </>
                 ) : (

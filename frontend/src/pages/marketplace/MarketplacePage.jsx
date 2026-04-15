@@ -8,20 +8,20 @@ import { cn } from '@/lib/utils';
 import { Search, Filter, MapPin, X, Sparkles } from 'lucide-react';
 
 const categories = [
-  { id: 'all', label: 'All Products' },
-  { id: 'produce', label: 'Fresh Produce' },
+  { id: 'all', label: 'All Items' },
+  { id: 'produce', label: 'Fresh Food' },
   { id: 'tools', label: 'Farm Tools' },
   { id: 'equipment', label: 'Equipment' },
 ];
 
-const locations = ['All Locations', 'Lagos', 'Kaduna', 'Kano', 'Benue', 'Oyo', 'Ekiti', 'Akwa Ibom'];
+const locations = ['All Places', 'Lagos', 'Kaduna', 'Kano', 'Benue', 'Oyo', 'Ekiti', 'Akwa Ibom'];
 
 export const MarketplacePage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('All Locations');
+  const [selectedLocation, setSelectedLocation] = useState('All Places');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -55,13 +55,13 @@ export const MarketplacePage = () => {
           <div className="max-w-3xl animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-black uppercase tracking-widest mb-6">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Verified Direct Sourcing</span>
+              <span>Confirmed goods from farmers</span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-black text-foreground mb-6 tracking-tight leading-[0.95]">
-              Nigerian <span className="text-gradient">Agro-Market</span>
+              The <span className="text-gradient">Market</span>
             </h1>
             <p className="text-xl text-muted-foreground font-medium max-w-xl leading-relaxed">
-              Premium quality produce, tools, and equipment sourced directly from farm gates across the federation.
+              Find the best food and farm tools straight from farmers across Nigeria.
             </p>
 
             {/* Premium Search Bar */}
@@ -71,7 +71,7 @@ export const MarketplacePage = () => {
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors z-20" />
                 <input
                   type="text"
-                  placeholder="What are you looking for today? (e.g. Yam, Mangoes, Tractors)"
+                  placeholder="What do you want to buy? (e.g. Yam, Mangoes, Tools)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-14 pr-6 h-18 glass-premium bg-white/80 dark:bg-card/80 border-border/50 group-focus-within:border-primary/50 text-lg rounded-2xl transition-all relative z-10"
@@ -84,7 +84,7 @@ export const MarketplacePage = () => {
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="w-5 h-5 mr-3" />
-                Quick Filters
+                Filters
               </Button>
             </div>
           </div>
@@ -94,8 +94,8 @@ export const MarketplacePage = () => {
       <div className="container mx-auto px-4 py-6">
         {/* AI Recommendation */}
         <AITipCard
-          title="Looking for bulk deals?"
-          description="Tap 'Make Offer' on any product to negotiate directly with farmers. Bulk orders often get 10-20% discounts!"
+          title="Want to buy a lot?"
+          description="Tap 'Make Offer' to bargain with the farmer. Buying more usually saves you money!"
           className="mb-6"
         />
 
@@ -110,7 +110,7 @@ export const MarketplacePage = () => {
               <div className="glass-premium p-6 rounded-3xl border-border/50">
                 <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-4 flex items-center gap-2">
                   <Filter className="w-4 h-4 text-primary" />
-                  Categories
+                  What to buy
                 </h3>
                 <div className="space-y-2">
                   {categories.map((cat) => (
@@ -134,7 +134,7 @@ export const MarketplacePage = () => {
               <div className="glass-premium p-6 rounded-3xl border-border/50">
                 <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-4 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-primary" />
-                  Location
+                  Where
                 </h3>
                 <div className="grid grid-cols-1 gap-2">
                   {locations.map((loc) => (
@@ -159,18 +159,18 @@ export const MarketplacePage = () => {
               </div>
 
               {/* Reset Action */}
-              {(selectedCategory !== 'all' || selectedLocation !== 'All Locations' || searchQuery) && (
+              {(selectedCategory !== 'all' || selectedLocation !== 'All Places' || searchQuery) && (
                 <Button
                   variant="ghost"
                   className="w-full h-14 rounded-2xl text-destructive hover:bg-destructive/5 font-bold"
                   onClick={() => {
                     setSelectedCategory('all');
-                    setSelectedLocation('All Locations');
+                    setSelectedLocation('All Places');
                     setSearchQuery('');
                   }}
                 >
                   <X className="w-5 h-5 mr-3" />
-                  Reset Discovery
+                  Clear All
                 </Button>
               )}
             </div>
@@ -181,7 +181,7 @@ export const MarketplacePage = () => {
             {/* Results Count */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
-                Showing {products.length} products
+                Found {products.length} items
               </p>
             </div>
 
@@ -209,9 +209,9 @@ export const MarketplacePage = () => {
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">No products found</h3>
+                <h3 className="text-lg font-semibold text-foreground">Nothing found</h3>
                 <p className="text-muted-foreground mt-2">
-                  Try adjusting your search or filter criteria
+                  Try searching for something else or clearing filters
                 </p>
               </div>
             )}

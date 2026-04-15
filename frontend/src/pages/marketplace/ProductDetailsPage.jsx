@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { AITipCard } from '@/components/ai/AITipCard';
 import { productsAPI } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Star, MapPin, MessageCircle, ShoppingCart, Minus, Plus, Truck, Shield, Clock, ShieldCheck, Heart, Share2, Leaf } from 'lucide-react';
@@ -65,8 +66,8 @@ export const ProductDetailsPage = () => {
     try {
       await addItem(product.id, quantity);
       toast({
-        title: 'Added to cart',
-        description: `${product.name} has been added to your cart.`,
+        title: 'Added to basket',
+        description: `${product.name} has been added to your basket.`,
       });
     } catch (error) {
       toast({
@@ -292,7 +293,7 @@ export const ProductDetailsPage = () => {
               <div className="grid grid-cols-3 gap-6 pt-10 border-t border-border/50">
                 {[
                   { icon: Truck, label: 'Fast Delivery', sub: 'To your door' },
-                  { icon: Shield, label: 'Escrow Lock', sub: 'Secured Capital' },
+                  { icon: Shield, label: 'Safe Trade', sub: 'Money is safe' },
                   { icon: Clock, label: 'Freshness Seal', sub: 'Harv-to-Gate' }
                 ].map((feat, i) => (
                   <div key={i} className="text-center group">

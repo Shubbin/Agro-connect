@@ -18,8 +18,8 @@ export const Footer = () => {
               </span>
             </Link>
             <p className="text-background/70 text-sm leading-relaxed">
-              Connecting Nigerian farmers directly with buyers. 
-              Fresh produce, fair prices, trusted trade.
+              We help Nigerian farmers sell directly to buyers. 
+              Fresh food, fair prices, and safe trading.
             </p>
             <div className="flex gap-3">
               <a href="#" className="w-9 h-9 bg-background/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
@@ -40,12 +40,12 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/marketplace" className="text-background/70 hover:text-primary transition-colors">
-                  Marketplace
+                  The Market
                 </Link>
               </li>
               <li>
                 <Link to="/signup" className="text-background/70 hover:text-primary transition-colors">
-                  Become a Seller
+                  Start Selling
                 </Link>
               </li>
               <li>
@@ -55,7 +55,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/help" className="text-background/70 hover:text-primary transition-colors">
-                  Help Center
+                  Get Help
                 </Link>
               </li>
             </ul>
@@ -63,16 +63,16 @@ export const Footer = () => {
 
           {/* Categories */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Categories</h3>
+            <h3 className="font-semibold text-lg">What to Buy</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/marketplace?category=produce" className="text-background/70 hover:text-primary transition-colors">
-                  Fresh Produce
+                  Fresh Food
                 </Link>
               </li>
               <li>
                 <Link to="/marketplace?category=grains" className="text-background/70 hover:text-primary transition-colors">
-                  Grains & Cereals
+                  Grains & Seeds
                 </Link>
               </li>
               <li>
@@ -82,7 +82,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/marketplace?category=equipment" className="text-background/70 hover:text-primary transition-colors">
-                  Equipment
+                  Big Machines
                 </Link>
               </li>
             </ul>
@@ -90,7 +90,7 @@ export const Footer = () => {
 
           {/* Contact */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Contact Us</h3>
+            <h3 className="font-semibold text-lg">Talk to Us</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-3 text-background/70">
                 <MapPin className="w-4 h-4 text-primary" />
@@ -112,8 +112,8 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/60">
             <p>© 2024 AgroDirect. All rights reserved.</p>
             <div className="flex gap-6">
-              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+              <Link to="/privacy" className="hover:text-primary transition-colors">Private Information Rules</Link>
+              <Link to="/terms" className="hover:text-primary transition-colors">Rules of Use</Link>
             </div>
           </div>
         </div>

@@ -28,8 +28,8 @@ export const ProductCard = ({product }) => {
     
     if (!isAuthenticated) {
       toast({
-        title: 'Login Required',
-        description: 'Please create an account or login to add items to your cart.',
+        title: 'Please Sign In',
+        description: 'Please join us or sign in to add items to your basket.',
         variant: 'destructive',
       });
       navigate('/signup', { state: { from: '/marketplace' } });
@@ -40,13 +40,13 @@ export const ProductCard = ({product }) => {
       if (!product || !product.id) return;
       await addItem(product.id, product.minOrder || 1);
       toast({
-        title: 'Added to cart',
-        description: `${product.name} has been added to your cart.`,
+        title: 'Added to basket',
+        description: `${product.name} is now in your basket.`,
       });
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to add item to cart.',
+        title: 'Problem',
+        description: 'Could not add item to basket. Please try again.',
         variant: 'destructive',
       });
     }
@@ -104,7 +104,7 @@ export const ProductCard = ({product }) => {
 
           <div className="mt-auto pt-4 border-t border-border/50 flex items-end justify-between">
             <div>
-              <div className="text-xs text-muted-foreground font-black uppercase tracking-tighter mb-1">Price / {product.unit}</div>
+              <div className="text-xs text-muted-foreground font-black uppercase tracking-tighter mb-1">Price per {product.unit}</div>
               <p className="text-2xl font-black text-foreground tracking-tighter">
                 {formatPrice(product.price)}
               </p>
@@ -125,14 +125,14 @@ export const ProductCard = ({product }) => {
              </div>
              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                   <p className="text-xs font-black text-foreground truncate">{product.farmerName || 'Verified Farmer'}</p>
+                   <p className="text-xs font-black text-foreground truncate">{product.farmerName || 'Trusted Farmer'}</p>
                    <VerificationBadge status={product.farmerVerified ? 'verified' : 'unverified'} />
                 </div>
                 <div className="flex items-center gap-2">
                    <MapPin className="w-2.5 h-2.5 text-primary" />
                    <p className="text-[10px] text-muted-foreground font-medium truncate">{product.location}</p>
                    <span className="text-[10px] text-muted-foreground/30">•</span>
-                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{product.available} {product.unit} in stock</p>
+                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{product.available} {product.unit} left</p>
                 </div>
              </div>
           </div>

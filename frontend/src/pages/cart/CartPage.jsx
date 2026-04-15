@@ -35,12 +35,12 @@ export const CartPage = () => {
           <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingCart className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Your cart is empty</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Your basket is empty</h2>
           <p className="text-muted-foreground mb-6">
-            Browse our marketplace to find fresh produce and farm equipment
+            Look through the market to find fresh food and tools
           </p>
           <Link to="/marketplace">
-            <Button>Start Shopping</Button>
+            <Button>Start Buying</Button>
           </Link>
         </div>
       </MainLayout>
@@ -71,14 +71,14 @@ export const CartPage = () => {
             <div className="space-y-4">
                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
                   <ShoppingCart className="w-3 h-3" />
-                  Your Cart
+                  Your Basket
                </div>
                <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                  Your <span className="text-gradient">Cart</span>
+                  Your <span className="text-gradient">Basket</span>
                </h1>
             </div>
             <p className="text-xl text-muted-foreground font-medium max-w-sm">
-               Review your selections and prepare for secure checkout.
+               Check your items and get ready to pay safely.
             </p>
           </div>
 
@@ -87,8 +87,8 @@ export const CartPage = () => {
             <div className="lg:col-span-2 space-y-10 animate-fade-in-up">
               {/* AI Tip */}
               <AITipCard
-                title="Combined Delivery"
-                description="Buying multiple items from the same partner makes delivery faster and cheaper."
+                title="Save on Delivery"
+                description="Buying more than one thing from the same farmer makes delivery faster and cheaper."
                 className="border-primary/20 bg-primary/[0.02]"
               />
 
@@ -156,7 +156,7 @@ export const CartPage = () => {
                             </div>
                             
                             <div className="text-right">
-                               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Line Total</p>
+                               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Total Price</p>
                                <span className="text-2xl font-black text-foreground tracking-tighter">
                                  {formatPrice(item.product.price * item.quantity)}
                                </span>
@@ -192,23 +192,23 @@ export const CartPage = () => {
                   </div>
                   
                   <h2 className="text-2xl font-black text-foreground tracking-tight mb-8 flex items-center gap-3">
-                     Summary
+                     Total Bill
                   </h2>
                   
                   <div className="space-y-4 mb-10">
                     <div className="flex justify-between items-center text-muted-foreground group">
-                      <span className="text-sm font-bold uppercase tracking-widest">Subtotal</span>
+                      <span className="text-sm font-bold uppercase tracking-widest">Price of items</span>
                       <span className="text-lg font-black text-foreground tracking-tight">{formatPrice(total)}</span>
                     </div>
                     <div className="flex justify-between items-center text-muted-foreground group">
-                      <span className="text-sm font-bold uppercase tracking-widest">Est. Delivery</span>
-                      <span className="text-xs font-black uppercase tracking-tighter">Calculated at Checkout</span>
+                      <span className="text-sm font-bold uppercase tracking-widest">Delivery Fee</span>
+                      <span className="text-xs font-black uppercase tracking-tighter">Shown at next step</span>
                     </div>
                     
                     <div className="pt-6 border-t border-border/50">
                       <div className="flex justify-between items-end">
                         <div>
-                           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Final Payable</p>
+                           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Total to Pay</p>
                            <span className="text-4xl font-black text-gradient tracking-tighter">{formatPrice(total)}</span>
                         </div>
                       </div>
@@ -217,7 +217,7 @@ export const CartPage = () => {
 
                   <Link to="/checkout" className="block group/btn">
                     <Button className="w-full h-20 rounded-[1.5rem] btn-premium text-lg font-black tracking-tight flex items-center justify-center gap-3">
-                      Secure Checkout
+                      Pay Safely
                       <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-2 transition-transform" />
                     </Button>
                   </Link>
@@ -231,7 +231,7 @@ export const CartPage = () => {
                 
                 <Link to="/marketplace" className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all">
                   <ArrowRight className="w-3 h-3 rotate-180" />
-                  Continue Discovery
+                  Look for More
                 </Link>
               </div>
             </div>

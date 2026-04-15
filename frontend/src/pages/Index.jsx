@@ -94,19 +94,19 @@ export const HomePage = () => {
             <div className="flex-1 text-center lg:text-left animate-fade-in-up">
               <div className="inline-flex items-center gap-2 glass-premium px-4 py-2 rounded-full text-sm font-bold text-primary mb-8 animate-bounce-gentle">
                 <Sparkles className="w-4 h-4" />
-                <span>Nigeria's Most Trusted Agri-Network</span>
+                <span>The Most Trusted Farm Network in Nigeria</span>
               </div>
               <h1 className="text-6xl lg:text-8xl font-black text-foreground tracking-tight leading-[0.95] mb-8">
-                Harvest the<br />
-                <span className="text-gradient drop-shadow-sm">Future Premium</span>
+                Get Fresh<br />
+                <span className="text-gradient drop-shadow-sm">Farm Goods</span>
               </h1>
               <p className="text-xl text-muted-foreground mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                Direct trade between farmers and consumers. Verified quality, fair pricing, and easy delivery across Nigeria.
+                Buy and sell straight from farmers. Trusted quality, good prices, and easy delivery across Nigeria.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
                 <Link to="/marketplace">
                   <Button size="xl" className="btn-premium h-16 px-12 text-lg rounded-2xl bg-primary hover:bg-primary/90">
-                    Explore Marketplace <ArrowRight className="w-5 h-5 ml-3" />
+                    See What's for Sale <ArrowRight className="w-5 h-5 ml-3" />
                   </Button>
                 </Link>
                 <Link to="/signup">
@@ -130,8 +130,8 @@ export const HomePage = () => {
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground">Verified Farmers</p>
-                      <p className="text-sm text-muted-foreground">100% Quality Assurance</p>
+                      <p className="font-bold text-foreground">Trusted Farmers</p>
+                      <p className="text-sm text-muted-foreground">100% Good Quality</p>
                     </div>
                   </div>
                 </div>
@@ -145,15 +145,15 @@ export const HomePage = () => {
       <section className="py-32 bg-secondary/30 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-4xl lg:text-5xl font-black text-foreground mb-6">Built for Efficiency</h2>
+            <h2 className="text-4xl lg:text-5xl font-black text-foreground mb-6">Easy to Use</h2>
             <div className="w-20 h-1.5 bg-primary mx-auto rounded-full" />
           </div>
           
           <div className="grid md:grid-cols-3 gap-12">
             {[
-              { icon: Leaf, title: 'Direct Source', desc: 'Cut out middlemen and buy fresh directly from Nigerian farm gates.', color: 'bg-green-500' },
-              { icon: Sparkles, title: 'AI Matching', desc: 'Our smart algorithm connects you with the best producers for your needs.', color: 'bg-blue-500' },
-              { icon: MessageSquare, title: 'Live Negotation', desc: 'Securely chat and finalize deals within minutes on our platform.', color: 'bg-amber-500' },
+              { icon: Leaf, title: 'Buy Direct', desc: 'No middlemen. Buy fresh food straight from the farmers.', color: 'bg-green-500' },
+              { icon: Sparkles, title: 'Smart Search', desc: 'We help you find exactly what you need in seconds.', color: 'bg-blue-500' },
+              { icon: MessageSquare, title: 'Chat & Bargain', desc: 'Chat safely and agree on prices directly on the app.', color: 'bg-amber-500' },
             ].map((f, i) => (
               <div key={i} className="group card-premium p-10 text-center hover:bg-white dark:hover:bg-card">
                 <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg group-hover:scale-110 transition-transform", f.color + "/10")}>
@@ -172,12 +172,12 @@ export const HomePage = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
             <div className="max-w-2xl">
-              <h2 className="text-4xl lg:text-5xl font-black text-foreground mb-6">Today's Top Crops</h2>
-              <p className="text-lg text-muted-foreground font-medium">Freshly listed products from verified seasonal farmers across the country.</p>
+              <h2 className="text-4xl lg:text-5xl font-black text-foreground mb-6">Fresh Items Today</h2>
+              <p className="text-lg text-muted-foreground font-medium">New goods posted by our trusted farmers across the country.</p>
             </div>
             <Link to="/marketplace">
               <Button variant="ghost" className="text-primary font-black hover:bg-primary/5 text-lg group px-0">
-                Browse Full Catalog <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
+                See All Items <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
               </Button>
             </Link>
           </div>
@@ -213,18 +213,18 @@ export const HomePage = () => {
               <div className="lg:w-1/2 text-center lg:text-left">
                 <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2 rounded-full text-primary-foreground font-bold mb-8">
                   <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                  AI Power Active
+                  Smart Helper Active
                 </div>
                 <h3 className="text-4xl lg:text-6xl font-black text-white mb-8 leading-tight">
                   Meet Your New<br />
-                  <span className="text-primary">Business Partner</span>
+                  <span className="text-primary">Farm Partner</span>
                 </h3>
                 <p className="text-white/70 text-xl font-medium leading-relaxed mb-12">
-                  Our advanced AI assistant analyzes market trends, suggests optimal pricing, and helps you negotiate better deals. It's like having a top-tier consultant in your pocket 24/7.
+                  Our smart Agro Bot helper knows about market prices and helps you get the best deals. It's like having an expert friend helping you 24/7.
                 </p>
                 <Link to="/chat">
                   <Button className="btn-premium h-16 px-12 text-lg bg-white text-foreground hover:bg-white/90 rounded-2xl">
-                    Try AI Assistant Now
+                    Talk to Agro Bot Now
                   </Button>
                 </Link>
               </div>
@@ -237,16 +237,16 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <p className="text-white font-bold">Agro Bot</p>
-                      <p className="text-primary text-xs font-black uppercase tracking-widest">Pricing Specialist</p>
+                      <p className="text-primary text-xs font-black uppercase tracking-widest">Price Helper</p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="bg-white/10 p-4 rounded-2xl rounded-tl-none border border-white/5">
-                      <p className="text-white/90 text-sm italic">"Analyzing current tomato prices in Lagos... Market trend suggests a 15% increase next week. Ready to negotiate?"</p>
+                      <p className="text-white/90 text-sm italic">"I'm checking tomato prices in Lagos... Prices might go up by 15% next week. Want to sell now?"</p>
                     </div>
                     <div className="flex justify-end">
                       <div className="bg-primary/20 p-4 rounded-2xl rounded-tr-none border border-primary/20">
-                        <p className="text-primary-foreground text-sm font-bold">Yes, let's optimize my listing!</p>
+                        <p className="text-primary-foreground text-sm font-bold">Yes, help me sell!</p>
                       </div>
                     </div>
                   </div>
@@ -262,7 +262,7 @@ export const HomePage = () => {
         <div className="absolute inset-0 bg-primary/[0.02] -skew-y-3 origin-right" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-4xl lg:text-6xl font-black text-foreground tracking-tighter mb-4">The Pulse of Nigeria's Agriculture</h2>
+            <h2 className="text-4xl lg:text-6xl font-black text-foreground tracking-tighter mb-4">The Heart of Nigeria's Farming</h2>
             <div className="w-24 h-2 bg-primary mx-auto rounded-full" />
           </div>
 
@@ -270,27 +270,27 @@ export const HomePage = () => {
             {[
               { 
                 val: statsData?.farmers || '16', 
-                lab: 'Active Farmers', 
+                lab: 'Trusted Farmers', 
                 img: '/stat-farmers.png',
-                desc: 'Verified agriculture partners'
+                desc: 'Confirmed farming partners'
               },
               { 
                 val: statsData?.products || '121', 
-                lab: 'Quality Crops', 
+                lab: 'Good Items', 
                 img: '/stat-crops.png',
-                desc: 'Seasonal fresh harvests'
+                desc: 'Fresh food and tools'
               },
               { 
                 val: statsData?.states || '16', 
                 lab: 'States Reached', 
                 img: '/stat-reach.png',
-                desc: 'Nationwide logistics network'
+                desc: 'Delivering across Nigeria'
               },
               { 
                 val: statsData?.volume || '₦500k+', 
-                lab: 'Total Trade', 
+                lab: 'Total Sales', 
                 img: '/stat-trade.png',
-                desc: 'Direct market throughput'
+                desc: 'Buying and selling safely'
               },
             ].map((s, i) => (
               <div key={i} className="group relative h-[400px] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-700 hover:scale-[1.02] hover:-translate-y-2">
