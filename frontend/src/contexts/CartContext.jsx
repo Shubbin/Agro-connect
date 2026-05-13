@@ -21,7 +21,12 @@ export const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshCart();
+    const token = localStorage.getItem('agro_token');
+    if (token) {
+      refreshCart();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const addItem = async (productId, quantity) => {
