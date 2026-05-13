@@ -170,8 +170,15 @@ export const ordersAPI = {
     });
   },
 
-  confirmDelivery: async (orderId) => {
+  confirmDelivery: async (orderId, otp) => {
     return apiRequest('/orders/confirm-delivery', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, otp }),
+    });
+  },
+
+  requestDeliveryCode: async (orderId) => {
+    return apiRequest('/orders/request-delivery-code', {
       method: 'POST',
       body: JSON.stringify({ orderId }),
     });
@@ -294,5 +301,39 @@ export const uploadAPI = {
 export const statsAPI = {
   getSummary: async () => {
     return apiRequest('/stats');
+  },
+};
+
+// ============ B2B API ============
+
+export const b2bAPI = {
+  generateKey: async (name) => {
+    return apiRequest('/b2b/keys', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  },
+  getKeys: async () => {
+    return apiRequest('/b2b/keys');
+  },
+  getStats: async () => {
+    return apiRequest('/b2b/stats');
+  },
+};
+
+// ============ DISPUTE API ============
+
+export const disputeAPI = {
+  getAll: async () => {
+    return apiRequest('/disputes');
+  },
+  create: async (data) => {
+    return apiRequest('/disputes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  getResolution: async (id) => {
+    return apiRequest(`/disputes/${id}/resolve`);
   },
 };
