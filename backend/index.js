@@ -85,7 +85,19 @@ app.use((_req, res) => {
 });
 
 // ── Start ────────────────────────────────────────────────────────────────────
+import fetch from 'node-fetch';
 
 app.listen(PORT, () => {
   console.log(`🚀 Agro Direct Connect API (Supabase) running on http://localhost:${PORT}`);
+  
+  // Keep-alive logic for Render (Free Tier)
+  const url = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  setInterval(async () => {
+    try {
+      const response = await fetch(`${url}/health`);
+      console.log(`[Keep-Alive] Pinged ${url}/health: Status ${response.status}`);
+    } catch (err) {
+      console.error('[Keep-Alive Error]:', err.message);
+    }
+  }, 600000); // 10 minutes
 });
