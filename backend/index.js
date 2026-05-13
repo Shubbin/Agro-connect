@@ -56,6 +56,10 @@ app.get('/', (_req, res) => {
   res.json({ message: 'Welcome to Agro Direct Connect API (Node.js/Supabase)' });
 });
 
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'OK', uptime: process.uptime() });
+});
+
 // Use /api prefix to match frontend
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
