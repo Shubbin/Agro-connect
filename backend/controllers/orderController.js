@@ -1,11 +1,15 @@
-import Order from '../models/Order.js';
-import Product from '../models/Product.js';
-import User from '../models/User.js';
+import { supabase } from '../config/db.js';
 import { sendMockSms } from './smsController.js';
+import PayoutService from '../services/payoutService.js';
 
 export const getAll = async (_req, res) => {
   try {
-    const orders = await Order.find().sort({ created_at: -1 }).populate('user', 'name email');
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     return res.json(orders);
   } catch (err) {
     console.error('GetAll orders error:', err);
@@ -15,10 +19,14 @@ export const getAll = async (_req, res) => {
 
 export const getById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
-      .populate('user', 'name email')
-      .populate('items.product');
-    return res.json(order ?? null);
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) throw error;
+    return res.json(order);
   } catch (err) {
     console.error('GetById order error:', err);
     return res.status(500).json({ message: 'Something went wrong on our end. Please try again later.' });
@@ -29,22 +37,46 @@ export const create = async (req, res) => {
   const { userId, total = 0, deliveryAddress = '', items = [] } = req.body;
 
   try {
-    // MongoDB handles the embedded items automatically by defining them in the schema
+    // 1. Create the main order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert([
+        {
+          user_id: userId,
+          total,
+          delivery_address: deliveryAddress,
+          status: 'pending'
+        }
+      ])
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // 2. Create the order items
     const orderItems = items.map(item => ({
-      product: item.product.id || item.product._id,
+      order_id: order.id,
+      product_id: item.product.id || item.product._id,
       quantity: item.quantity,
       price: item.offeredPrice ?? item.product.price
     }));
 
-    const order = await Order.create({
-      user: userId,
-      total,
-      delivery_address: deliveryAddress,
-      items: orderItems
-    });
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems);
 
-    const populated = await order.populate(['user', 'items.product']);
-    return res.json(populated);
+    if (itemsError) throw itemsError;
+
+    // 3. Return full order with items
+    const { data: fullOrder, error: fetchError } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('id', order.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return res.json(fullOrder);
   } catch (err) {
     console.error('Create order error:', err);
     return res.status(500).json({ message: 'Could not create your order. Please try again later.' });
@@ -55,13 +87,18 @@ export const updateTracking = async (req, res) => {
   const { orderId, trackingNumber, estimatedDelivery } = req.body;
 
   try {
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { tracking_number: trackingNumber, estimated_delivery: estimatedDelivery, status: 'shipped' },
-      { new: true }
-    );
+    const { data: order, error } = await supabase
+      .from('orders')
+      .update({
+        tracking_number: trackingNumber,
+        estimated_delivery: estimatedDelivery,
+        status: 'shipped'
+      })
+      .eq('id', orderId)
+      .select()
+      .single();
 
-    if (!order) return res.status(404).json({ message: 'Could not find this order' });
+    if (error) return res.status(404).json({ message: 'Could not find this order' });
 
     sendMockSms(
       'Buyer',
@@ -76,16 +113,38 @@ export const updateTracking = async (req, res) => {
 };
 
 export const confirmDelivery = async (req, res) => {
-  const { orderId } = req.body;
+  const { orderId, otp } = req.body;
 
   try {
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { status: 'delivered', escrow_status: 'released', actual_delivery_date: Date.now() },
-      { new: true }
-    );
+    // 1. Fetch order to check OTP
+    const { data: orderData, error: fetchError } = await supabase
+      .from('orders')
+      .select('delivery_otp, status')
+      .eq('id', orderId)
+      .single();
 
-    if (!order) return res.status(404).json({ message: 'Could not find this order' });
+    if (fetchError || !orderData) return res.status(404).json({ message: 'Order not found' });
+
+    // 2. Verify OTP if it exists
+    if (orderData.delivery_otp && orderData.delivery_otp !== otp) {
+      return res.status(400).json({ message: 'Invalid delivery OTP' });
+    }
+
+    const { data: order, error } = await supabase
+      .from('orders')
+      .update({
+        status: 'delivered',
+        escrow_status: 'released',
+        actual_delivery_date: new Date().toISOString()
+      })
+      .eq('id', orderId)
+      .select()
+      .single();
+
+    if (error) return res.status(404).json({ message: 'Could not find this order' });
+
+    // 3. Record Payout in Ledger
+    await PayoutService.recordPayout(order);
 
     sendMockSms('Farmer', `Order #${orderId} delivery confirmed! Money has been sent to your wallet.`);
     sendMockSms('Buyer', `Delivery confirmed for order #${orderId}. Thank you for using AgroDirect!`);
@@ -97,11 +156,38 @@ export const confirmDelivery = async (req, res) => {
   }
 };
 
-export const getFarmerOrders = async (req, res) => {
-  // In a real app, we'd filter by products belonging to the farmer
-  // For this MVP, we return all orders since orders are shared
+export const generateOtp = async (req, res) => {
+  const { orderId } = req.params;
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
   try {
-    const orders = await Order.find().sort({ created_at: -1 }).populate(['user', 'items.product']);
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ delivery_otp: otp })
+      .eq('id', orderId)
+      .select('*, user:users(phone)')
+      .single();
+
+    if (error) throw error;
+
+    // Send OTP to buyer via SMS
+    sendMockSms('Buyer', `Your AgroConnect delivery OTP for order #${orderId} is: ${otp}. Give this to the seller only when you receive your produce.`);
+
+    res.json({ message: 'OTP generated and sent to buyer' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getFarmerOrders = async (req, res) => {
+  try {
+    // For MVP, return all orders with product details
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     return res.json(orders);
   } catch (err) {
     console.error('GetFarmerOrders error:', err);
@@ -112,5 +198,3 @@ export const getFarmerOrders = async (req, res) => {
 export const respondToOffer = (_req, res) => {
   return res.json({ message: 'Offer response recorded' });
 };
-
-

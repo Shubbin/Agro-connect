@@ -53,9 +53,24 @@ export const handle = async (req, res) => {
   const action = req.params.action ?? 'assistant';
 
   switch (action) {
+    case 'market-analysis': {
+      const { message } = req.body;
+      const response = await callGroq(
+        `You are 'AgroBot'. Use your knowledge of Nigerian agriculture to analyze current market trends for: ${message}. 
+        Provide price estimates (in Naira), best locations to sell, and a 1-month outlook.
+        Keep it professional and data-driven.`,
+        false
+      );
+      return res.json({ response });
+    }
+
     case 'assistant': {
-      const { message = 'Hello' } = req.body;
-      const response = await callGroq(message);
+      const { message = 'Hello', language = 'English' } = req.body;
+      const response = await callGroq(
+        `Answer this user query: "${message}". 
+        The user's preferred language is ${language}. If it is Yoruba, Hausa, or Igbo, please respond in that language.
+        If it is English, keep it standard. Tone: Helpful and Local.`
+      );
       return res.json({ response });
     }
 
@@ -102,6 +117,55 @@ export const handle = async (req, res) => {
         true
       );
       return res.send(response);
+    }
+
+    case 'agro-score-coaching': {
+      const { profile } = req.body;
+      const response = await callGroq(
+        `You are 'AgroCoach'. Analyze this user profile: ${JSON.stringify(profile)}. 
+        Provide 3 tips to improve their AgroScore and explain how it helps them get BNPL (Buy Now Pay Later) trade terms. 
+        Return as JSON with 'summary', 'tips' (array of strings), and 'next_goal'.`,
+        true
+      );
+
+      const parsedResponse = JSON.parse(response);
+      
+      // Save to logs if userId is provided
+      if (profile.userId) {
+        await supabase.from('ai_coaching_logs').insert([{
+          user_id: profile.userId,
+          advice_type: 'agro_score',
+          advice_content: parsedResponse.summary + " " + parsedResponse.tips.join(" "),
+          agro_score_at_time: profile.agro_score
+        }]);
+      }
+
+      return res.json(parsedResponse);
+    }
+
+    case 'verify-farmer-ai': {
+      const { farmerData } = req.body;
+      const response = await callGroq(
+        `Analyze this farmer verification request: ${JSON.stringify(farmerData)}. 
+        Check for consistency and recommend a trust level. 
+        Return as JSON with 'confidence' (0-100), 'trust_badge' (None, Verified, Premium), and 'reason'.`,
+        true
+      );
+      return res.send(response);
+    }
+
+    case 'coaching-history': {
+      const { userId } = req.query;
+      if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+      const { data, error } = await supabase
+        .from('ai_coaching_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) return res.status(500).json({ error: error.message });
+      return res.json(data);
     }
 
     default:

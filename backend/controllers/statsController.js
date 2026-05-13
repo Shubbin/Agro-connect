@@ -1,6 +1,4 @@
-import Order from '../models/Order.js';
-import Product from '../models/Product.js';
-import User from '../models/User.js';
+import { supabase } from '../config/db.js';
 
 const formatVolume = (raw) => {
   if (raw >= 1_000_000) return `₦${(raw / 1_000_000).toFixed(1)}M+`;
@@ -10,20 +8,43 @@ const formatVolume = (raw) => {
 
 export const getSummary = async (_req, res) => {
   try {
-    const volumeRes = await Order.aggregate([
-      { $match: { status: { $ne: 'cancelled' } } },
-      { $group: { _id: null, total: { $sum: "$total" } } }
-    ]);
+    // 1. Calculate Volume (Total of all non-cancelled orders)
+    const { data: orders, error: orderError } = await supabase
+      .from('orders')
+      .select('total')
+      .neq('status', 'cancelled');
 
-    const farmers = await User.countDocuments({ role: 'farmer' });
-    const products = await Product.countDocuments();
-    const statesRes = await Product.distinct('location');
+    if (orderError) throw orderError;
+    const totalVolume = orders.reduce((sum, order) => sum + Number(order.total), 0);
+
+    // 2. Count Farmers
+    const { count: farmers, error: farmerError } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'farmer');
+
+    if (farmerError) throw farmerError;
+
+    // 3. Count Products
+    const { count: products, error: productError } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+
+    if (productError) throw productError;
+
+    // 4. Distinct Locations
+    const { data: locations, error: locError } = await supabase
+      .from('products')
+      .select('location');
+    
+    if (locError) throw locError;
+    const uniqueStates = [...new Set(locations.map(l => l.location))];
 
     return res.json({
-      farmers: Number(farmers ?? 0),
-      products: Number(products ?? 0),
-      states: statesRes.length,
-      volume: formatVolume(volumeRes[0]?.total ?? 0),
+      farmers: farmers || 0,
+      products: products || 0,
+      states: uniqueStates.length,
+      volume: formatVolume(totalVolume),
     });
   } catch (err) {
     console.error('Get stats summary error:', err);
@@ -31,4 +52,48 @@ export const getSummary = async (_req, res) => {
   }
 };
 
+export const getFarmerDashboard = async (req, res) => {
+  const farmerId = req.user.id;
 
+  try {
+    // 1. Total Revenue & Pending Payouts
+    const { data: payouts, error: payoutError } = await supabase
+      .from('payouts')
+      .select('*')
+      .eq('merchant_id', farmerId);
+
+    if (payoutError) throw payoutError;
+
+    const totalRevenue = payouts.reduce((sum, p) => sum + Number(p.amount_net), 0);
+    const pendingPayouts = payouts
+      .filter(p => p.status === 'pending')
+      .reduce((sum, p) => sum + Number(p.amount_net), 0);
+
+    // 2. Active Products count
+    const { count: productCount } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('farmer_id', farmerId);
+
+    // 3. Recent Sales (last 5)
+    const { data: recentSales } = await supabase
+        .from('orders')
+        .select('*, user:users(name)')
+        .eq('merchant_id', farmerId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    res.json({
+      totalRevenue: formatVolume(totalRevenue),
+      pendingPayouts: formatVolume(pendingPayouts),
+      productCount: productCount || 0,
+      recentSales: recentSales || [],
+      performance: {
+        score: 85, // Placeholder for AgroScore logic
+        trend: 'up'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

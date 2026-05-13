@@ -1,5 +1,4 @@
-import Message from '../models/Message.js';
-import User from '../models/User.js';
+import { supabase } from '../config/db.js';
 
 const getUserIdFromToken = async (req) => {
   const auth = req.headers.authorization ?? '';
@@ -7,8 +6,13 @@ const getUserIdFromToken = async (req) => {
   if (!match) return null;
 
   try {
-    const user = await User.findOne({ auth_token: match[1] });
-    return user ? user._id : null;
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_token', match[1])
+      .single();
+    
+    return user ? user.id : null;
   } catch (err) {
     console.error('getUserIdFromToken error:', err);
     return null;
@@ -25,23 +29,18 @@ export const getMessages = async (req, res) => {
   const [id1, id2] = parts;
 
   try {
-    const messages = await Message.find({
-      $or: [
-        { sender: id1, receiver: id2 },
-        { sender: id2, receiver: id1 }
-      ]
-    })
-    .sort({ timestamp: 1 })
-    .populate('sender', 'name');
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*, sender:users(name)')
+      .or(`and(sender_id.eq.${id1},receiver_id.eq.${id2}),and(sender_id.eq.${id2},receiver_id.eq.${id1})`)
+      .order('timestamp', { ascending: true });
 
-    const formatted = messages.map(m => {
-      const doc = m.toObject();
-      return {
-        ...doc,
-        id: doc._id,
-        senderName: doc.sender?.name
-      };
-    });
+    if (error) throw error;
+
+    const formatted = messages.map(m => ({
+      ...m,
+      senderName: m.sender?.name
+    }));
 
     return res.json(formatted);
   } catch (err) {
@@ -61,22 +60,24 @@ export const sendMessage = async (req, res) => {
   }
 
   try {
-    const message = await Message.create({
-      sender: senderId,
-      receiver: receiverId,
-      content: trimmedContent,
-      product: productId,
-      media_url: mediaUrl,
-      media_type: mediaType
-    });
+    const { data: message, error } = await supabase
+      .from('messages')
+      .insert([{
+        sender_id: senderId,
+        receiver_id: receiverId,
+        content: trimmedContent,
+        product_id: productId,
+        media_url: mediaUrl,
+        media_type: mediaType
+      }])
+      .select('*, sender:users(name)')
+      .single();
 
-    const populated = await message.populate('sender', 'name');
-    const doc = populated.toObject();
+    if (error) throw error;
 
     return res.json({
-      ...doc,
-      id: doc._id,
-      senderName: doc.sender?.name
+      ...message,
+      senderName: message.sender?.name
     });
   } catch (err) {
     console.error('Send message error:', err);
@@ -89,46 +90,41 @@ export const getConversations = async (req, res) => {
   if (!userId) return res.json([]);
 
   try {
-    // Basic aggregation to find unique conversation partners
-    const partners = await Message.aggregate([
-      { $match: { $or: [{ sender: userId }, { receiver: userId }] } },
-      { $sort: { timestamp: -1 } },
-      {
-        $group: {
-          _id: { $cond: [{ $eq: ["$sender", userId] }, "$receiver", "$sender"] },
-          lastMessage: { $first: "$content" },
-          last_ts: { $first: "$timestamp" },
-          unread: {
-            $sum: {
-              $cond: [
-                { $and: [{ $eq: ["$receiver", userId] }, { $eq: ["$is_read", false] }] },
-                1,
-                0
-              ]
-            }
-          }
+    // In Supabase/Postgres, we can use a more complex query or a view
+    // For MVP, we'll fetch all messages for the user and group them in JS
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*, sender:users(id, name, role, is_verified), receiver:users(id, name, role, is_verified)')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order('timestamp', { ascending: false });
+
+    if (error) throw error;
+
+    const conversationsMap = new Map();
+
+    messages.forEach(m => {
+      const partner = m.sender_id === userId ? m.receiver : m.sender;
+      if (!partner) return;
+
+      if (!conversationsMap.has(partner.id)) {
+        conversationsMap.set(partner.id, {
+          id: `${userId}_${partner.id}`,
+          participantId: partner.id,
+          participantName: partner.name,
+          participantRole: partner.role,
+          isVerified: Boolean(partner.is_verified),
+          lastMessage: m.content,
+          unread: (!m.is_read && m.receiver_id === userId) ? 1 : 0,
+          timestamp: m.timestamp
+        });
+      } else {
+        if (!m.is_read && m.receiver_id === userId) {
+          conversationsMap.get(partner.id).unread += 1;
         }
-      },
-      { $sort: { last_ts: -1 } }
-    ]);
+      }
+    });
 
-    const conversations = await Promise.all(partners.map(async (row) => {
-      const partner = await User.findById(row._id).select('name role is_verified');
-      if (!partner) return null;
-
-      return {
-        id: `${userId}_${row._id}`,
-        participantId: row._id,
-        participantName: partner.name,
-        participantRole: partner.role,
-        isVerified: Boolean(partner.is_verified),
-        lastMessage: row.lastMessage ?? '',
-        unread: Number(row.unread ?? 0),
-        timestamp: row.last_ts,
-      };
-    }));
-
-    return res.json(conversations.filter(Boolean));
+    return res.json(Array.from(conversationsMap.values()));
   } catch (err) {
     console.error('Get conversations error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -137,16 +133,15 @@ export const getConversations = async (req, res) => {
 
 export const getUsers = async (_req, res) => {
   try {
-    const users = await User.find({ role: 'farmer' }).select('id name role is_verified verification_status');
-    const formatted = users.map(u => ({
-      ...u.toObject(),
-      id: u._id
-    }));
-    return res.json(formatted);
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, name, role, is_verified, verification_status')
+      .eq('role', 'farmer');
+
+    if (error) throw error;
+    return res.json(users);
   } catch (err) {
     console.error('Get chat users error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-

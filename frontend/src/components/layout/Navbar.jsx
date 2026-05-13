@@ -17,21 +17,21 @@ export const Navbar = () => {
   const navLinks = isAuthenticated
     ? user?.role === 'farmer'
       ? [
-          { href: '/farmer/dashboard', label: 'My Home' },
-          { href: '/farmer/products', label: 'My Goods' },
+          { href: '/farmer/dashboard', label: 'Dashboard' },
+          { href: '/farmer/products', label: 'Inventory' },
           { href: '/farmer/orders', label: 'Sales' },
-          { href: '/chat', label: 'Chats' },
-          { href: '/ai-assistant', label: 'Smart Helper' },
+          { href: '/chat', label: 'Messages' },
+          { href: '/ai-assistant', label: 'AgroBot' },
         ]
       : [
-          { href: '/marketplace', label: 'The Market' },
-          { href: '/orders', label: 'My Buys' },
-          { href: '/chat', label: 'Chats' },
-          { href: '/ai-assistant', label: 'Smart Helper' },
+          { href: '/marketplace', label: 'Marketplace' },
+          { href: '/orders', label: 'Purchases' },
+          { href: '/chat', label: 'Messages' },
+          { href: '/ai-assistant', label: 'AgroBot' },
         ]
     : [
-        { href: '/marketplace', label: 'The Market' },
-        { href: '/about', label: 'About Us' },
+        { href: '/marketplace', label: 'Marketplace' },
+        { href: '/about', label: 'About' },
       ];
 
   return (

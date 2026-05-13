@@ -1,40 +1,35 @@
-import mongoose from 'mongoose';
-import Product from '../models/Product.js';
+import { supabase } from '../config/db.js';
 
 export const getAll = async (req, res) => {
   const { category = 'all', location = 'All Locations', search = '' } = req.query;
 
   try {
-    const filter = {};
+    let query = supabase
+      .from('products')
+      .select('*, farmer:users(name, is_verified, verification_status)');
 
     if (category !== 'all') {
-      filter.category = category;
+      query = query.eq('category', category);
     }
 
     if (location !== 'All Locations') {
-      filter.location = location;
+      query = query.eq('location', location);
     }
 
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } }
-      ];
+      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,category.ilike.%${search}%`);
     }
 
-    const products = await Product.find(filter).populate('farmer', 'name is_verified verification_status');
+    const { data: products, error } = await query;
 
-    const formatted = products.map(p => {
-      const doc = p.toObject();
-      return {
-        ...doc,
-        id: doc._id,
-        farmerName: doc.farmer?.name,
-        farmerVerified: doc.farmer?.is_verified,
-        farmerStatus: doc.farmer?.verification_status
-      };
-    });
+    if (error) throw error;
+
+    const formatted = products.map(p => ({
+      ...p,
+      farmerName: p.farmer?.name,
+      farmerVerified: p.farmer?.is_verified,
+      farmerStatus: p.farmer?.verification_status
+    }));
 
     return res.json(formatted);
   } catch (err) {
@@ -46,22 +41,20 @@ export const getAll = async (req, res) => {
 export const getById = async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid product ID format' });
-  }
-
   try {
-    const product = await Product.findById(id).populate('farmer', 'name is_verified verification_status');
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('*, farmer:users(name, is_verified, verification_status)')
+      .eq('id', id)
+      .single();
     
-    if (!product) return res.json(null);
+    if (error || !product) return res.json(null);
 
-    const doc = product.toObject();
     return res.json({
-      ...doc,
-      id: doc._id,
-      farmerName: doc.farmer?.name,
-      farmerVerified: doc.farmer?.is_verified,
-      farmerStatus: doc.farmer?.verification_status
+      ...product,
+      farmerName: product.farmer?.name,
+      farmerVerified: product.farmer?.is_verified,
+      farmerStatus: product.farmer?.verification_status
     });
   } catch (err) {
     console.error('GetById product error:', err);
@@ -73,18 +66,19 @@ export const getByFarmer = async (req, res) => {
   const farmerId = req.params.farmerId ?? req.query.farmerId;
 
   try {
-    const products = await Product.find({ farmer: farmerId }).populate('farmer', 'name is_verified verification_status');
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*, farmer:users(name, is_verified, verification_status)')
+      .eq('farmer_id', farmerId);
 
-    const formatted = products.map(p => {
-      const doc = p.toObject();
-      return {
-        ...doc,
-        id: doc._id,
-        farmerName: doc.farmer?.name,
-        farmerVerified: doc.farmer?.is_verified,
-        farmerStatus: doc.farmer?.verification_status
-      };
-    });
+    if (error) throw error;
+
+    const formatted = products.map(p => ({
+      ...p,
+      farmerName: p.farmer?.name,
+      farmerVerified: p.farmer?.is_verified,
+      farmerStatus: p.farmer?.verification_status
+    }));
 
     return res.json(formatted);
   } catch (err) {
@@ -111,28 +105,32 @@ export const create = async (req, res) => {
   if (!name || !price) return res.status(400).json({ message: 'Name and price are required' });
 
   try {
-    const product = await Product.create({
-      farmer: farmerId,
-      name,
-      description,
-      category,
-      price,
-      unit,
-      available,
-      images,
-      location,
-      certifications
-    });
+    const { data: product, error } = await supabase
+      .from('products')
+      .insert([
+        {
+          farmer_id: farmerId,
+          name,
+          description,
+          category,
+          price,
+          unit,
+          available,
+          images,
+          location,
+          certifications
+        }
+      ])
+      .select('*, farmer:users(name, is_verified, verification_status)')
+      .single();
 
-    const populated = await product.populate('farmer', 'name is_verified verification_status');
-    const doc = populated.toObject();
+    if (error) throw error;
 
     return res.json({
-      ...doc,
-      id: doc._id,
-      farmerName: doc.farmer?.name,
-      farmerVerified: doc.farmer?.is_verified,
-      farmerStatus: doc.farmer?.verification_status
+      ...product,
+      farmerName: product.farmer?.name,
+      farmerVerified: product.farmer?.is_verified,
+      farmerStatus: product.farmer?.verification_status
     });
   } catch (err) {
     console.error('Create product error:', err);
@@ -145,16 +143,20 @@ export const update = async (req, res) => {
   const updates = req.body;
 
   try {
-    const product = await Product.findByIdAndUpdate(id, updates, { new: true }).populate('farmer', 'name is_verified verification_status');
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const { data: product, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select('*, farmer:users(name, is_verified, verification_status)')
+      .single();
 
-    const doc = product.toObject();
+    if (error) return res.status(404).json({ message: 'Product not found' });
+
     return res.json({
-      ...doc,
-      id: doc._id,
-      farmerName: doc.farmer?.name,
-      farmerVerified: doc.farmer?.is_verified,
-      farmerStatus: doc.farmer?.verification_status
+      ...product,
+      farmerName: product.farmer?.name,
+      farmerVerified: product.farmer?.is_verified,
+      farmerStatus: product.farmer?.verification_status
     });
   } catch (err) {
     console.error('Update product error:', err);
@@ -165,13 +167,15 @@ export const update = async (req, res) => {
 export const remove = async (req, res) => {
   const { id } = req.params;
   try {
-    const product = await Product.findByIdAndDelete(id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) return res.status(404).json({ message: 'Product not found' });
     return res.json({ message: 'Product deleted' });
   } catch (err) {
     console.error('Remove product error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-

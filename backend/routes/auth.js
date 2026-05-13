@@ -1,13 +1,20 @@
 import { Router } from 'express';
-import { login, register, logout } from '../controllers/authController.js';
-import { getProfile } from '../controllers/profileController.js';
+import * as authController from '../controllers/authController.js';
 
 const router = Router();
 
-router.post('/login', login);
-router.post('/register', register);
-router.post('/logout', logout);
-router.get('/profile', getProfile);
+// Password-based (Legacy)
+router.post('/login', authController.login);
+router.post('/register', authController.register);
+
+// Passwordless (OTP)
+router.post('/otp/request', authController.requestOtp);
+router.post('/otp/verify', authController.verifyOtp);
+
+// Password Management
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.updatePassword);
+
+router.post('/logout', authController.logout);
 
 export default router;
-

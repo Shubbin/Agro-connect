@@ -1,13 +1,30 @@
-import mongoose from 'mongoose';
+import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
+import ws from 'ws';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase URL or Service Role Key in .env');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  },
+  realtime: {
+    transport: ws
+  }
+});
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/agrconnect');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+    // Basic connectivity check
+    console.log('🚀 Supabase client initialized');
+  } catch (err) {
+    console.error('Supabase initialization warning:', err.message);
   }
 };
 

@@ -1,91 +1,96 @@
-import mongoose from 'mongoose';
-import User from './models/User.js';
-import Product from './models/Product.js';
+import { supabase } from './config/db.js';
 import bcrypt from 'bcryptjs';
-import 'dotenv/config';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/agrconnect';
 
 const seed = async () => {
+  console.log('🌱 Starting Supabase Seeding...');
+
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB for seeding...');
+    // 1. Clear existing data (optional, be careful)
+    // await supabase.from('cart_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    // await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-    // Clear existing data
-    await User.deleteMany({});
-    await Product.deleteMany({});
+    const hashedPassword = bcrypt.hashSync('password123', 10);
 
-    // Create a farmer
-    const farmerPassword = bcrypt.hashSync('password123', 10);
-    const farmer = await User.create({
-      name: 'Organic Farmer John',
-      email: 'farmer@example.com',
-      password: farmerPassword,
-      role: 'farmer',
-      phone: '08012345678',
-      is_verified: true,
-      verification_status: 'verified'
-    });
+    // 2. Seed Farmers
+    const { data: farmers, error: farmerError } = await supabase
+      .from('users')
+      .insert([
+        { name: 'Ibrahim Okafor', email: 'ibrahim@farm.ng', password: hashedPassword, role: 'farmer', is_verified: true, verification_status: 'verified' },
+        { name: 'Amina Yusuf', email: 'amina@agrotech.ng', password: hashedPassword, role: 'farmer', is_verified: true, verification_status: 'verified' },
+        { name: 'Chidi Benson', email: 'chidi@agri.ng', password: hashedPassword, role: 'farmer', is_verified: true, verification_status: 'verified' }
+      ])
+      .select();
 
-    // Create a buyer
-    const buyerPassword = bcrypt.hashSync('password123', 10);
-    await User.create({
-      name: 'Smart Buyer Jane',
-      email: 'buyer@example.com',
-      password: buyerPassword,
-      role: 'user',
-      phone: '08087654321',
-      is_verified: true,
-      verification_status: 'verified'
-    });
+    if (farmerError) throw farmerError;
+    console.log(`✅ Seeded ${farmers.length} farmers`);
 
-    // Create products
-    const products = [
+    // 3. Seed Products
+    const productsToSeed = [
       {
-        name: 'Premium Cocoa Beans',
-        description: 'Grade-A organic cocoa beans from Edo State. High yield and rich flavor.',
-        price: 45000,
-        available: 150,
-        unit: 'Bag (50kg)',
-        category: 'Cash Crops',
-        location: 'Edo State',
-        farmer: farmer._id,
-        images: ['https://images.unsplash.com/photo-1541414779316-956a5084c0d4?auto=format&fit=crop&q=80&w=800'],
-        certifications: ['Organic', 'Export Ready']
+        farmer_id: farmers[0].id,
+        name: 'Organic Tomatoes',
+        description: 'Freshly harvested vine-ripened organic tomatoes from our Oyo fields. No chemical pesticides used.',
+        category: 'Produce',
+        price: 1500,
+        unit: 'Basket',
+        available: 45,
+        images: ['https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&auto=format&fit=crop'],
+        location: 'Oyo'
       },
       {
-        name: 'Fresh Cassava Roots',
-        description: 'Freshly harvested cassava roots. Perfect for processing into garri or flour.',
-        price: 12000,
-        available: 500,
-        unit: 'Ton',
+        farmer_id: farmers[0].id,
+        name: 'Habanero Peppers',
+        description: 'Extremely spicy and aromatic peppers, perfect for traditional Nigerian stews.',
+        category: 'Spices',
+        price: 800,
+        unit: 'kg',
+        available: 120,
+        images: ['https://images.unsplash.com/photo-1589146143003-8898126e0337?w=800&auto=format&fit=crop'],
+        location: 'Oyo'
+      },
+      {
+        farmer_id: farmers[1].id,
+        name: 'Sweet Potatoes',
+        description: 'High-quality sweet potatoes from the rich soils of Kaduna. Rich in vitamin A.',
         category: 'Tubers',
-        location: 'Ogun State',
-        farmer: farmer._id,
-        images: ['https://images.unsplash.com/photo-1627914460578-8fc5f6e80b43?auto=format&fit=crop&q=80&w=800'],
-        certifications: ['GMO Free']
+        price: 3500,
+        unit: 'Bag (50kg)',
+        available: 20,
+        images: ['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop'],
+        location: 'Kaduna'
       },
       {
-        name: 'Large Yellow Onions',
-        description: 'High quality large yellow onions from the North. Long shelf life.',
-        price: 25000,
-        available: 200,
-        unit: 'Jumbo Bag',
-        category: 'Vegetables',
-        location: 'Kano State',
-        farmer: farmer._id,
-        images: ['https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=800'],
-        certifications: ['Freshly Harvested']
+        farmer_id: farmers[2].id,
+        name: 'Fresh Palm Oil',
+        description: 'Pure, unadulterated red palm oil processed traditionally in Enugu.',
+        category: 'Oil',
+        price: 12000,
+        unit: '25L Gallon',
+        available: 15,
+        images: ['https://images.unsplash.com/photo-1621460245191-49e0881f621a?w=800&auto=format&fit=crop'],
+        location: 'Enugu'
       }
     ];
 
-    await Product.insertMany(products);
+    const { data: seededProducts, error: productError } = await supabase
+      .from('products')
+      .insert(productsToSeed)
+      .select();
 
-    console.log('Database seeded successfully!');
-    process.exit(0);
+    if (productError) throw productError;
+    console.log(`✅ Seeded ${seededProducts.length} products`);
+
+    console.log('\n🚀 Database Seeding Completed Successfully!');
+    console.log('-------------------------------------------');
+    console.log('Login Details for testing:');
+    console.log('Email: ibrahim@farm.ng');
+    console.log('Password: password123');
+    console.log('-------------------------------------------');
+
   } catch (err) {
-    console.error('Seeding error:', err);
-    process.exit(1);
+    console.error('❌ Seeding failed:', err.message);
+  } finally {
+    process.exit();
   }
 };
 

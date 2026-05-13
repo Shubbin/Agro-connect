@@ -1,15 +1,16 @@
-import mongoose from 'mongoose';
-import User from '../models/User.js';
-import Product from '../models/Product.js';
-import Order from '../models/Order.js';
+import { supabase } from '../config/db.js';
 
 const getUserIdFromToken = async (req) => {
   const auth = req.headers.authorization ?? '';
   const match = auth.match(/^Bearer\s+(.+)$/);
   if (!match) return null;
   try {
-    const user = await User.findOne({ auth_token: match[1] });
-    return user ? user._id : null;
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_token', match[1])
+      .single();
+    return user ? user.id : null;
   } catch (err) {
     console.error('getUserIdFromToken error:', err);
     return null;
@@ -20,47 +21,45 @@ const getUserIdFromToken = async (req) => {
 
 const getFarmerStats = async (farmerId) => {
   try {
-    // 1. Total Revenue from delivered orders
-    const revenueRes = await Order.aggregate([
-      { $match: { status: 'delivered' } },
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $group: { _id: null, total: { $sum: { $multiply: ["$items.price", "$items.quantity"] } } } }
-    ]);
+    // Fetch all orders with items and product details for this farmer
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, items:order_items(*, product:products(*))');
 
-    // 2. Total orders containing farmer's products
-    const totalOrdersRes = await Order.aggregate([
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $group: { _id: "$_id" } }
-    ]);
+    if (error) throw error;
 
-    // 3. Delivered orders containing farmer's products
-    const deliveredOrdersRes = await Order.aggregate([
-      { $match: { status: 'delivered' } },
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $group: { _id: "$_id" } }
-    ]);
+    let totalRevenue = 0;
+    let totalOrdersSet = new Set();
+    let deliveredOrdersSet = new Set();
 
-    const productCount = await Product.countDocuments({ farmer: farmerId });
+    orders.forEach(order => {
+      const farmerItems = order.items.filter(item => item.product?.farmer_id === farmerId);
+      if (farmerItems.length > 0) {
+        totalOrdersSet.add(order.id);
+        if (order.status === 'delivered') {
+          deliveredOrdersSet.add(order.id);
+          farmerItems.forEach(item => {
+            totalRevenue += Number(item.price) * Number(item.quantity);
+          });
+        }
+      }
+    });
 
-    const tOrders = totalOrdersRes.length;
-    const dCount = deliveredOrdersRes.length;
+    const { count: productCount } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('farmer_id', farmerId);
+
+    const tOrders = totalOrdersSet.size;
+    const dCount = deliveredOrdersSet.size;
     const deliveryRate = tOrders > 0 ? Math.round((dCount / tOrders) * 100) : 0;
 
     return {
-      totalRevenue: revenueRes[0]?.total ?? 0,
+      totalRevenue,
       pendingRevenue: 0,
       totalOrders: tOrders,
       deliveredOrders: dCount,
-      productCount: productCount,
+      productCount: productCount || 0,
       deliveryRate,
     };
   } catch (err) {
@@ -71,26 +70,35 @@ const getFarmerStats = async (farmerId) => {
 
 const getTopProducts = async (farmerId) => {
   try {
-    // Top 5 products by revenue and order count
-    const topProducts = await Order.aggregate([
-      { $match: { status: 'delivered' } },
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $group: {
-          _id: "$productInfo._id",
-          name: { $first: "$productInfo.name" },
-          price: { $first: "$productInfo.price" },
-          available: { $first: "$productInfo.available" },
-          category: { $first: "$productInfo.category" },
-          order_count: { $sum: 1 },
-          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
-      }},
-      { $sort: { revenue: -1, order_count: -1 } },
-      { $limit: 5 }
-    ]);
-    return topProducts;
+    const { data: items, error } = await supabase
+      .from('order_items')
+      .select('*, order:orders!inner(status), product:products!inner(*)')
+      .eq('product.farmer_id', farmerId)
+      .eq('order.status', 'delivered');
+
+    if (error) throw error;
+
+    const productStats = {};
+    items.forEach(item => {
+      const p = item.product;
+      if (!productStats[p.id]) {
+        productStats[p.id] = {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          available: p.available,
+          category: p.category,
+          order_count: 0,
+          revenue: 0
+        };
+      }
+      productStats[p.id].order_count += 1;
+      productStats[p.id].revenue += Number(item.price) * Number(item.quantity);
+    });
+
+    return Object.values(productStats)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
   } catch (err) {
     console.error('getTopProducts error:', err);
     return [];
@@ -99,26 +107,22 @@ const getTopProducts = async (farmerId) => {
 
 const getFarmerRecentOrders = async (farmerId) => {
   try {
-    // Recent 5 orders containing farmer's products
-    const recentOrders = await Order.aggregate([
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'buyerInfo' } },
-      { $unwind: "$buyerInfo" },
-      { $group: {
-          _id: "$_id",
-          id: { $first: "$_id" },
-          status: { $first: "$status" },
-          total: { $first: "$total" },
-          created_at: { $first: "$created_at" },
-          buyerName: { $first: "$buyerInfo.name" }
-      }},
-      { $sort: { created_at: -1 } },
-      { $limit: 5 }
-    ]);
-    return recentOrders;
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name), items:order_items!inner(product:products!inner(farmer_id))')
+      .eq('items.product.farmer_id', farmerId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+
+    return orders.map(o => ({
+      id: o.id,
+      status: o.status,
+      total: o.total,
+      created_at: o.created_at,
+      buyerName: o.user?.name
+    }));
   } catch (err) {
     console.error('getFarmerRecentOrders error:', err);
     return [];
@@ -127,11 +131,13 @@ const getFarmerRecentOrders = async (farmerId) => {
 
 const getInventoryValue = async (farmerId) => {
   try {
-    const res = await Product.aggregate([
-      { $match: { farmer: farmerId } },
-      { $group: { _id: null, value: { $sum: { $multiply: ["$price", "$available"] } } } }
-    ]);
-    return res[0]?.value ?? 0;
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('price, available')
+      .eq('farmer_id', farmerId);
+
+    if (error) throw error;
+    return products.reduce((sum, p) => sum + (Number(p.price) * Number(p.available)), 0);
   } catch (err) {
     console.error('getInventoryValue error:', err);
     return 0;
@@ -140,7 +146,12 @@ const getInventoryValue = async (farmerId) => {
 
 const getFarmerAIInsights = async (farmerId) => {
   try {
-    const products = await Product.find({ farmer: farmerId });
+    const { data: products, error: pError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('farmer_id', farmerId);
+
+    if (pError) throw pError;
 
     const insights = [];
     let profileScore = 50;
@@ -171,15 +182,13 @@ const getFarmerAIInsights = async (farmerId) => {
       }
     });
 
-    const orderRes = await Order.aggregate([
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $match: { "productInfo.farmer": farmerId } },
-      { $group: { _id: "$_id" } }
-    ]);
+    const { data: orderItems, error: oError } = await supabase
+      .from('order_items')
+      .select('id, product:products!inner(farmer_id)')
+      .eq('product.farmer_id', farmerId);
 
-    const orderCount = orderRes.length;
+    if (oError) throw oError;
+    const orderCount = orderItems.length;
 
     if (orderCount === 0) {
       insights.push({
@@ -227,27 +236,27 @@ const getFarmerAIInsights = async (farmerId) => {
 
 const getBuyerStats = async (buyerId) => {
   try {
-    const stats = await Order.aggregate([
-      { $match: { user: buyerId } },
-      { $group: { 
-          _id: null, 
-          totalSpend: { $sum: "$total" },
-          totalOrders: { $sum: 1 }
-      }}
-    ]);
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('total, items:order_items(product:products(farmer_id))')
+      .eq('user_id', buyerId);
 
-    const farmerCountRes = await Order.aggregate([
-      { $match: { user: buyerId } },
-      { $unwind: "$items" },
-      { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'productInfo' } },
-      { $unwind: "$productInfo" },
-      { $group: { _id: "$productInfo.farmer" } }
-    ]);
+    if (error) throw error;
+
+    let totalSpend = 0;
+    const uniqueFarmers = new Set();
+
+    orders.forEach(o => {
+      totalSpend += Number(o.total);
+      o.items.forEach(item => {
+        if (item.product?.farmer_id) uniqueFarmers.add(item.product.farmer_id);
+      });
+    });
 
     return {
-      totalSpend: stats[0]?.totalSpend ?? 0,
-      totalOrders: stats[0]?.totalOrders ?? 0,
-      uniqueFarmers: farmerCountRes.length,
+      totalSpend,
+      totalOrders: orders.length,
+      uniqueFarmers: uniqueFarmers.size,
     };
   } catch (err) {
     console.error('getBuyerStats error:', err);
@@ -257,24 +266,19 @@ const getBuyerStats = async (buyerId) => {
 
 const getBuyerRecentOrders = async (buyerId) => {
   try {
-    const orders = await Order.find({ user: buyerId }).sort({ created_at: -1 }).limit(5).populate('items.product');
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, items:order_items(*, product:products(*, farmer:users(name)))')
+      .eq('user_id', buyerId)
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-    return await Promise.all(orders.map(async (order) => {
-      const doc = order.toObject();
-      const firstProduct = doc.items[0]?.product;
-      let farmerName = 'Farmer';
-      
-      if (firstProduct && firstProduct.farmer) {
-        const farmer = await User.findById(firstProduct.farmer).select('name');
-        farmerName = farmer?.name ?? 'Farmer';
-      }
+    if (error) throw error;
 
-      return {
-        ...doc,
-        id: doc._id,
-        farmerName,
-        total_amount: doc.total,
-      };
+    return orders.map(o => ({
+      ...o,
+      farmerName: o.items[0]?.product?.farmer?.name ?? 'Farmer',
+      total_amount: o.total
     }));
   } catch (err) {
     console.error('getBuyerRecentOrders error:', err);
@@ -284,7 +288,12 @@ const getBuyerRecentOrders = async (buyerId) => {
 
 const getBuyerAIInsights = async (buyerId) => {
   try {
-    const orders = await Order.find({ user: buyerId }).populate('items.product');
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('items:order_items(product:products(category))')
+      .eq('user_id', buyerId);
+
+    if (error) throw error;
 
     const insights = [];
     const catCounts = {};
@@ -313,7 +322,7 @@ const getBuyerAIInsights = async (buyerId) => {
         icon: 'ShoppingBag',
         severity: 'info',
         title: 'Start shopping from verified farmers',
-        detail: 'Browse 120+ products from 16 verified farmers across Nigeria.',
+        detail: 'Browse 120+ products from verified farmers across Nigeria.',
       });
     }
 
@@ -326,26 +335,45 @@ const getBuyerAIInsights = async (buyerId) => {
 
 // ── Main handler ────────────────────────────────────────────────────────────
 
+const getAgroTrustBadges = (stats, role) => {
+  const badges = [];
+  if (role === 'farmer') {
+    if (stats.deliveryRate > 90 && stats.totalOrders > 5) {
+      badges.push({ id: 'fast-shipper', label: 'Fast Shipper', icon: 'zap', color: 'green' });
+    }
+    if (stats.deliveredOrders > 20) {
+      badges.push({ id: 'top-rated', label: 'Top Rated Seller', icon: 'star', color: 'blue' });
+    }
+  } else {
+    if (stats.totalSpent > 100000) {
+      badges.push({ id: 'high-roller', label: 'Premium Buyer', icon: 'award', color: 'purple' });
+    }
+    if (stats.agroScore > 70) {
+      badges.push({ id: 'trustworthy', label: 'Trusted Partner', icon: 'shield-check', color: 'gold' });
+    }
+  }
+  return badges;
+};
+
 export const getProfile = async (req, res) => {
   let userId = await getUserIdFromToken(req);
   
-  // If not in token, check query
   if (!userId && req.query.userId) {
-     const qId = req.query.userId;
-     if (mongoose.Types.ObjectId.isValid(qId)) {
-        userId = qId;
-     }
+     userId = req.query.userId;
   }
 
   if (!userId) return res.status(401).json({ error: 'Unauthorized or Invalid User ID' });
 
   try {
-    const user = await User.findById(userId).select('id name email phone role is_verified verification_status created_at');
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, phone, role, is_verified, verification_status, created_at, agro_score, trust_badges')
+      .eq('id', userId)
+      .single();
 
-    const userData = user.toObject();
-    userData.id = userData._id;
-    const profile = { user: userData };
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+
+    const profile = { user };
 
     if (user.role === 'farmer') {
       const [stats, topProducts, recentOrders, inventoryValue, aiInsights] = await Promise.all([
@@ -357,9 +385,10 @@ export const getProfile = async (req, res) => {
       ]);
       profile.stats = stats;
       profile.topProducts = topProducts;
-      profile.recentOrders = recentOrders.map(o => ({ ...o, id: o._id }));
+      profile.recentOrders = recentOrders;
       profile.inventoryValue = inventoryValue;
       profile.aiInsights = aiInsights;
+      profile.badges = getAgroTrustBadges(stats, 'farmer');
     } else {
       const [stats, recentOrders, aiInsights] = await Promise.all([
         getBuyerStats(userId),
@@ -369,6 +398,9 @@ export const getProfile = async (req, res) => {
       profile.stats = stats;
       profile.recentOrders = recentOrders;
       profile.aiInsights = aiInsights;
+      // Inject agro_score into stats for badge calculation
+      stats.agroScore = user.agro_score;
+      profile.badges = getAgroTrustBadges(stats, 'buyer');
     }
 
     return res.json(profile);
@@ -377,5 +409,3 @@ export const getProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-

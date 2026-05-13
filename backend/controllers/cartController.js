@@ -1,6 +1,4 @@
-import CartItem from '../models/CartItem.js';
-import User from '../models/User.js';
-import Product from '../models/Product.js';
+import { supabase } from '../config/db.js';
 
 const getUserIdFromToken = async (req) => {
   const auth = req.headers.authorization ?? '';
@@ -8,8 +6,13 @@ const getUserIdFromToken = async (req) => {
   if (!match) return null;
 
   try {
-    const user = await User.findOne({ auth_token: match[1] });
-    return user ? user._id : null;
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_token', match[1])
+      .single();
+    
+    return user ? user.id : null;
   } catch (err) {
     console.error('getUserIdFromToken error:', err);
     return null;
@@ -18,27 +21,17 @@ const getUserIdFromToken = async (req) => {
 
 export const get = async (req, res) => {
   try {
-    const userId = (await getUserIdFromToken(req)) ?? (req.query.userId || '65f1a2b3c4d5e6f7a8b9c0d1'); // Fallback for testing
+    const userId = await getUserIdFromToken(req);
+    if (!userId) return res.status(401).json({ message: 'Authentication required' });
 
-    const items = await CartItem.find({ user: userId }).populate('product');
+    const { data: items, error } = await supabase
+      .from('cart_items')
+      .select('*, product:products(*)')
+      .eq('user_id', userId);
 
-    const formatted = items.map((item) => {
-      const doc = item.toObject();
-      return {
-        ...doc,
-        id: doc._id,
-        productId: doc.product?._id,
-        name: doc.product?.name,
-        price: doc.product?.price,
-        images: doc.product?.images,
-        product: doc.product ? {
-          ...doc.product,
-          id: doc.product._id
-        } : null
-      };
-    });
+    if (error) throw error;
 
-    return res.json(formatted);
+    return res.json(items);
   } catch (err) {
     console.error('Get cart error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -47,33 +40,43 @@ export const get = async (req, res) => {
 
 export const add = async (req, res) => {
   try {
-    const userId = (await getUserIdFromToken(req)) ?? req.query.userId;
+    const userId = await getUserIdFromToken(req);
     const { productId, quantity = 1 } = req.body;
 
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     // Check if item already exists in cart
-    let item = await CartItem.findOne({ user: userId, product: productId });
+    const { data: existingItem, error: findError } = await supabase
+      .from('cart_items')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .single();
 
-    if (item) {
-      item.quantity += Number(quantity);
-      await item.save();
+    if (existingItem) {
+      const { data: updated, error: updateError } = await supabase
+        .from('cart_items')
+        .update({ quantity: existingItem.quantity + Number(quantity) })
+        .eq('id', existingItem.id)
+        .select('*, product:products(*)')
+        .single();
+      
+      if (updateError) throw updateError;
+      return res.json(updated);
     } else {
-      item = await CartItem.create({
-        user: userId,
-        product: productId,
-        quantity: Number(quantity)
-      });
+      const { data: newItem, error: insertError } = await supabase
+        .from('cart_items')
+        .insert([{
+          user_id: userId,
+          product_id: productId,
+          quantity: Number(quantity)
+        }])
+        .select('*, product:products(*)')
+        .single();
+      
+      if (insertError) throw insertError;
+      return res.json(newItem);
     }
-
-    const populated = await item.populate('product');
-    const doc = populated.toObject();
-
-    return res.json({
-      ...doc,
-      id: doc._id,
-      product: doc.product ? { ...doc.product, id: doc.product._id } : null
-    });
   } catch (err) {
     console.error('Add to cart error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -85,15 +88,15 @@ export const update = async (req, res) => {
   const { quantity } = req.body;
 
   try {
-    const item = await CartItem.findByIdAndUpdate(itemId, { quantity }, { new: true }).populate('product');
-    if (!item) return res.status(404).json({ message: 'Item not found' });
+    const { data: updated, error } = await supabase
+      .from('cart_items')
+      .update({ quantity })
+      .eq('id', itemId)
+      .select('*, product:products(*)')
+      .single();
 
-    const doc = item.toObject();
-    return res.json({
-      ...doc,
-      id: doc._id,
-      success: true
-    });
+    if (error) throw error;
+    return res.json({ ...updated, success: true });
   } catch (err) {
     console.error('Update cart error:', err);
     return res.status(500).json({ message: 'Server error' });
@@ -103,8 +106,12 @@ export const update = async (req, res) => {
 export const remove = async (req, res) => {
   const { itemId } = req.params;
   try {
-    const item = await CartItem.findByIdAndDelete(itemId);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('id', itemId);
+
+    if (error) throw error;
     return res.json({ success: true, id: itemId });
   } catch (err) {
     console.error('Remove from cart error:', err);
@@ -114,10 +121,15 @@ export const remove = async (req, res) => {
 
 export const clear = async (req, res) => {
   try {
-    const userId = (await getUserIdFromToken(req)) ?? req.query.userId;
+    const userId = await getUserIdFromToken(req);
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    await CartItem.deleteMany({ user: userId });
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) throw error;
     return res.json({ success: true });
   } catch (err) {
     console.error('Clear cart error:', err);
@@ -130,24 +142,17 @@ export const makeOffer = async (req, res) => {
   const { offeredPrice } = req.body;
 
   try {
-    const item = await CartItem.findByIdAndUpdate(
-      itemId,
-      { offered_price: offeredPrice, offer_status: 'pending' },
-      { new: true }
-    ).populate('product');
+    const { data: updated, error } = await supabase
+      .from('cart_items')
+      .update({ offered_price: offeredPrice, offer_status: 'pending' })
+      .eq('id', itemId)
+      .select('*, product:products(*)')
+      .single();
 
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-
-    const doc = item.toObject();
-    return res.json({
-      ...doc,
-      id: doc._id,
-      product: doc.product ? { ...doc.product, id: doc.product._id } : null
-    });
+    if (error) throw error;
+    return res.json(updated);
   } catch (err) {
     console.error('Make offer error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-

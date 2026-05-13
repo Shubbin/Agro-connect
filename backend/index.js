@@ -19,11 +19,13 @@ import paymentRoutes from './routes/payment.js';
 import smsRoutes from './routes/sms.js';
 import uploadRoutes from './routes/upload.js';
 import farmerRoutes from './routes/farmer.js';
+import b2bRoutes from './routes/b2b.js';
+import disputeRoutes from './routes/disputes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Connect to MongoDB
+// Initialize Supabase
 connectDB();
 
 const app = express();
@@ -51,7 +53,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // ── Routes ───────────────────────────────────────────────────────────────────
 
 app.get('/', (_req, res) => {
-  res.json({ message: 'Welcome to Agro Direct Connect API (Node.js/MongoDB)' });
+  res.json({ message: 'Welcome to Agro Direct Connect API (Node.js/Supabase)' });
 });
 
 // Use /api prefix to match frontend
@@ -69,6 +71,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/farmer', farmerRoutes);
+app.use('/api/b2b', b2bRoutes);
+app.use('/api/disputes', disputeRoutes);
 
 // ── 404 catch-all ────────────────────────────────────────────────────────────
 
@@ -79,6 +83,5 @@ app.use((_req, res) => {
 // ── Start ────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`🚀 Agro Direct Connect API (MongoDB) running on http://localhost:${PORT}`);
+  console.log(`🚀 Agro Direct Connect API (Supabase) running on http://localhost:${PORT}`);
 });
-
