@@ -44,11 +44,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUp = async (data) => {
-    await authAPI.register(data);
+    const response = await authAPI.register(data);
+    localStorage.setItem('agro_user', JSON.stringify(response.user));
+    localStorage.setItem('agro_token', response.token);
+    setUser(response.user);
   };
 
   const logout = async () => {
-    await authAPI.logout();
+    try {
+      await authAPI.logout();
+    } catch (err) {
+      console.warn('Logout API call failed, clearing local state anyway');
+    }
     localStorage.removeItem('agro_user');
     localStorage.removeItem('agro_token');
     localStorage.removeItem('agro_cart');
@@ -68,6 +75,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         login,
         register,
+        signUp,
         logout,
         updateUser,
       }}
