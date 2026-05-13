@@ -1,3 +1,5 @@
+import { Router } from 'express';
+import { getAll, getById, create, update, remove } from '../controllers/productController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();

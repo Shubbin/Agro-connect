@@ -1,3 +1,5 @@
+import { Router } from 'express';
+import { getBalance, getTransactions } from '../controllers/walletController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();

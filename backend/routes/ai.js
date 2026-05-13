@@ -1,3 +1,5 @@
+import { Router } from 'express';
+import { handle } from '../controllers/aiController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();

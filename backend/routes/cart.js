@@ -1,3 +1,5 @@
+import { Router } from 'express';
+import { get, add, update, remove, clear, makeOffer } from '../controllers/cartController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();
