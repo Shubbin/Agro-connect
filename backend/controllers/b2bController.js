@@ -33,6 +33,21 @@ export const generateApiKey = async (req, res) => {
   }
 };
 
+// 2. Get All API Keys for Merchant
+export const getApiKeys = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('merchant_api_keys')
+      .select('*')
+      .eq('merchant_id', req.user.id);
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // 2. Create Bulk Trade Session (BNPL for Businesses)
 export const createTradeSession = async (req, res) => {
   const { items, buyerId, plan } = req.body;
