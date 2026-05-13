@@ -10,15 +10,18 @@ export const protect = async (req, res, next) => {
   if (!match) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
   try {
-    const { data: user, error } = await supabase
+    const { data: { user }, error } = await supabase.auth.getUser(match[1]);
+
+    if (error || !user) return res.status(401).json({ error: 'Unauthorized: Invalid session' });
+
+    // Link the Supabase user to our custom users table data
+    const { data: dbUser } = await supabase
       .from('users')
       .select('*')
-      .eq('auth_token', match[1])
+      .eq('id', user.id)
       .single();
 
-    if (error || !user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-
-    req.user = user;
+    req.user = dbUser || user; // Fallback to auth user if not in DB yet
     next();
   } catch (err) {
     res.status(401).json({ error: 'Unauthorized' });

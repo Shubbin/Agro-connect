@@ -8,11 +8,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 export const apiRequest = async (endpoint, options = {}) => {
+  const token = localStorage.getItem('agro_token');
   const url = `${API_BASE_URL}${endpoint}`;
+  
   const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : '',
       ...options.headers,
     },
   });
