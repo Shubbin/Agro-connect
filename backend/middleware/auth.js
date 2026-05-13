@@ -7,24 +7,31 @@ export const protect = async (req, res, next) => {
   const auth = req.headers.authorization ?? '';
   const match = auth.match(/^Bearer\s+(.+)$/);
   
-  if (!match) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+  if (!match) {
+    console.error('Auth Failure: No Bearer token in headers');
+    return res.status(401).json({ error: 'Authentication required: No token' });
+  }
 
   try {
     const token = match[1];
 
-    // Check if it's a valid UUID (User ID) from our DB
+    // During transition, we allow the User ID to act as the token
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', token)
       .single();
 
-    if (error || !user) return res.status(401).json({ error: 'Unauthorized: Session expired or invalid' });
+    if (error || !user) {
+      console.error('Auth Failure: Token not found in users table', token);
+      return res.status(401).json({ error: 'Authentication required: Invalid session' });
+    }
 
     req.user = user;
     next();
   } catch (err) {
-    res.status(401).json({ error: 'Unauthorized' });
+    console.error('Auth Failure: System error', err.message);
+    res.status(401).json({ error: 'Authentication required: System error' });
   }
 };
 
