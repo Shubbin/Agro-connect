@@ -29,7 +29,7 @@ export const login = async (req, res) => {
         .single();
       
       if (createError) throw createError;
-      return res.json({ message: 'Welcome to Zenda!', user: newUser, token: newUser.id });
+      return res.json({ message: 'Welcome to Agro-Connect!', user: newUser, token: newUser.id });
     }
 
     // Direct success - using User ID as the token for now to bypass Supabase Auth issues
