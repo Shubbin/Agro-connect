@@ -7,18 +7,33 @@ import crypto from 'crypto';
  * Handles Password-based, OTP-based, and Password Management flows.
  */
 
-// 1. Passwordless Login (Request OTP)
-export const requestOtp = async (req, res) => {
+// 1. Direct Login (No OTP required for now)
+export const login = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
 
   try {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true }
-    });
-    if (error) throw error;
-    res.json({ message: 'OTP sent to your email.' });
+    // Check if user exists in our DB
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (fetchError || !user) {
+      // Auto-register if user doesn't exist (Quick Onboarding)
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert([{ email, name: email.split('@')[0], role: 'user' }])
+        .select()
+        .single();
+      
+      if (createError) throw createError;
+      return res.json({ message: 'Welcome to Zenda!', user: newUser, token: newUser.id });
+    }
+
+    // Direct success - using User ID as the token for now to bypass Supabase Auth issues
+    res.json({ message: 'Login successful', user, token: user.id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

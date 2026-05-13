@@ -44,13 +44,13 @@ class AgroAIService {
     }
   }
 
-  async getAgroScoreCoaching(profile) {
+  async getZendaScoreCoaching(profile) {
     try {
       const prompt = `
-        You are 'AgroCoach', a financial advisor for produce buyers.
+        You are 'ZendaCoach', a financial advisor for Zenda users.
         User Profile:
         - Name: ${profile.name}
-        - Current AgroScore: ${profile.agro_score}/100
+        - Current ZendaScore: ${profile.agro_score || 0}/100
         
         Return ONLY a JSON object:
         {
@@ -68,14 +68,14 @@ class AgroAIService {
 
       return JSON.parse(chatCompletion.choices[0].message.content);
     } catch (error) {
-      return { summary: "Continue trading to build your AgroScore.", tips: ["Complete on-time payments."] };
+      return { summary: "Continue using Zenda to build your credit profile.", tips: ["Complete installments on time."] };
     }
   }
 
-  async askAgroBot(question) {
+  async askZendaBot(question) {
     try {
       const prompt = `
-        You are 'AgroBot', the AI assistant for Agro-Connect.
+        You are 'ZendaBot', the AI assistant for Zenda.
         Answer this question concisely: "${question}"
       `;
 
