@@ -1,13 +1,12 @@
-import { Router } from 'express';
-import { get, add, update, remove, clear, makeOffer } from '../controllers/cartController.js';
+import { protect } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', get);
-router.post('/add', add);
-router.put('/:itemId', update);
-router.delete('/:itemId', remove);
-router.delete('/', clear);
-router.post('/:itemId/offer', makeOffer);
+router.get('/', protect, get);
+router.post('/add', protect, add);
+router.put('/:itemId', protect, update);
+router.delete('/:itemId', protect, remove);
+router.delete('/', protect, clear);
+router.post('/:itemId/offer', protect, makeOffer);
 
 export default router;

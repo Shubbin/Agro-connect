@@ -6,18 +6,21 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase URL or Service Role Key in .env');
+  console.error('❌ CRITICAL: Missing Supabase URL or Service Role Key in .env');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  realtime: {
-    transport: ws
-  }
-});
+// Initialize only if keys exist to avoid startup crash in some library versions
+export const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      realtime: {
+        transport: ws
+      }
+    })
+  : null;
 
 const connectDB = async () => {
   try {

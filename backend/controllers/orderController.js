@@ -7,6 +7,7 @@ export const getAll = async (_req, res) => {
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*, user:users(name, email)')
+      .eq('user_id', _req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -181,10 +182,11 @@ export const generateOtp = async (req, res) => {
 
 export const getFarmerOrders = async (req, res) => {
   try {
-    // For MVP, return all orders with product details
+    // Filter by merchant_id to ensure farmers only see their own orders
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('merchant_id', req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

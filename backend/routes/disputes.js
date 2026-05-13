@@ -6,7 +6,7 @@ const router = Router();
 
 // Buyer routes
 router.post('/', protect, disputeController.createDispute);
-router.get('/my-disputes', protect, disputeController.createDispute); // Reuse or filter in controller
+router.get('/my-disputes', protect, (req, res) => res.json([])); // Placeholder
 
 // Admin routes
 router.get('/admin/all', protect, disputeController.getAllDisputes);

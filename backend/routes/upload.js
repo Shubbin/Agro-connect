@@ -19,8 +19,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+import { protect } from '../middleware/auth.js';
+
 const router = Router();
 
-router.post('/', upload.single('file'), uploadHandler);
+router.post('/', protect, upload.single('file'), uploadHandler);
 
 export default router;

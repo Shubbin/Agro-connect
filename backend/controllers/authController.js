@@ -39,6 +39,13 @@ export const login = async (req, res) => {
   }
 };
 
+// 2. Request OTP (Stub for Direct Login)
+export const requestOtp = async (req, res) => {
+  const { email } = req.body;
+  console.log(`[Auth] OTP requested for ${email} - bypassing and returning success`);
+  res.json({ message: 'OTP sent to your email (Bypassed for development)' });
+};
+
 // 2. Verify OTP
 export const verifyOtp = async (req, res) => {
   const { email, token } = req.body;
@@ -80,15 +87,15 @@ export const updatePassword = async (req, res) => {
 };
 
 // 5. Legacy Login (Password-based)
-export const login = async (req, res) => {
+export const legacyLogin = async (req, res) => {
   const { email, password } = req.body;
   try {
     const { data: user, error } = await supabase.from('users').select('*').eq('email', email).single();
     if (error || !user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    const token = 'agro_token_' + crypto.randomBytes(20).toString('hex');
-    await supabase.from('users').update({ auth_token: token }).eq('id', user.id);
+    // Standardizing on User ID as the token to match enhanced middleware
+    const token = user.id;
     const { password: _pw, ...safeUser } = user;
     return res.json({ user: safeUser, token });
   } catch (err) {
@@ -100,15 +107,16 @@ export const login = async (req, res) => {
 export const register = async (req, res) => {
   const { name, email, password, role = 'user', phone = '' } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const token = 'agro_token_' + crypto.randomBytes(20).toString('hex');
 
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .insert([{ name, email, phone, password: hashedPassword, role, auth_token: token }])
+      .insert([{ name, email, phone, password: hashedPassword, role }])
       .select().single();
 
     if (error) throw error;
+    // Standardizing on User ID as the token to match enhanced middleware
+    const token = user.id;
     const { password: _pw, ...safeUser } = user;
     return res.json({ user: safeUser, token });
   } catch (err) {

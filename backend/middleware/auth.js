@@ -30,7 +30,8 @@ export const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    console.error('Auth Failure: System error', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Auth Failure: System error', message);
     res.status(401).json({ error: 'Authentication required: System error' });
   }
 };

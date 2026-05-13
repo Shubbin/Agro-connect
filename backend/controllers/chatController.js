@@ -1,23 +1,6 @@
 import { supabase } from '../config/db.js';
 
-const getUserIdFromToken = async (req) => {
-  const auth = req.headers.authorization ?? '';
-  const match = auth.match(/^Bearer\s+(.+)$/);
-  if (!match) return null;
-
-  try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_token', match[1])
-      .single();
-    
-    return user ? user.id : null;
-  } catch (err) {
-    console.error('getUserIdFromToken error:', err);
-    return null;
-  }
-};
+// Redundant helper removed - we now use req.user from the protect middleware
 
 export const getMessages = async (req, res) => {
   const conversationId = req.query.conversationId;
@@ -50,8 +33,8 @@ export const getMessages = async (req, res) => {
 };
 
 export const sendMessage = async (req, res) => {
-  const { receiverId, content = '', productId = null, mediaUrl = null, mediaType = null, senderId: inputSenderId } = req.body;
-  const senderId = (await getUserIdFromToken(req)) ?? inputSenderId ?? null;
+  const { receiverId, content = '', productId = null, mediaUrl = null, mediaType = null } = req.body;
+  const senderId = req.user?.id;
 
   const trimmedContent = content.trim();
 
@@ -86,8 +69,8 @@ export const sendMessage = async (req, res) => {
 };
 
 export const getConversations = async (req, res) => {
-  const userId = (await getUserIdFromToken(req)) ?? req.query.userId;
-  if (!userId) return res.json([]);
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
     // In Supabase/Postgres, we can use a more complex query or a view

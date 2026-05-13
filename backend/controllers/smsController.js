@@ -6,13 +6,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const logFile = path.join(__dirname, '../../logs/sms_gateway.log');
 
-// Ensure the logs directory exists
-fs.mkdirSync(path.dirname(logFile), { recursive: true });
+// Ensure the logs directory exists, but don't crash if it's not writable (e.g. on Render)
+try {
+  fs.mkdirSync(path.dirname(logFile), { recursive: true });
+} catch (err) {
+  console.warn('[SMS Gateway] Could not create logs directory:', err.message);
+}
 
 export const sendMockSms = (to, message) => {
   const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
   const logEntry = `[${timestamp}] TO: ${to} | MSG: ${message}\n`;
-  fs.appendFileSync(logFile, logEntry);
+  try {
+    fs.appendFileSync(logFile, logEntry);
+  } catch (err) {
+    console.warn('[SMS Gateway] Could not write to log file:', err.message);
+  }
 
   return {
     status: 'success',

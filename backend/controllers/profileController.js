@@ -1,21 +1,6 @@
 import { supabase } from '../config/db.js';
 
-const getUserIdFromToken = async (req) => {
-  const auth = req.headers.authorization ?? '';
-  const match = auth.match(/^Bearer\s+(.+)$/);
-  if (!match) return null;
-  try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_token', match[1])
-      .single();
-    return user ? user.id : null;
-  } catch (err) {
-    console.error('getUserIdFromToken error:', err);
-    return null;
-  }
-};
+// Redundant helper removed - we now use req.user from the protect middleware
 
 // ── Farmer helpers ──────────────────────────────────────────────────────────
 
@@ -356,13 +341,9 @@ const getAgroTrustBadges = (stats, role) => {
 };
 
 export const getProfile = async (req, res) => {
-  let userId = await getUserIdFromToken(req);
+  const userId = req.user?.id || req.query.userId;
   
-  if (!userId && req.query.userId) {
-     userId = req.query.userId;
-  }
-
-  if (!userId) return res.status(401).json({ error: 'Unauthorized or Invalid User ID' });
+  if (!userId) return res.status(401).json({ error: 'Unauthorized: User ID required' });
 
   try {
     const { data: user, error } = await supabase

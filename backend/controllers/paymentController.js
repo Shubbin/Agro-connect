@@ -1,4 +1,4 @@
-import Order from '../models/Order.js';
+import { supabase } from '../config/db.js';
 import crypto from 'crypto';
 
 export const process = async (req, res) => {
@@ -7,13 +7,14 @@ export const process = async (req, res) => {
   if (!orderId) return res.status(400).json({ message: 'Order ID required' });
 
   try {
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { payment_status: 'paid', status: 'confirmed' },
-      { new: true }
-    );
+    const { data: order, error } = await supabase
+      .from('orders')
+      .update({ payment_status: 'paid', status: 'confirmed' })
+      .eq('id', orderId)
+      .select()
+      .single();
 
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (error || !order) return res.status(404).json({ message: 'Order not found' });
 
     return res.json({
       success: true,

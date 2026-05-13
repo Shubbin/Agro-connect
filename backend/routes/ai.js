@@ -1,11 +1,10 @@
-import { Router } from 'express';
-import { handle } from '../controllers/aiController.js';
+import { protect } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/:action', handle);
-router.post('/:action', handle);
-router.get('/', handle);
-router.post('/', handle);
+router.get('/:action', protect, handle);
+router.post('/:action', protect, handle);
+router.get('/', protect, handle);
+router.post('/', protect, handle);
 
 export default router;

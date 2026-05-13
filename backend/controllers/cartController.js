@@ -1,27 +1,10 @@
 import { supabase } from '../config/db.js';
 
-const getUserIdFromToken = async (req) => {
-  const auth = req.headers.authorization ?? '';
-  const match = auth.match(/^Bearer\s+(.+)$/);
-  if (!match) return null;
-
-  try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_token', match[1])
-      .single();
-    
-    return user ? user.id : null;
-  } catch (err) {
-    console.error('getUserIdFromToken error:', err);
-    return null;
-  }
-};
+// Redundant helper removed - we now use req.user from the protect middleware
 
 export const get = async (req, res) => {
   try {
-    const userId = await getUserIdFromToken(req);
+    const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: 'Authentication required' });
 
     const { data: items, error } = await supabase
@@ -40,7 +23,7 @@ export const get = async (req, res) => {
 
 export const add = async (req, res) => {
   try {
-    const userId = await getUserIdFromToken(req);
+    const userId = req.user?.id;
     const { productId, quantity = 1 } = req.body;
 
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -121,7 +104,7 @@ export const remove = async (req, res) => {
 
 export const clear = async (req, res) => {
   try {
-    const userId = await getUserIdFromToken(req);
+    const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     const { error } = await supabase

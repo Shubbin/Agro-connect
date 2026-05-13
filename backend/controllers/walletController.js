@@ -6,6 +6,7 @@ export const getBalance = async (_req, res) => {
     const { data: availableData, error: availableError } = await supabase
       .from('orders')
       .select('total')
+      .eq('merchant_id', _req.user.id)
       .eq('payment_status', 'paid')
       .eq('escrow_status', 'released');
 
@@ -16,6 +17,7 @@ export const getBalance = async (_req, res) => {
     const { data: pendingData, error: pendingError } = await supabase
       .from('orders')
       .select('total')
+      .eq('merchant_id', _req.user.id)
       .eq('payment_status', 'paid')
       .eq('escrow_status', 'held');
 
@@ -38,6 +40,7 @@ export const getTransactions = async (_req, res) => {
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*')
+      .eq('merchant_id', _req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
