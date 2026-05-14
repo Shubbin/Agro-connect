@@ -57,7 +57,8 @@ export const register = async (req, res) => {
       email,
       password,
       options: {
-        data: { name, role, phone }
+        data: { name, role, phone },
+        emailRedirectTo: process.env.FRONTEND_URL || 'https://agro-connect-two.vercel.app/'
       }
     });
 
