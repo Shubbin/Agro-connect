@@ -86,3 +86,15 @@ export const register = async (req, res) => {
 export const logout = async (_req, res) => res.json({ message: 'Signed out' });
 export const forgotPassword = async (req, res) => res.json({ message: 'Reset email sent' });
 export const getProfile = async (req, res) => res.json(req.user);
+
+export const requestOtp = async (req, res) => {
+  res.json({ message: 'OTP sent' });
+};
+
+export const verifyOtp = async (req, res) => {
+  res.json({ message: 'OTP verified', token: 'mock-token' });
+};
+
+export const updatePassword = async (req, res) => {
+  res.json({ message: 'Password updated' });
+};
