@@ -35,7 +35,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(
   cors({
-    origin: true, // Reflect request origin
+    origin: ["https://agro-connect-two.vercel.app", "http://localhost:5173"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -44,6 +44,14 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+console.log('🚀 SERVER START: ENV HEALTH CHECK:', {
+  PORT,
+  HAS_SUPABASE_URL: !!process.env.SUPABASE_URL,
+  HAS_SUPABASE_ANON: !!process.env.SUPABASE_ANON_KEY,
+  HAS_SERVICE_ROLE: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  NODE_ENV: process.env.NODE_ENV || 'development'
+});
 
 // ── Static files ─────────────────────────────────────────────────────────────
 

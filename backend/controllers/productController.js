@@ -85,3 +85,21 @@ export const remove = async (req, res) => {
     return res.status(500).json({ message: 'Delete failed' });
   }
 };
+
+export const getByFarmer = async (req, res) => {
+  const { farmerId } = req.query;
+  if (!farmerId) return res.status(400).json({ message: 'Farmer ID required' });
+  
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('farmer_id', farmerId);
+    
+    if (error) throw error;
+    return res.json(data);
+  } catch (err) {
+    console.error('GetByFarmer error:', err);
+    return res.status(500).json({ message: 'Fetch farmer products failed' });
+  }
+};

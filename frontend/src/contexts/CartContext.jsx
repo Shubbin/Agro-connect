@@ -1,27 +1,35 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { cartAPI } from '@/services/api';
-
-
+import { supabase } from '@/lib/supabase';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
   const refreshCart = async () => {
     try {
-      const token = localStorage.getItem('agro_token');
-      if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      console.log("🔍 TRACE: AUTH READY:", !loadingAuth);
+      console.log("🔍 TRACE: SESSION EXISTS:", !!session);
+      console.log("🔍 TRACE: ACCESS TOKEN EXISTS:", !!session?.access_token);
+      
+      if (!session?.access_token) {
+        console.warn("⚠️ TRACE: No access token found. Skipping cart fetch.");
+        setItems([]);
         setIsLoading(false);
         return;
       }
 
+      console.log("🚀 TRACE: FETCHING CART WITH TOKEN:", session.access_token.substring(0, 10) + "...");
+      
       const cartItems = await cartAPI.get();
       setItems(Array.isArray(cartItems) ? cartItems : []);
     } catch (error) {
-      // Fail silently for initial load to prevent console clutter
-      console.log('Cart session cleared.');
+      console.error('❌ TRACE: Cart fetch failed:', error.message);
       setItems([]);
     } finally {
       setIsLoading(false);
@@ -29,12 +37,30 @@ export const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('agro_token');
-    if (token) {
-      refreshCart();
-    } else {
-      setIsLoading(false);
-    }
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("✅ TRACE: Initial Auth Check Complete. Session:", !!session);
+      setLoadingAuth(false);
+      if (session) {
+        refreshCart();
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("🔄 TRACE: Auth State Changed. Session:", !!session);
+      if (session) {
+        refreshCart();
+      } else {
+        setItems([]);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const addItem = async (productId, quantity) => {

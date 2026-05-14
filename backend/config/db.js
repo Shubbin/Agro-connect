@@ -9,6 +9,13 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('❌ CRITICAL: Missing Supabase URL or Service Role Key in .env');
 }
 
+console.log('🔍 BACKEND: ENV CHECK:', {
+  hasUrl: !!supabaseUrl,
+  hasService: !!supabaseKey,
+  hasAnon: !!process.env.SUPABASE_ANON_KEY
+});
+console.log('🔍 BACKEND: SUPABASE URL:', supabaseUrl);
+
 export const supabase = (supabaseUrl && supabaseKey) 
   ? createClient(supabaseUrl, supabaseKey, {
       auth: {

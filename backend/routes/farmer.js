@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getByFarmer } from '../controllers/productController.js';
-import { getAll as getFarmerOrders } from '../controllers/orderController.js';
+import { getFarmerOrders } from '../controllers/orderController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();
