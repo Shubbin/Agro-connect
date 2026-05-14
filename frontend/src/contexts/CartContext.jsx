@@ -11,10 +11,18 @@ export const CartProvider = ({ children }) => {
 
   const refreshCart = async () => {
     try {
+      const token = localStorage.getItem('agro_token');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
       const cartItems = await cartAPI.get();
-      setItems(cartItems);
+      setItems(Array.isArray(cartItems) ? cartItems : []);
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
+      // Fail silently for initial load to prevent console clutter
+      console.log('Cart session cleared.');
+      setItems([]);
     } finally {
       setIsLoading(false);
     }
