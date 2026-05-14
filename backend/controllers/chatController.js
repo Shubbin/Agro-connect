@@ -1,6 +1,5 @@
-import { supabase } from '../config/db.js';
-
-// Redundant helper removed - we now use req.user from the protect middleware
+import Message from '../models/Message.js';
+import User from '../models/User.js';
 
 export const getMessages = async (req, res) => {
   const conversationId = req.query.conversationId;
@@ -12,119 +11,88 @@ export const getMessages = async (req, res) => {
   const [id1, id2] = parts;
 
   try {
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*, sender:users(name)')
-      .or(`and(sender_id.eq.${id1},receiver_id.eq.${id2}),and(sender_id.eq.${id2},receiver_id.eq.${id1})`)
-      .order('timestamp', { ascending: true });
-
-    if (error) throw error;
+    const messages = await Message.find({
+      $or: [
+        { sender: id1, receiver: id2 },
+        { sender: id2, receiver: id1 }
+      ]
+    }).populate('sender', 'name').sort({ timestamp: 1 });
 
     const formatted = messages.map(m => ({
-      ...m,
+      ...m.toObject(),
       senderName: m.sender?.name
     }));
 
     return res.json(formatted);
   } catch (err) {
-    console.error('Get messages error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const sendMessage = async (req, res) => {
   const { receiverId, content = '', productId = null, mediaUrl = null, mediaType = null } = req.body;
-  const senderId = req.user?.id;
-
-  const trimmedContent = content.trim();
-
-  if (!senderId || !receiverId || (!trimmedContent && !mediaUrl)) {
-    return res.status(400).json({ error: 'senderId, receiverId and (content or media) are required' });
-  }
+  const senderId = req.user?._id;
 
   try {
-    const { data: message, error } = await supabase
-      .from('messages')
-      .insert([{
-        sender_id: senderId,
-        receiver_id: receiverId,
-        content: trimmedContent,
-        product_id: productId,
-        media_url: mediaUrl,
-        media_type: mediaType
-      }])
-      .select('*, sender:users(name)')
-      .single();
+    const message = new Message({
+      sender: senderId,
+      receiver: receiverId,
+      content,
+      product: productId,
+      media_url: mediaUrl,
+      media_type: mediaType
+    });
 
-    if (error) throw error;
+    await message.save();
+    const populated = await Message.findById(message._id).populate('sender', 'name');
 
     return res.json({
-      ...message,
-      senderName: message.sender?.name
+      ...populated.toObject(),
+      senderName: populated.sender?.name
     });
   } catch (err) {
-    console.error('Send message error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const getConversations = async (req, res) => {
-  const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-
+  const userId = req.user?._id;
   try {
-    // In Supabase/Postgres, we can use a more complex query or a view
-    // For MVP, we'll fetch all messages for the user and group them in JS
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*, sender:users(id, name, role, is_verified), receiver:users(id, name, role, is_verified)')
-      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-      .order('timestamp', { ascending: false });
-
-    if (error) throw error;
+    const messages = await Message.find({
+      $or: [{ sender: userId }, { receiver: userId }]
+    }).populate('sender', 'name role is_verified').populate('receiver', 'name role is_verified').sort({ timestamp: -1 });
 
     const conversationsMap = new Map();
 
     messages.forEach(m => {
-      const partner = m.sender_id === userId ? m.receiver : m.sender;
+      const partner = m.sender._id.toString() === userId.toString() ? m.receiver : m.sender;
       if (!partner) return;
 
-      if (!conversationsMap.has(partner.id)) {
-        conversationsMap.set(partner.id, {
-          id: `${userId}_${partner.id}`,
-          participantId: partner.id,
+      if (!conversationsMap.has(partner._id.toString())) {
+        conversationsMap.set(partner._id.toString(), {
+          id: `${userId}_${partner._id}`,
+          participantId: partner._id,
           participantName: partner.name,
           participantRole: partner.role,
-          isVerified: Boolean(partner.is_verified),
+          isVerified: partner.is_verified,
           lastMessage: m.content,
-          unread: (!m.is_read && m.receiver_id === userId) ? 1 : 0,
+          unread: (!m.is_read && m.receiver._id.toString() === userId.toString()) ? 1 : 0,
           timestamp: m.timestamp
         });
-      } else {
-        if (!m.is_read && m.receiver_id === userId) {
-          conversationsMap.get(partner.id).unread += 1;
-        }
       }
     });
 
     return res.json(Array.from(conversationsMap.values()));
   } catch (err) {
-    console.error('Get conversations error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
 export const getUsers = async (_req, res) => {
   try {
-    const { data: users, error } = await supabase
-      .from('users')
-      .select('id, name, role, is_verified, verification_status')
-      .eq('role', 'farmer');
-
-    if (error) throw error;
+    const users = await User.find({ role: 'farmer' }).select('name role is_verified');
     return res.json(users);
   } catch (err) {
-    console.error('Get chat users error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
