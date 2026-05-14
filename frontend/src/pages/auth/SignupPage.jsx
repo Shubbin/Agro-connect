@@ -7,8 +7,9 @@ import { cn } from '@/lib/utils';
 import { Leaf, Check, User, Tractor, ArrowRight, Eye, EyeOff, Sparkles, Star, ShieldCheck, Mail, Phone, Lock, ArrowLeft } from 'lucide-react';
 
 export const SignupPage = () => {
-  const [step, setStep] = useState('role');
+  const [step, setStep] = useState('role'); // 'role', 'details', 'otp'
   const [role, setRole] = useState(null);
+  const [otpToken, setOtpToken] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export const SignupPage = () => {
     confirmPassword: '',
   });
 
-  const { signUp } = useAuth();
+  const { signUp, requestOtp, verifyOtp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -28,40 +29,42 @@ export const SignupPage = () => {
     setStep('details');
   };
 
-  const handleSubmit = async (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: 'Passwords do not match',
-        description: 'Please make sure your passwords match.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!role) return;
-
     setIsLoading(true);
     try {
-      await signUp({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        role,
-        phone: formData.phone,
-      });
-      
+      await verifyOtp(formData.email, otpToken);
       toast({
-        title: 'Signup successful',
-        description: 'Please sign in with your credentials.',
+        title: 'Welcome to Agro-Direct!',
+        description: 'Your account is now verified.',
       });
-      
-      navigate('/login');
+      navigate(role === 'farmer' ? '/farmer/dashboard' : '/marketplace');
+    } catch (error) {
+      toast({
+        title: 'Verification failed',
+        description: 'Invalid or expired OTP code.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      // 1. Send OTP (this also registers the user if they don't exist)
+      await requestOtp(formData.email);
+      setStep('otp');
+      toast({
+        title: 'Verification Code Sent',
+        description: 'Check your email for the 6-digit code.',
+      });
     } catch (error) {
       toast({
         title: 'Registration failed',
-        description: 'Something went wrong. Please try again.',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -204,110 +207,73 @@ export const SignupPage = () => {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
+            <form onSubmit={step === 'details' ? handleSubmit : handleVerifyOtp} className="space-y-8 animate-fade-in">
               <div className="space-y-4">
                 <button
                   type="button"
-                  onClick={() => setStep('role')}
+                  onClick={() => setStep(step === 'otp' ? 'details' : 'role')}
                   className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-4 group"
                 >
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  Change Role
+                  {step === 'otp' ? 'Back to Details' : 'Change Role'}
                 </button>
                 <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-[0.95]">
-                  Tell us <span className="text-gradient">a bit more</span>
+                  {step === 'otp' ? 'Verify your' : 'Tell us'} <span className="text-gradient">{step === 'otp' ? 'Email' : 'a bit more'}</span>
                 </h2>
                 <p className="text-lg text-muted-foreground font-medium uppercase tracking-wider text-[10px]">
-                  Finishing your {role} setup
+                  {step === 'otp' ? 'We sent a code to your inbox' : `Finishing your ${role} setup`}
                 </p>
               </div>
 
               <div className="grid gap-6">
-                {[
-                   { label: 'Your Full Name', type: 'text', key: 'name', placeholder: 'Kenedy Okoro', icon: User },
-                   { label: 'Your Email', type: 'email', key: 'email', placeholder: 'kenedy@agrodirect.ng', icon: Mail },
-                   { label: 'Your Phone Number', type: 'tel', key: 'phone', placeholder: '+234 812 345 6789', icon: Phone }
-                ].map((field) => (
-                  <div key={field.key} className="space-y-2 group">
+                {step === 'details' ? (
+                  <>
+                    {[
+                       { label: 'Your Full Name', type: 'text', key: 'name', placeholder: 'Kenedy Okoro', icon: User },
+                       { label: 'Your Email', type: 'email', key: 'email', placeholder: 'kenedy@agrodirect.ng', icon: Mail },
+                       { label: 'Your Phone Number', type: 'tel', key: 'phone', placeholder: '+234 812 345 6789', icon: Phone }
+                    ].map((field) => (
+                      <div key={field.key} className="space-y-2 group">
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
+                          {field.label}
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <field.icon className="w-5 h-5" />
+                          </div>
+                          <input
+                            type={field.type}
+                            required
+                            value={formData[field.key]}
+                            onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                            className="w-full h-16 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground placeholder:font-medium placeholder:text-muted-foreground/50"
+                            placeholder={field.placeholder}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="space-y-2 group animate-in slide-in-from-bottom-2 duration-500">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                      {field.label}
+                      6-Digit Verification Code
                     </label>
                     <div className="relative">
                       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                        <field.icon className="w-5 h-5" />
+                        <Check className="w-6 h-6 text-primary" />
                       </div>
                       <input
-                        type={field.type}
+                        type="text"
                         required
-                        value={formData[field.key]}
-                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                        className="w-full h-16 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground placeholder:font-medium placeholder:text-muted-foreground/50"
-                        placeholder={field.placeholder}
+                        maxLength={6}
+                        value={otpToken}
+                        onChange={(e) => setOtpToken(e.target.value)}
+                        className="w-full h-18 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg tracking-[0.5em]"
+                        placeholder="000000"
                       />
                     </div>
                   </div>
-                ))}
-
-                <div className="space-y-2 group">
-                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Create a Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full h-16 pl-14 pr-14 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div className="space-y-2 group">
-                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Type Password Again
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      className={cn(
-                        "w-full h-16 pl-14 pr-14 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground",
-                        formData.confirmPassword && formData.confirmPassword !== formData.password
-                          ? "border-destructive/50 bg-destructive/5"
-                          : formData.confirmPassword && formData.confirmPassword === formData.password
-                          ? "border-primary/50"
-                          : ""
-                      )}
-                      placeholder="••••••••"
-                    />
-                    {formData.confirmPassword && (
-                      <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                        {formData.confirmPassword === formData.password
-                          ? <Check className="w-5 h-5 text-primary" />
-                          : <span className="text-[10px] font-black text-destructive uppercase tracking-widest whitespace-nowrap">No match</span>
-                        }
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
 
               <div className="pt-4">
@@ -317,7 +283,7 @@ export const SignupPage = () => {
                   className="w-full h-18 rounded-[1.25rem] btn-premium text-lg font-black tracking-tight"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Joining...' : 'Join Now'}
+                  {isLoading ? 'Processing...' : (step === 'details' ? 'Join Now' : 'Verify & Join')}
                 </Button>
               </div>
 
