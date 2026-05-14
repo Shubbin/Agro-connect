@@ -9,25 +9,36 @@ export const login = async (req, res) => {
   }
 
   try {
-    const { data: user, error } = await supabase
+    // 1. Authenticate with Supabase Auth (returns a real JWT)
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      console.error('❌ TRACE [LOGIN]: Supabase Auth Error:', authError.message);
+      return res.status(401).json({ error: authError.message });
+    }
+
+    // 2. Fetch extra profile data from public.users
+    const { data: user, error: dbError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .eq('id', authData.user.id)
       .single();
     
-    if (error || !user) {
-      return res.status(404).json({ error: 'Account not found' });
+    if (dbError || !user) {
+      console.warn('⚠️ TRACE [LOGIN]: User authenticated but no profile found in public.users');
     }
 
-    const isMatch = bcrypt.compareSync(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    // Standardizing on User ID as the token
-    const { password: _pw, ...safeUser } = user;
-    res.json({ message: 'Login successful', user: safeUser, token: user.id });
+    console.log('✅ TRACE [LOGIN]: Success. Token issued.');
+    res.json({ 
+      message: 'Login successful', 
+      user: user || authData.user, 
+      token: authData.session.access_token 
+    });
   } catch (error) {
+    console.error('❌ TRACE [LOGIN]: System Error:', error.message);
     res.status(500).json({ error: 'Login failed. Please try again later.' });
   }
 };
@@ -41,27 +52,33 @@ export const register = async (req, res) => {
   }
 
   try {
-    // Check if user already exists
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single();
+    // 1. Sign up with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name, role, phone }
+      }
+    });
 
-    if (existing) {
-      return res.status(400).json({ error: 'An account with this email already exists' });
+    if (authError) {
+      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', authError.message);
+      return res.status(400).json({ error: authError.message });
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    
-    // Insert new user - REQUIRES SERVICE ROLE KEY
-    const { data: newUser, error } = await supabase
+    if (!authData.user) {
+      throw new Error('Registration failed: No user data returned');
+    }
+
+    // 2. Insert into public.users for relational data
+    const { data: newUser, error: dbError } = await supabase
       .from('users')
       .insert([{ 
+        id: authData.user.id, 
         name, 
         email, 
         phone, 
-        password: hashedPassword, 
+        password: 'SUPABASE_AUTH_MANAGED',
         role,
         is_verified: false,
         verification_status: 'pending'
@@ -69,20 +86,17 @@ export const register = async (req, res) => {
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ TRACE [REGISTRATION]: Supabase Insertion Error:', error);
-      console.error('🔍 TRACE [REGISTRATION]: Details:', {
-        code: error.code,
-        message: error.message,
-        hint: error.hint
-      });
-      throw new Error(error.message);
+    if (dbError) {
+      console.error('❌ TRACE [REGISTRATION]: public.users sync error:', dbError);
     }
 
-    const { password: _pw, ...safeUser } = newUser;
-    return res.json({ user: safeUser, token: newUser.id });
+    console.log('✅ TRACE [REGISTRATION]: Success');
+    return res.json({ 
+      user: newUser || authData.user, 
+      token: authData.session?.access_token || 'CHECK_EMAIL_FOR_CONFIRMATION'
+    });
   } catch (err) {
-    console.error('[REGISTRATION] System Error:', err.message);
+    console.error('❌ TRACE [REGISTRATION]: System Error:', err.message);
     res.status(500).json({ error: 'Registration failed: ' + err.message });
   }
 };
