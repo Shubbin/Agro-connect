@@ -96,7 +96,8 @@ app.use((_req, res) => {
 import fetch from 'node-fetch';
 
 app.listen(PORT, () => {
-  console.log(`🚀 Agro Direct Connect API (Supabase) running on http://localhost:${PORT}`);
+  const serverUrl = process.env.BACKEND_URL || `https://agro-connect-pj6c.onrender.com`;
+  console.log(`🚀 Agro Direct Connect API (Supabase) is LIVE on ${serverUrl}`);
   
   // Keep-alive logic for Render (Free Tier)
   const url = process.env.BACKEND_URL || `http://localhost:${PORT}`;
