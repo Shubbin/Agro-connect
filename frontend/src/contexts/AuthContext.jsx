@@ -67,6 +67,18 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
   };
 
+  const requestOtp = async (email) => {
+    return await authAPI.requestOtp(email);
+  };
+
+  const verifyOtp = async (email, token) => {
+    const response = await authAPI.verifyOtp(email, token);
+    localStorage.setItem('agro_user', JSON.stringify(response.user));
+    localStorage.setItem('agro_token', response.token);
+    setUser(response.user);
+    return response;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -76,6 +88,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         signUp,
+        requestOtp,
+        verifyOtp,
         logout,
         updateUser,
       }}

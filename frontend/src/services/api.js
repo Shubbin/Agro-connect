@@ -81,6 +81,20 @@ export const authAPI = {
     return apiRequest(`/auth/verify-email?token=${token}`);
   },
 
+  requestOtp: async (email) => {
+    return apiRequest('/auth/otp/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyOtp: async (email, token) => {
+    return apiRequest('/auth/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify({ email, token }),
+    });
+  },
+
   logout: async () => {
     return apiRequest('/auth/logout', { method: 'POST' });
   },
