@@ -63,7 +63,11 @@ export const register = async (req, res) => {
     });
 
     if (authError) {
-      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', authError.message);
+      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', {
+        message: authError.message,
+        status: authError.status,
+        code: authError.code
+      });
       return res.status(400).json({ error: authError.message });
     }
 
