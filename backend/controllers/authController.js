@@ -106,21 +106,38 @@ export const legacyLogin = async (req, res) => {
 // 6. Legacy Register
 export const register = async (req, res) => {
   const { name, email, password, role = 'user', phone = '' } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  
+  if (!email || !password || !name) {
+    return res.status(400).json({ message: 'Name, email and password are required' });
+  }
 
   try {
+    // Check if user already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'A user with this email already exists' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
     const { data: user, error } = await supabase
       .from('users')
       .insert([{ name, email, phone, password: hashedPassword, role }])
       .select().single();
 
     if (error) throw error;
+    
     // Standardizing on User ID as the token to match enhanced middleware
     const token = user.id;
     const { password: _pw, ...safeUser } = user;
     return res.json({ user: safeUser, token });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Registration error:', err.message);
+    res.status(500).json({ message: 'Could not complete registration. Please try again.' });
   }
 };
 

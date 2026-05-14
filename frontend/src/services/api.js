@@ -20,6 +20,17 @@ export const apiRequest = async (endpoint, options = {}) => {
     },
   });
   
+  if (response.status === 401) {
+    // Clear stale session if unauthorized
+    const currentToken = localStorage.getItem('agro_token');
+    if (currentToken) {
+      console.warn('Unauthorized request. Clearing stale session.');
+      localStorage.removeItem('agro_token');
+      localStorage.removeItem('agro_user');
+      // Optional: window.location.href = '/login'; 
+    }
+  }
+  
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'API error' }));
     throw new Error(error.message || 'API error');
