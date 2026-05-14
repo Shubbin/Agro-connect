@@ -11,6 +11,9 @@ export const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem('agro_token');
   const url = `${API_BASE_URL}${endpoint}`;
   
+  console.log(`🚀 TRACE [API]: Requesting ${endpoint}`);
+  console.log(`🔍 TRACE [API]: Current LocalStorage Token:`, token ? token.substring(0, 10) + "..." : "MISSING");
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -21,6 +24,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   });
   
   if (response.status === 401) {
+    console.error(`❌ TRACE [API]: 401 Unauthorized for ${endpoint}`);
     // Clear stale session if unauthorized
     const currentToken = localStorage.getItem('agro_token');
     if (currentToken) {

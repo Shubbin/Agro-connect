@@ -70,7 +70,12 @@ export const register = async (req, res) => {
       .single();
 
     if (error) {
-      console.error('[REGISTRATION] Supabase Error:', error);
+      console.error('❌ TRACE [REGISTRATION]: Supabase Insertion Error:', error);
+      console.error('🔍 TRACE [REGISTRATION]: Details:', {
+        code: error.code,
+        message: error.message,
+        hint: error.hint
+      });
       throw new Error(error.message);
     }
 
