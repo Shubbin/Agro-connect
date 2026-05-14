@@ -1,61 +1,88 @@
-import User from '../models/User.js';
+import { supabase } from '../config/db.js';
 import bcrypt from 'bcryptjs';
 
-// 1. Direct Login
+// 1. Login
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
 
   try {
-    const user = await User.findOne({ email });
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
     
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    if (error || !user) {
+      return res.status(404).json({ error: 'Account not found' });
     }
 
-    if (password && !bcrypt.compareSync(password, user.password)) {
-      return res.status(401).json({ error: 'Invalid password' });
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // Standardizing on User ID as the token
-    res.json({ message: 'Login successful', user, token: user._id });
+    const { password: _pw, ...safeUser } = user;
+    res.json({ message: 'Login successful', user: safeUser, token: user.id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Login failed. Please try again later.' });
   }
 };
 
-// 2. Legacy Register
+// 2. Register
 export const register = async (req, res) => {
   const { name, email, password, role = 'user', phone = '' } = req.body;
 
+  if (!email || !password || !name) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Check if user already exists
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existing) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = new User({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      role
-    });
+    
+    // Insert new user - REQUIRES SERVICE ROLE KEY
+    const { data: newUser, error } = await supabase
+      .from('users')
+      .insert([{ 
+        name, 
+        email, 
+        phone, 
+        password: hashedPassword, 
+        role,
+        is_verified: false,
+        verification_status: 'pending'
+      }])
+      .select()
+      .single();
 
-    await newUser.save();
+    if (error) {
+      console.error('[REGISTRATION] Supabase Error:', error);
+      throw new Error(error.message);
+    }
 
-    const token = newUser._id;
-    return res.json({ user: newUser, token });
+    const { password: _pw, ...safeUser } = newUser;
+    return res.json({ user: safeUser, token: newUser.id });
   } catch (err) {
-    console.error('Registration error:', err.message);
-    res.status(500).json({ message: 'Could not complete registration' });
+    console.error('[REGISTRATION] System Error:', err.message);
+    res.status(500).json({ error: 'Registration failed: ' + err.message });
   }
 };
 
-// Stubs for other auth functions
-export const requestOtp = async (req, res) => res.json({ message: 'Bypassed' });
-export const verifyOtp = async (req, res) => res.json({ message: 'Bypassed' });
-export const forgotPassword = async (req, res) => res.json({ message: 'Reset link sent' });
-export const updatePassword = async (req, res) => res.json({ message: 'Password updated' });
+// Helpers
 export const logout = async (_req, res) => res.json({ message: 'Signed out' });
+export const forgotPassword = async (req, res) => res.json({ message: 'Reset email sent' });
+export const getProfile = async (req, res) => res.json(req.user);

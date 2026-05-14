@@ -1,31 +1,24 @@
-import Product from '../models/Product.js';
+import { supabase } from '../config/db.js';
 
 export const getAll = async (req, res) => {
   const { category = 'all', location = 'All Locations', search = '' } = req.query;
 
   try {
-    let filter = {};
+    let query = supabase
+      .from('products')
+      .select('*, farmer:users(name, is_verified, verification_status)');
 
-    if (category !== 'all') {
-      filter.category = category;
-    }
-
-    if (location !== 'All Locations') {
-      filter.location = location;
-    }
-
+    if (category !== 'all') query = query.eq('category', category);
+    if (location !== 'All Locations') query = query.eq('location', location);
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } }
-      ];
+      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    const products = await Product.find(filter).populate('farmer', 'name is_verified verification_status');
+    const { data: products, error } = await query;
+    if (error) throw error;
 
     const formatted = products.map(p => ({
-      ...p.toObject(),
+      ...p,
       farmerName: p.farmer?.name,
       farmerVerified: p.farmer?.is_verified,
       farmerStatus: p.farmer?.verification_status
@@ -33,102 +26,62 @@ export const getAll = async (req, res) => {
 
     return res.json(formatted);
   } catch (err) {
-    console.error('GetAll products error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Fetch products failed' });
   }
 };
 
 export const getById = async (req, res) => {
-  const { id } = req.params;
   try {
-    const product = await Product.findById(id).populate('farmer', 'name is_verified verification_status');
-    if (!product) return res.json(null);
-
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, farmer:users(name, is_verified, verification_status)')
+      .eq('id', req.params.id)
+      .single();
+    if (error) return res.json(null);
     return res.json({
-      ...product.toObject(),
-      farmerName: product.farmer?.name,
-      farmerVerified: product.farmer?.is_verified,
-      farmerStatus: product.farmer?.verification_status
+      ...data,
+      farmerName: data.farmer?.name,
+      farmerVerified: data.farmer?.is_verified
     });
   } catch (err) {
-    console.error('GetById product error:', err);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
-
-export const getByFarmer = async (req, res) => {
-  const farmerId = req.params.farmerId ?? req.query.farmerId;
-  try {
-    const products = await Product.find({ farmer: farmerId }).populate('farmer', 'name is_verified verification_status');
-    
-    const formatted = products.map(p => ({
-      ...p.toObject(),
-      farmerName: p.farmer?.name,
-      farmerVerified: p.farmer?.is_verified,
-      farmerStatus: p.farmer?.verification_status
-    }));
-
-    return res.json(formatted);
-  } catch (err) {
-    console.error('GetByFarmer products error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Fetch product failed' });
   }
 };
 
 export const create = async (req, res) => {
-  const { farmerId, name, price, ...other } = req.body;
-
-  if (!farmerId) return res.status(401).json({ message: 'Unauthorized: Farmer ID required' });
-  if (!name || !price) return res.status(400).json({ message: 'Name and price are required' });
-
   try {
-    const product = new Product({
-      farmer: farmerId,
-      name,
-      price,
-      ...other
-    });
-
-    await product.save();
-    const populated = await Product.findById(product._id).populate('farmer', 'name is_verified verification_status');
-
-    return res.json({
-      ...populated.toObject(),
-      farmerName: populated.farmer?.name,
-      farmerVerified: populated.farmer?.is_verified,
-      farmerStatus: populated.farmer?.verification_status
-    });
+    const { data, error } = await supabase
+      .from('products')
+      .insert([req.body])
+      .select()
+      .single();
+    if (error) throw error;
+    return res.json(data);
   } catch (err) {
-    console.error('Create product error:', err);
-    return res.status(500).json({ message: 'Error creating product' });
+    return res.status(500).json({ message: 'Create failed' });
   }
 };
 
 export const update = async (req, res) => {
-  const { id } = req.params;
   try {
-    const product = await Product.findByIdAndUpdate(id, req.body, { new: true }).populate('farmer', 'name is_verified verification_status');
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-
-    return res.json({
-      ...product.toObject(),
-      farmerName: product.farmer?.name,
-      farmerVerified: product.farmer?.is_verified,
-      farmerStatus: product.farmer?.verification_status
-    });
+    const { data, error } = await supabase
+      .from('products')
+      .update(req.body)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return res.json(data);
   } catch (err) {
-    console.error('Update product error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Update failed' });
   }
 };
 
 export const remove = async (req, res) => {
-  const { id } = req.params;
   try {
-    await Product.findByIdAndDelete(id);
-    return res.json({ message: 'Product deleted' });
+    await supabase.from('products').delete().eq('id', req.params.id);
+    return res.json({ success: true });
   } catch (err) {
-    console.error('Remove product error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Delete failed' });
   }
 };
