@@ -58,7 +58,7 @@ export const register = async (req, res) => {
       password,
       options: {
         data: { name, role, phone },
-        emailRedirectTo: process.env.FRONTEND_URL || 'https://agro-connect-two.vercel.app/'
+        emailRedirectTo: 'https://agro-connect-two.vercel.app/'
       }
     });
 
