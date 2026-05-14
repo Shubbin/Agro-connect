@@ -108,11 +108,63 @@ export const forgotPassword = async (req, res) => res.json({ message: 'Reset ema
 export const getProfile = async (req, res) => res.json(req.user);
 
 export const requestOtp = async (req, res) => {
-  res.json({ message: 'OTP sent' });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  console.log(`🚀 TRACE [OTP]: Requesting OTP for ${email}`);
+  
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      }
+    });
+
+    if (error) {
+      console.error('❌ TRACE [OTP]: Supabase Error:', error.message);
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ message: 'OTP sent successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'OTP request failed' });
+  }
 };
 
 export const verifyOtp = async (req, res) => {
-  res.json({ message: 'OTP verified', token: 'mock-token' });
+  const { email, token } = req.body;
+  if (!email || !token) return res.status(400).json({ error: 'Email and token are required' });
+
+  console.log(`🚀 TRACE [OTP]: Verifying OTP for ${email}`);
+
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    });
+
+    if (error) {
+      console.error('❌ TRACE [OTP]: Verification Failed:', error.message);
+      return res.status(401).json({ error: error.message });
+    }
+
+    // Ensure user exists in public.users table (optional but good for your relational data)
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    res.json({ 
+      message: 'Verified', 
+      user: profile || data.user, 
+      token: data.session.access_token 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Verification failed' });
+  }
 };
 
 export const updatePassword = async (req, res) => {
