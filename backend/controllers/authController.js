@@ -14,6 +14,7 @@ export const login = async (req, res) => {
     });
 
     if (authError) {
+      console.error('❌ TRACE [LOGIN]: Auth Failed:', authError.message);
       return res.status(401).json({ error: authError.message });
     }
 
