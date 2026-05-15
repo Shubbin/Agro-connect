@@ -130,14 +130,14 @@ const AIAssistantPage = () => {
 
   return (
     <MainLayout hideFooter hideAI>
-      <div className="h-[calc(100vh-4.5rem)] flex bg-background relative overflow-hidden">
+      <div className="h-[calc(100dvh-4rem)] md:h-[calc(100vh-4.5rem)] flex bg-background relative overflow-hidden">
         {/* Ambient background effect */}
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
         {/* Sidebar - History */}
         <div className={cn(
-          "w-80 border-r border-border/30 bg-background/50 backdrop-blur-2xl flex flex-col relative z-30 transition-all duration-500",
+          "w-72 md:w-80 border-r border-border/30 bg-background/50 backdrop-blur-2xl flex flex-col relative z-40 transition-all duration-500 shadow-2xl md:shadow-none",
           "fixed inset-y-0 left-0 md:relative md:flex",
           showHistory ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
@@ -196,30 +196,30 @@ const AIAssistantPage = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 relative">
           {/* Header */}
-          <div className="p-4 md:p-8 border-b border-border/30 backdrop-blur-xl flex items-center justify-between relative z-20">
-            <div className="flex items-center gap-4 md:gap-6">
+          <div className="p-4 md:p-8 border-b border-border/30 backdrop-blur-xl flex items-center justify-between sticky top-0 bg-white/80 z-30">
+            <div className="flex items-center gap-3 md:gap-6">
               <button 
                 onClick={() => setShowHistory(true)}
-                className="md:hidden w-12 h-12 glass-premium rounded-2xl flex items-center justify-center text-muted-foreground hover:text-primary transition-all"
+                className="md:hidden w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-muted-foreground hover:text-primary transition-all"
               >
-                <History className="w-6 h-6" />
+                <History className="w-5 h-5" />
               </button>
-              <Link to="/" className="hidden sm:flex w-12 h-12 glass-premium rounded-2xl items-center justify-center text-muted-foreground hover:text-primary active:scale-90 transition-all">
-                <ArrowLeft className="w-6 h-6" />
+              <Link to="/" className="hidden sm:flex w-10 h-10 md:w-12 md:h-12 glass-premium rounded-xl md:rounded-2xl items-center justify-center text-muted-foreground hover:text-primary active:scale-90 transition-all">
+                <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
               </Link>
               <div className="relative">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
-                  <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-white animate-pulse" />
+                <div className="w-10 h-10 md:w-14 md:h-14 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
+                  <Sparkles className="w-5 h-5 md:w-8 md:h-8 text-white animate-pulse" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-green-500 border-4 border-white rounded-full" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 md:w-5 md:h-5 bg-green-500 border-2 md:border-4 border-white rounded-full" />
               </div>
               <div>
-                <h2 className="text-lg md:text-2xl font-black text-foreground tracking-tighter uppercase leading-none mb-1 truncate max-w-[150px] md:max-w-none">
-                  {activeSession ? activeSession.title : "Agro Intelligence"}
+                <h2 className="text-sm md:text-2xl font-black text-foreground tracking-tighter uppercase leading-none mb-1 truncate max-w-[120px] md:max-w-none">
+                  {activeSession ? activeSession.title : "AgroBot AI"}
                 </h2>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-3 h-3 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Llama-3 Powered Core</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Zap className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary" />
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground">Intelligence</span>
                 </div>
               </div>
             </div>
@@ -243,19 +243,19 @@ const AIAssistantPage = () => {
                 className={cn("flex gap-4 md:gap-6 animate-fade-in-up", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}
               >
                 <div className={cn(
-                  "w-10 h-10 md:w-12 md:h-12 rounded-2xl shrink-0 flex items-center justify-center shadow-lg transition-transform hover:scale-110",
+                  "w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl shrink-0 flex items-center justify-center shadow-lg transition-transform hover:scale-110",
                   msg.role === 'user' ? "bg-secondary" : "bg-primary"
                 )}>
-                  {msg.role === 'user' ? <User className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" /> : <Bot className="w-5 h-5 md:w-6 md:h-6 text-white" />}
+                  {msg.role === 'user' ? <User className="w-4 h-4 md:w-6 md:h-6 text-muted-foreground" /> : <Bot className="w-4 h-4 md:w-6 md:h-6 text-white" />}
                 </div>
                 <div className={cn(
-                  "max-w-[85%] md:max-w-2xl px-5 md:px-8 py-4 md:py-6 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl transition-all duration-500",
+                  "max-w-[85%] md:max-w-2xl px-4 md:px-8 py-3 md:py-6 rounded-[1.25rem] md:rounded-[2.5rem] shadow-2xl transition-all duration-500",
                   msg.role === 'user' 
                     ? "bg-white text-foreground border border-border/50 rounded-tr-none hover:border-primary/20" 
                     : "glass-premium bg-white/50 text-foreground rounded-tl-none border-primary/10 hover:bg-white/80"
                 )}>
                   <p className="text-sm md:text-lg font-medium leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                  <span className="text-[10px] font-black uppercase tracking-widest mt-4 block text-muted-foreground opacity-50">
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-3 md:mt-4 block text-muted-foreground opacity-50">
                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { AITipCard } from '@/components/ai/AITipCard';
 import { walletAPI, ordersAPI, productsAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Package, ShoppingCart, Wallet, MessageCircle, ArrowRight, Leaf, Sparkles, ShieldCheck } from 'lucide-react';
+import { Plus, Package, ShoppingCart, Wallet, MessageCircle, ArrowRight, Leaf, Sparkles, ShieldCheck, TrendingUp, BarChart3, Activity } from 'lucide-react';
 import { VerificationBadge } from '@/components/ui/VerificationBadge';
+import { cn } from '@/lib/utils';
 
 export const FarmerDashboardPage = () => {
   const { user } = useAuth();
@@ -39,139 +39,155 @@ export const FarmerDashboardPage = () => {
 
   return (
     <MainLayout>
-      <div className="relative min-h-screen bg-background">
-        {/* Abstract Background Orbs */}
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[30%] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="relative min-h-screen bg-background pb-32">
+        {/* Cinematic Backdrop */}
+        <div className="absolute top-0 right-0 w-full h-[60vh] bg-[radial-gradient(circle_at_80%_20%,rgba(0,100,0,0.05),transparent)] pointer-events-none" />
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fade-in">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
-                <Leaf className="w-3 h-3" />
-                Farm Summary
+        <div className="container mx-auto px-4 py-12 lg:py-20 relative z-10">
+          
+          {/* PHASE 1: COMMAND HEADER */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20 reveal-up">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+                <Activity className="w-4 h-4 animate-pulse" />
+                Operational Status: Active
               </div>
-              <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9] max-w-xl">
-                 Farmer <span className="text-gradient">Dashboard</span>
+              <h1 className="text-6xl md:text-8xl font-black text-foreground tracking-tighter uppercase leading-[0.85] max-w-2xl">
+                 Producer <br />
+                 <span className="text-gradient">Command Deck</span>
               </h1>
-              <div className="flex items-center gap-4">
-                 <p className="text-xl text-muted-foreground font-medium max-w-md">
-                   Welcome, {user?.name || 'Partner'}. Monitor your yields and manage operations.
-                 </p>
-                 <VerificationBadge status={user?.is_verified ? 'verified' : 'unverified'} className="px-4 py-1.5" />
+              <div className="flex items-center gap-6">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center font-black text-primary border border-primary/10">
+                       {user?.name?.charAt(0) || 'P'}
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Welcome back, Operator</p>
+                       <p className="text-xl font-black text-foreground tracking-tight">{user?.name || 'Agro Partner'}</p>
+                    </div>
+                 </div>
+                 <div className="w-px h-10 bg-border" />
+                 <VerificationBadge status={user?.is_verified ? 'verified' : 'unverified'} className="px-5 py-2 rounded-xl" />
               </div>
             </div>
-            <Link to="/farmer/products/new" className="group">
-              <Button size="xl" className="rounded-2xl btn-premium h-16 px-8 text-lg font-black tracking-tight">
-                <Plus className="w-6 h-6 mr-3 group-hover:rotate-90 transition-transform duration-500" />
-                Add New Product
-              </Button>
-            </Link>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+               <Link to="/farmer/products/new">
+                  <button className="btn-premium h-18 px-10 group">
+                    <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+                    Expand Inventory
+                  </button>
+               </Link>
+            </div>
           </div>
 
-          {/* AI Insights Bar */}
-          <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="glass-premium p-8 rounded-[2.5rem] border-primary/20 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Sparkles className="w-24 h-24 text-primary" />
+          {/* PHASE 2: INTELLIGENCE STRIP */}
+          <div className="mb-16 reveal-up" style={{ animationDelay: '100ms' }}>
+            <div className="glass-card p-10 rounded-[3rem] border-primary/30 bg-primary/[0.03] flex flex-col md:flex-row items-center gap-10 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <Sparkles className="w-32 h-32 text-primary" />
                </div>
-               <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-                  <Sparkles className="w-8 h-8 text-white" />
+               <div className="w-20 h-20 rounded-[2rem] bg-primary flex items-center justify-center shrink-0 shadow-2xl shadow-primary/30 animate-pulse">
+                  <Sparkles className="w-10 h-10 text-white" />
                </div>
-               <div className="flex-1 space-y-1">
-                  <h3 className="text-xl font-black text-foreground tracking-tight">Market News</h3>
-                  <p className="text-muted-foreground font-medium leading-relaxed">
-                    Local mango prices are up <span className="text-primary font-bold">15%</span> this week in Kaduna. Consider updating your listings to maximize profit.
+               <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
+                     <h3 className="text-2xl font-black text-foreground tracking-tighter uppercase">Market Intelligence</h3>
+                     <span className="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest rounded-lg">High Priority</span>
+                  </div>
+                  <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-3xl">
+                    Llama Analysis: <span className="text-foreground font-bold">Yam prices in Abuja Hub</span> are projected to rise by <span className="text-primary font-bold">18.4%</span> over the next 72 hours. Recommend holding stock for peak margin.
                   </p>
                </div>
-               <Button variant="outline" className="rounded-xl border-primary/20 hover:bg-primary/5 font-bold">View Market Trends</Button>
+               <button className="h-14 px-8 rounded-2xl bg-white border border-border/50 font-black uppercase tracking-widest text-[10px] hover:bg-muted transition-all active:scale-95 shrink-0 shadow-sm">
+                  Full Analytics Report
+               </button>
             </div>
           </div>
 
-          {/* Core Metrics Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          {/* PHASE 3: KPI TERMINAL */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 reveal-up" style={{ animationDelay: '200ms' }}>
             {[
-              { icon: Package, label: 'Products for Sale', value: stats.products, sub: 'Product Listings', color: 'primary', trend: '+2' },
-              { icon: ShoppingCart, label: 'New Orders', value: stats.orders, sub: 'Recent Sales', color: 'blue', trend: '+5' },
-              { icon: Wallet, label: 'Money You Can Withdraw', value: formatPrice(stats.balance), sub: 'Available for Payout', color: 'green', trend: 'Verified' },
-              { icon: Wallet, label: 'Money Coming Soon', value: formatPrice(stats.pending), sub: 'In Escrow Settlement', color: 'amber', trend: 'Locked' },
+              { icon: Package, label: 'Active Inventory', value: stats.products, sub: 'Verified Listings', color: 'primary', trend: '+12%', type: 'units' },
+              { icon: ShoppingCart, label: 'Order Velocity', value: stats.orders, sub: 'Confirmed Contracts', color: 'primary', trend: '+5', type: 'orders' },
+              { icon: Wallet, label: 'Liquidity Reserve', value: formatPrice(stats.balance), sub: 'Ready for Payout', color: 'primary', trend: 'Verified', type: 'balance' },
+              { icon: Activity, label: 'Escrow Volume', value: formatPrice(stats.pending), sub: 'Awaiting Settlement', color: 'primary', trend: 'In-Transit', type: 'pending' },
             ].map((stat, i) => (
-              <div key={i} className="glass-premium p-8 rounded-[2rem] border-border/50 group hover:border-primary/50 transition-all duration-500 relative overflow-hidden active:scale-[0.98]">
-                 <div className="absolute bottom-[-10%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
-                    <stat.icon className="w-24 h-24" />
+              <div key={i} className="glass-card p-10 rounded-[3rem] border-white/60 bg-white/40 group relative overflow-hidden active:scale-[0.98]">
+                 <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-1000 rotate-12 group-hover:rotate-0">
+                    <stat.icon className="w-32 h-32" />
                  </div>
-                 <div className="flex items-center justify-between mb-6">
-                    <div className={`w-14 h-14 rounded-2xl bg-${stat.color}/10 flex items-center justify-center text-${stat.color} shadow-inner`}>
+                 <div className="flex items-center justify-between mb-8">
+                    <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-primary shadow-inner">
                        <stat.icon className="w-7 h-7" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-secondary text-muted-foreground">{stat.trend}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-white border border-border/50 shadow-sm">{stat.trend}</span>
                  </div>
-                 <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</h4>
-                 <div className="text-3xl font-black text-foreground tracking-tighter mb-1">{stat.value}</div>
-                 <p className="text-xs text-muted-foreground font-medium">{stat.sub}</p>
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">{stat.label}</h4>
+                 <div className="text-4xl font-black text-foreground tracking-tighter mb-2 leading-none">{stat.value}</div>
+                 <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{stat.sub}</p>
               </div>
             ))}
           </div>
 
-          {/* Quick Action Navigation */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          {/* PHASE 4: MISSION NAVIGATION */}
+          <div className="grid lg:grid-cols-3 gap-10 mb-16 reveal-up" style={{ animationDelay: '300ms' }}>
             {[
-              { title: 'Your Store', icon: Package, desc: 'Manage your products and prices.', link: '/farmer/products', color: 'primary' },
-              { title: 'Sales Record', icon: ShoppingCart, desc: 'Track your sales and talk to buyers.', link: '/farmer/orders', color: 'blue' },
-              { title: 'Money & Payments', icon: Wallet, desc: 'Manage your money and withdrawals.', link: '/farmer/wallet', color: 'green' }
+              { title: 'Inventory Control', icon: Package, desc: 'Configure product metrics, pricing tiers, and global availability.', link: '/farmer/products' },
+              { title: 'Contract Management', icon: ShoppingCart, desc: 'Monitor active sales cycles, track deliveries, and manage buyer relations.', link: '/farmer/orders' },
+              { title: 'Financial Terminal', icon: Wallet, desc: 'Access wallet settlements, withdrawal logs, and trade financial history.', link: '/farmer/wallet' }
             ].map((action, i) => (
-              <Link key={i} to={action.link} className="glass-premium p-10 rounded-[2.5rem] border-border/50 hover:border-primary/50 transition-all duration-500 group relative overflow-hidden active:scale-[0.98]">
-                 <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500">
-                    <ArrowRight className="w-12 h-12 text-primary/20" />
+              <Link key={i} to={action.link} className="glass-card p-12 rounded-[3.5rem] border-white/60 bg-white/40 hover:bg-white/80 transition-all duration-700 group relative overflow-hidden active:scale-[0.98]">
+                 <div className="absolute top-0 right-0 p-12 opacity-0 group-hover:opacity-10 translate-x-8 group-hover:translate-x-0 transition-all duration-1000">
+                    <BarChart3 className="w-24 h-24 text-primary" />
                  </div>
-                 <div className="w-16 h-16 rounded-3xl bg-secondary flex items-center justify-center mb-8 shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                    <action.icon className="w-8 h-8" />
+                 <div className="w-20 h-20 rounded-[2rem] bg-secondary flex items-center justify-center mb-10 shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-700">
+                    <action.icon className="w-10 h-10" />
                  </div>
-                 <h3 className="text-2xl font-black text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors">{action.title}</h3>
-                 <p className="text-muted-foreground font-medium mb-8 leading-relaxed">{action.desc}</p>
-                 <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-primary group-hover:gap-4 transition-all">
-                    Open
-                    <ArrowRight className="w-4 h-4" />
+                 <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase mb-4 group-hover:text-primary transition-colors">{action.title}</h3>
+                 <p className="text-lg text-muted-foreground font-medium mb-12 leading-relaxed">{action.desc}</p>
+                 <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary group-hover:gap-8 transition-all">
+                    Access System
+                    <ArrowRight className="w-5 h-5" />
                  </div>
               </Link>
             ))}
           </div>
 
-          {/* Operational Support & Verification Tiles */}
-          <div className="grid lg:grid-cols-2 gap-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-            {/* Chat Tile */}
-            <Link to="/chat" className="glass-premium p-8 rounded-[2.5rem] border-primary/20 flex items-center gap-8 hover:bg-secondary/30 transition-all group overflow-hidden relative">
+          {/* PHASE 5: SUPPORT TERMINALS */}
+          <div className="grid lg:grid-cols-2 gap-10 reveal-up" style={{ animationDelay: '400ms' }}>
+            {/* Communication Hub */}
+            <Link to="/chat" className="glass-card p-10 rounded-[3.5rem] border-primary/20 bg-primary/[0.02] flex items-center gap-10 hover:bg-white transition-all group relative overflow-hidden">
                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-               <div className="w-20 h-20 bg-primary/10 rounded-[1.75rem] flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                  <MessageCircle className="w-10 h-10 text-primary" />
+               <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-700">
+                  <MessageCircle className="w-12 h-12 text-primary" />
                </div>
-               <div className="flex-1 space-y-1 relative z-10">
-                  <h3 className="text-2xl font-black text-foreground tracking-tight">Chat with Buyers</h3>
-                  <p className="text-muted-foreground font-medium leading-relaxed">
-                    Talk directly to buyers and close deals.
+               <div className="flex-1 space-y-2 relative z-10">
+                  <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase">Trade Communication</h3>
+                  <p className="text-lg text-muted-foreground font-medium leading-relaxed">
+                    Direct low-latency negotiation with verified buyers.
                   </p>
                </div>
-               <Button size="icon" className="w-14 h-14 rounded-2xl btn-premium shadow-primary/20 shrink-0">
-                  <ArrowRight className="w-6 h-6" />
-               </Button>
+               <div className="w-16 h-16 rounded-[1.5rem] btn-premium shrink-0 hidden sm:flex items-center justify-center">
+                  <ArrowRight className="w-7 h-7" />
+               </div>
             </Link>
 
-            {/* Verification Center Tile */}
-            <div className="glass-premium p-8 rounded-[2.5rem] border-amber-500/20 flex items-center gap-8 hover:bg-amber-500/5 transition-all group overflow-hidden relative">
-               <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-               <div className="w-20 h-20 bg-amber-500/10 rounded-[1.75rem] flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                  <ShieldCheck className="w-10 h-10 text-amber-500" />
+            {/* Security Certification Hub */}
+            <div className="glass-card p-10 rounded-[3.5rem] border-accent-gold/20 bg-accent-gold/[0.02] flex items-center gap-10 hover:bg-white transition-all group relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-r from-accent-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+               <div className="w-24 h-24 bg-accent-gold/10 rounded-[2rem] flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-700">
+                  <ShieldCheck className="w-12 h-12 text-accent-gold" />
                </div>
-               <div className="flex-1 space-y-1 relative z-10">
-                  <h3 className="text-2xl font-black text-foreground tracking-tight">Get Trusted Badge</h3>
-                  <p className="text-muted-foreground font-medium leading-relaxed">
-                    Get verified to build more trust with buyers.
+               <div className="flex-1 space-y-2 relative z-10">
+                  <h3 className="text-3xl font-black text-foreground tracking-tighter uppercase">Trust Protocol</h3>
+                  <p className="text-lg text-muted-foreground font-medium leading-relaxed">
+                    Level up your operational credibility score.
                   </p>
                </div>
-               <Button size="xl" variant="outline" className="rounded-2xl border-amber-500/20 hover:bg-amber-500/10 text-amber-500 font-black tracking-tight shrink-0">
-                  {user?.is_verified ? 'Manage Badge' : 'Get Verified'}
-               </Button>
+               <button className="h-16 px-8 rounded-2xl border-2 border-accent-gold/20 text-accent-gold font-black uppercase tracking-widest text-[10px] hover:bg-accent-gold hover:text-white transition-all shrink-0">
+                  {user?.is_verified ? 'Manage Badge' : 'Apply for Trust'}
+               </button>
             </div>
           </div>
         </div>

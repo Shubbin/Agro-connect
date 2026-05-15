@@ -265,7 +265,7 @@ export const ChatPage = () => {
 
   return (
     <MainLayout hideFooter hideAI>
-      <div className="h-[calc(100vh-4.5rem)] flex bg-background relative overflow-hidden">
+      <div className="h-[calc(100dvh-4rem)] md:h-[calc(100vh-4.5rem)] flex bg-background relative overflow-hidden">
         {/* Ambient background effect */}
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -274,9 +274,9 @@ export const ChatPage = () => {
           "w-full md:w-96 border-r border-border/50 bg-background/50 backdrop-blur-xl flex flex-col relative z-20 transition-all",
           selectedConv ? "hidden md:flex" : "flex"
         )}>
-          <div className="p-8 border-b border-border/30">
-             <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">My Chats</h2>
+          <div className="p-4 md:p-8 border-b border-border/30">
+             <div className="flex items-center justify-between mb-4 md:mb-8">
+                <h2 className="text-xl md:text-2xl font-black text-foreground tracking-tighter uppercase">My Chats</h2>
                 <div className="w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer">
                    <MoreHorizontal className="w-5 h-5" />
                 </div>
@@ -291,40 +291,40 @@ export const ChatPage = () => {
              </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-2 p-4 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto space-y-1 md:space-y-2 p-2 md:p-4 scrollbar-hide">
             {conversations.map((conv) => (
               <button
                 key={conv.id}
                 onClick={() => setSelectedConv(conv)}
                 className={cn(
-                  "w-full p-6 text-left rounded-[2.5rem] transition-all duration-500 relative group", 
+                  "w-full p-4 md:p-6 text-left rounded-2xl md:rounded-[2.5rem] transition-all duration-500 relative group", 
                   selectedConv?.id === conv.id 
                     ? "glass-premium bg-white border-primary/20 shadow-xl shadow-primary/5 border" 
                     : "hover:bg-primary/[0.02] border border-transparent"
                 )}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-1 md:mb-2">
+                  <div className="flex items-center gap-2 md:gap-3">
                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm transition-transform group-hover:scale-105",
+                        "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-xs md:text-sm shadow-sm transition-transform group-hover:scale-105",
                         selectedConv?.id === conv.id ? "bg-primary text-white" : "bg-secondary text-muted-foreground"
                      )}>
                         {conv.participantName.charAt(0)}
                      </div>
                      <div>
-                        <span className="font-black text-foreground tracking-tight block">{conv.participantName}</span>
+                        <span className="font-black text-foreground tracking-tight block text-sm md:text-base">{conv.participantName}</span>
                         <div className="flex items-center gap-2">
-                           <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">{conv.participantRole}</span>
+                           <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-primary/60">{conv.participantRole}</span>
                         </div>
                      </div>
                   </div>
                   {conv.unread > 0 && (
-                    <span className="w-6 h-6 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-background">
+                    <span className="w-5 h-5 md:w-6 md:h-6 bg-primary text-white text-[9px] md:text-[10px] font-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-background">
                       {conv.unread}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground font-medium truncate pl-[3.75rem]">{conv.lastMessage}</p>
+                <p className="text-xs md:text-sm text-muted-foreground font-medium truncate pl-[3rem] md:pl-[3.75rem]">{conv.lastMessage}</p>
                 
                 {selectedConv?.id === conv.id && (
                    <div className="absolute right-6 top-1/2 -translate-y-1/2">
@@ -349,25 +349,25 @@ export const ChatPage = () => {
           {selectedConv ? (
             <>
               {/* Interface Header */}
-              <div className="p-6 md:p-8 border-b border-border/30 backdrop-blur-xl flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                   <button onClick={() => setSelectedConv(null)} className="md:hidden w-12 h-12 glass-premium rounded-2xl flex items-center justify-center text-muted-foreground active:scale-90 transition-transform">
-                      <ArrowLeft className="w-6 h-6" />
+              <div className="p-4 md:p-8 border-b border-border/30 backdrop-blur-xl flex items-center justify-between sticky top-0 bg-white/80 z-30">
+                <div className="flex items-center gap-3 md:gap-6">
+                   <button onClick={() => setSelectedConv(null)} className="md:hidden w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-muted-foreground active:scale-90 transition-transform">
+                      <ArrowLeft className="w-5 h-5" />
                    </button>
                    <div className="relative">
-                      <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-xl shadow-primary/20">
+                      <div className="w-10 h-10 md:w-14 md:h-14 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center font-black text-white text-base md:text-xl shadow-xl shadow-primary/20">
                         {selectedConv.participantName.charAt(0)}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full" title="Online Status" />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 md:w-5 md:h-5 bg-green-500 border-2 md:border-4 border-white rounded-full" title="Online Status" />
                    </div>
                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-2xl font-black text-foreground tracking-tighter uppercase">{selectedConv.participantName}</h3>
-                        {selectedConv.isVerified && <ShieldCheck className="w-4 h-4 text-primary" />}
+                      <div className="flex items-center gap-1.5 md:gap-2">
+                        <h3 className="text-sm md:text-2xl font-black text-foreground tracking-tighter uppercase truncate max-w-[120px] md:max-w-none">{selectedConv.participantName}</h3>
+                        {selectedConv.isVerified && <ShieldCheck className="w-3 h-3 md:w-4 md:h-4 text-primary" />}
                       </div>
                       <div className="flex items-center gap-3">
-                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                            <Store className="w-3 h-3 text-primary" />
+                         <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1 md:gap-1.5">
+                            <Store className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary" />
                             Direct Chat
                          </span>
                       </div>
@@ -455,8 +455,8 @@ export const ChatPage = () => {
               </div>
 
               {/* Terminal Input Protocol */}
-              <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background via-background/95 to-transparent">
-                <div className="max-w-4xl mx-auto space-y-4">
+              <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 bg-gradient-to-t from-background via-background/95 to-transparent">
+                <div className="max-w-4xl mx-auto space-y-2 md:space-y-4">
                   
                   {/* Quick Replies */}
                   {!mediaPreview && !message && (

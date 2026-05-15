@@ -3,49 +3,21 @@ import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/ProductCard';
-import { Leaf, ArrowRight, Sparkles, CheckCircle, MessageSquare, ShieldCheck, Zap } from 'lucide-react';
+import { Leaf, ArrowRight, Sparkles, CheckCircle, MessageSquare, ShieldCheck, Zap, Globe, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 import { productsAPI, statsAPI } from '@/services/api';
 
-const StatCounter = ({ end, duration = 2000, prefix = '', suffix = '' }) => {
-  const [count, setCount] = React.useState(0);
-
-  const displaySuffix = suffix || (typeof end === 'string' ? end.replace(/[0-9.₦,]/g, '') : '');
-  const displayPrefix = prefix || (typeof end === 'string' ? (end.startsWith('₦') ? '₦' : '') : '');
-
-  React.useEffect(() => {
-    let start = 0;
-    const endValue = typeof end === 'string' 
-      ? parseFloat(end.replace(/[^0-9.]/g, '')) 
-      : end;
-    
-    const increment = endValue / (duration / 16);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= endValue) {
-        setCount(endValue);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [end, duration]);
-
-  if (count >= parseFloat(String(end).replace(/[^0-9.]/g, ''))) {
-    return <span>{end}</span>;
-  }
-
-  return (
-    <span>
-      {displayPrefix}
-      {count.toLocaleString()}
-      {displaySuffix}
-    </span>
-  );
-};
+const StatItem = ({ value, label, icon: Icon }) => (
+  <div className="flex flex-col items-center lg:items-start group">
+    <div className="flex items-center gap-3 mb-2">
+      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+        <Icon className="w-5 h-5" />
+      </div>
+      <span className="text-3xl font-black tracking-tighter text-foreground">{value}</span>
+    </div>
+    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-13">{label}</span>
+  </div>
+);
 
 export const HomePage = () => {
   const [products, setProducts] = React.useState([]);
@@ -72,119 +44,155 @@ export const HomePage = () => {
 
   return (
     <MainLayout>
-      {/* Professional Hero Section - Split Grid */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-background">
+      {/* 
+        PHASE 1: CINEMATIC HERO 
+        Designed with high-density typography and massive scale.
+      */}
+      <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 lg:pt-32 lg:pb-24 overflow-hidden">
+        {/* Deep ambient backgrounds */}
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[70%] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[60%] bg-accent-gold/5 rounded-full blur-[150px] pointer-events-none" />
+        
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
-            <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider uppercase mb-6">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Nigeria's Verified Agricultural Network</span>
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="flex-1 text-center lg:text-left reveal-up">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 text-primary border border-primary/10 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Standard of Nigerian Excellence</span>
               </div>
-              <h1 className="text-4xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight mb-6">
-                Trade Fresh Produce <br />
-                <span className="text-primary">Directly from the Source</span>
+              
+              <h1 className="heading-hero mb-8">
+                Trade <span className="text-gradient">Nature</span> <br />
+                With <span className="relative inline-block">
+                  Intelligence
+                  <div className="absolute -bottom-2 left-0 w-full h-2 bg-accent-gold/40 -z-10 blur-sm" />
+                </span>
               </h1>
-              <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Connect with trusted local farmers, bargain in real-time, and secure your trades with our integrated escrow system. Simple, professional, and secure.
+
+              <p className="subheading mb-12 max-w-2xl mx-auto lg:mx-0">
+                AgroDirect is the premium portal for verified Nigerian agriculture. 
+                Sourcing fresh produce directly from farmers with the world's most 
+                advanced escrow and negotiation intelligence.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+
+              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start mb-16">
                 <Link to="/marketplace">
-                  <Button size="lg" className="h-14 px-8 rounded-xl font-bold shadow-lg shadow-primary/20">
-                    Explore Marketplace <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <button className="btn-premium h-16 px-10 text-sm">
+                    Enter Marketplace <ArrowRight className="w-5 h-5" />
+                  </button>
                 </Link>
                 <Link to="/signup">
-                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-xl font-bold border-2">
-                    Become a Seller
-                  </Button>
+                  <button className="h-16 px-10 rounded-2xl border-2 border-border/50 font-black uppercase tracking-widest text-[10px] hover:bg-muted transition-all active:scale-95">
+                    Register as Producer
+                  </button>
                 </Link>
               </div>
               
-              <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 border-t border-border pt-8">
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {!loading && <StatCounter end={statsData?.farmers || '1.2k+'} />}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Active Farmers</p>
-                </div>
-                <div className="w-px h-10 bg-border" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {!loading && <StatCounter end={statsData?.volume || '₦10M+'} />}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Trade Volume</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-12 pt-12 border-t border-border/50">
+                <StatItem icon={Users} value={statsData?.farmers || '1.2k+'} label="Verified Farmers" />
+                <StatItem icon={TrendingUp} value={statsData?.volume || '₦25M+'} label="Trade Volume" />
+                <div className="hidden md:block">
+                   <StatItem icon={Globe} value="36" label="States Covered" />
                 </div>
               </div>
             </div>
             
-            <div className="flex-1 relative w-full max-w-2xl lg:max-w-none mx-auto">
-              <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-border bg-card">
+            <div className="flex-1 relative w-full group reveal-up" style={{ animationDelay: '200ms' }}>
+              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border border-white/20 glass-card">
                 <img 
-                  src="/hero-farming.png" 
-                  alt="Quality Nigerian Produce" 
-                  className="w-full aspect-[4/3] object-cover"
+                  src="/hero_farming_nigeria_1778880045945.png" 
+                  alt="High-end Nigerian Agriculture" 
+                  className="w-full aspect-[4/5] md:aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
                 />
-                <div className="absolute top-4 right-4 glass-premium px-4 py-2 rounded-xl flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary fill-primary" />
-                  <span className="text-xs font-bold text-foreground">Live Prices</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-60" />
+                
+                {/* Floating UI Elements */}
+                <div className="absolute top-8 right-8 glass-premium px-6 py-3 rounded-2xl flex items-center gap-3 border-white/20 animate-float">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Market Live</span>
+                </div>
+
+                <div className="absolute bottom-8 left-8 right-8 glass-premium p-6 rounded-[2rem] border-white/30 backdrop-blur-3xl">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-accent-gold flex items-center justify-center text-accent-gold-foreground">
+                         <Zap className="w-6 h-6 fill-current" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Latest Trade</p>
+                         <p className="text-sm font-black text-foreground">50 Tons of Yam delivered to Lagos</p>
+                      </div>
+                   </div>
                 </div>
               </div>
-              {/* Subtle background decoration - no blobs */}
-              <div className="absolute -top-10 -right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
-              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl -z-10" />
+
+              {/* Decorative Geometric Shapes */}
+              <div className="absolute -top-12 -right-12 w-48 h-48 border-[20px] border-primary/5 rounded-full -z-10 animate-float" />
+              <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-accent-gold/10 rounded-[2rem] -z-10 animate-float" style={{ animationDelay: '2s' }} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Simplified Features Section */}
-      <section className="py-24 bg-muted/30">
+      {/* 
+        PHASE 2: FEATURES - THE PILLARS OF EXCELLENCE 
+      */}
+      <section className="py-32 bg-secondary/50 relative overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center max-w-3xl mx-auto mb-24 reveal-up">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6">Our Infrastructure</h2>
+            <h3 className="text-4xl md:text-6xl font-black text-foreground tracking-tighter uppercase leading-none mb-8">
+              Engineered for <span className="text-gradient">Trust</span>
+            </h3>
+            <p className="subheading">
+              We've combined local insights with global technology standards to create Nigeria's most robust agricultural trading engine.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-10">
             {[
-              { icon: Leaf, title: 'Direct Sourcing', desc: 'Eliminate middlemen and buy directly from confirmed local farmers at fair market prices.' },
-              { icon: MessageSquare, title: 'Real-time Negotiation', desc: 'Securely chat with sellers to negotiate prices, discuss delivery, and see live produce media.' },
-              { icon: ShieldCheck, title: 'Escrow Security', desc: 'Your payments are held securely until you confirm receipt of quality produce as described.' },
+              { icon: Leaf, title: 'Confirmed Origin', desc: 'Every product is geotagged and verified at the source, ensuring you get exactly what you see.' },
+              { icon: MessageSquare, title: 'Smart Negotiation', desc: 'Bargain with farmers in real-time using our proprietary trade communication protocol.' },
+              { icon: ShieldCheck, title: 'Escrow Protocol', desc: 'Funds are held in high-security vaults until both parties confirm a successful delivery.' },
             ].map((f, i) => (
-              <div key={i} className="card-premium p-8 bg-background">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 text-primary">
-                  <f.icon className="w-6 h-6" />
+              <div key={i} className="glass-card p-10 bg-white/40 border-white/50 group reveal-up" style={{ animationDelay: `${i * 100}ms` }}>
+                <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-xl flex items-center justify-center mb-8 text-primary group-hover:scale-110 transition-transform group-hover:rotate-6">
+                  <f.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="text-2xl font-black text-foreground mb-4 uppercase tracking-tighter">{f.title}</h3>
+                <p className="text-base text-muted-foreground leading-relaxed font-medium">{f.desc}</p>
+                <div className="mt-8 w-12 h-1.5 bg-primary/20 rounded-full group-hover:w-24 transition-all duration-500" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Product Marketplace Sneak Peek */}
-      <section className="py-24">
+      {/* 
+        PHASE 3: MARKETPLACE SNEAK PEEK 
+      */}
+      <section className="py-32">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-baseline justify-between mb-12 gap-4">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">Recently Posted Produce</h2>
-              <p className="text-muted-foreground">Fresh items from our verified sellers across Nigeria.</p>
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-8 reveal-up">
+            <div className="max-w-2xl">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6">Discovery</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-foreground tracking-tighter uppercase leading-none">
+                Fresh From the <span className="text-gradient">Soil</span>
+              </h3>
             </div>
             <Link to="/marketplace">
-              <Button variant="ghost" className="text-primary font-bold hover:bg-primary/5">
-                View Full Market <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <button className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] group">
+                <span className="group-hover:text-primary transition-colors">Explore All Listings</span>
+                <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </button>
             </Link>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 reveal-up">
             {loading ? (
               [...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse card-premium overflow-hidden">
-                  <div className="aspect-[4/3] bg-muted" />
-                  <div className="p-6 space-y-4">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
-                    <div className="h-6 bg-muted rounded-lg w-1/3" />
-                  </div>
-                </div>
+                <div key={i} className="animate-pulse bg-muted/20 rounded-[2.5rem] h-[400px]" />
               ))
             ) : (
               products.map((p) => <ProductCard key={p.id} product={p} />)
@@ -193,43 +201,61 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Concise AI Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="bg-foreground rounded-[2rem] p-8 lg:p-16 relative overflow-hidden">
-            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
-              <div className="lg:w-3/5 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-1.5 rounded-full text-xs font-bold mb-6">
-                  <Sparkles className="w-4 h-4" />
-                  AGROBOT AI ASSISTANT
+      {/* 
+        PHASE 4: AGROBOT AI INTEGRATION 
+        Cinematic Dark Section
+      */}
+      <section className="py-32 px-4 lg:px-8">
+        <div className="container mx-auto">
+          <div className="bg-foreground rounded-[4rem] p-12 lg:p-24 relative overflow-hidden group shadow-2xl">
+            {/* Dark mode background elements */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,100,0,0.2),transparent)] opacity-40" />
+            
+            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-20">
+              <div className="lg:w-3/5 text-center lg:text-left reveal-up">
+                <div className="inline-flex items-center gap-3 bg-white/10 text-white/90 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-10 backdrop-blur-md border border-white/5">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  AGROBOT CORE V2.0
                 </div>
-                <h3 className="text-3xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                  Your Smart Companion for <br />
-                  Market Intelligence
+                <h3 className="text-5xl lg:text-8xl font-black text-white mb-10 tracking-tighter uppercase leading-[0.85]">
+                  AI Powered <br />
+                  <span className="text-primary">Farming</span>
                 </h3>
-                <p className="text-white/70 text-base lg:text-lg mb-10 max-w-xl">
-                  Get real-time price predictions, crop management tips, and negotiation assistance powered by Llama-3.3 intelligence.
+                <p className="text-white/60 text-lg lg:text-xl mb-12 max-w-xl font-medium leading-relaxed">
+                  Leverage our proprietary Llama-based intelligence for price forecasting, 
+                  negotiation strategy, and multi-state crop trend analysis.
                 </p>
-                <Link to="/chat">
-                  <Button className="h-14 px-8 bg-white text-foreground hover:bg-white/90 rounded-xl font-bold">
-                    Start Chatting with AgroBot
-                  </Button>
+                <Link to="/ai-assistant">
+                  <button className="btn-premium h-16 px-12 bg-white text-foreground hover:scale-105 active:scale-95">
+                    Access Intelligence Deck
+                  </button>
                 </Link>
               </div>
-              <div className="lg:w-2/5 w-full">
-                <div className="glass-premium border-white/10 bg-white/5 p-6 rounded-2xl">
-                  <div className="flex gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                      <Sparkles className="text-white w-5 h-5" />
+              
+              <div className="lg:w-2/5 w-full reveal-up" style={{ animationDelay: '300ms' }}>
+                <div className="glass-card border-white/10 bg-white/5 p-10 rounded-[3rem] backdrop-blur-3xl relative">
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-[60px]" />
+                  
+                  <div className="flex gap-5 mb-10">
+                    <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/40 animate-pulse">
+                      <Sparkles className="text-white w-8 h-8" />
                     </div>
                     <div>
-                      <p className="text-white text-sm font-bold">AgroBot</p>
-                      <p className="text-primary text-[10px] font-bold uppercase">Price Helper</p>
+                      <p className="text-white font-black uppercase text-sm tracking-tight">AgroBot</p>
+                      <p className="text-primary text-[10px] font-black uppercase tracking-widest mt-1">Intelligence Protocol Active</p>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="bg-white/5 p-3 rounded-xl rounded-tl-none border border-white/5">
-                      <p className="text-white/80 text-xs italic">"Market analysis shows tomato prices in Ibadan are trending upwards. Best time to sell would be tomorrow morning."</p>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-white/5 p-6 rounded-3xl rounded-tl-none border border-white/5">
+                      <p className="text-white/80 text-sm font-medium leading-relaxed italic">
+                        "Market volatility detected in Lagos yam prices. I suggest increasing stock levels now before the expected 15% price surge next week."
+                      </p>
+                    </div>
+                    <div className="flex justify-end">
+                       <div className="bg-primary/20 text-primary-light px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border border-primary/20">
+                          Data verified from 42 hubs
+                       </div>
                     </div>
                   </div>
                 </div>
