@@ -2,6 +2,8 @@ import { supabase } from '../config/db.js';
 
 export const getMessages = async (req, res) => {
   const conversationId = req.query.conversationId;
+  const requesterId = req.user?.id;
+  
   if (!conversationId) return res.json([]);
 
   const parts = conversationId.split('_');
@@ -9,10 +11,16 @@ export const getMessages = async (req, res) => {
 
   const [id1, id2] = parts;
 
+  // SECURITY: Verify requester is part of this conversation
+  if (requesterId !== id1 && requesterId !== id2) {
+    console.warn(`[SECURITY] Unauthorized chat access attempt by ${requesterId} for conversation ${conversationId}`);
+    return res.status(403).json({ message: 'Unauthorized access to this conversation' });
+  }
+
   try {
     const { data: messages, error } = await supabase
       .from('messages')
-      .select('*, sender:users(name)')
+      .select('*, sender:users!sender_id(name)')
       .or(`and(sender_id.eq.${id1},receiver_id.eq.${id2}),and(sender_id.eq.${id2},receiver_id.eq.${id1})`)
       .order('timestamp', { ascending: true });
 
@@ -45,7 +53,7 @@ export const sendMessage = async (req, res) => {
         media_url: mediaUrl,
         media_type: mediaType
       }])
-      .select('*, sender:users(name)')
+      .select('*, sender:users!sender_id(name)')
       .single();
 
     if (error) throw error;
@@ -65,7 +73,7 @@ export const getConversations = async (req, res) => {
   try {
     const { data: messages, error } = await supabase
       .from('messages')
-      .select('*, sender:users(id, name, role, is_verified), receiver:users(id, name, role, is_verified)')
+      .select('*, sender:users!sender_id(id, name, role, is_verified), receiver:users!receiver_id(id, name, role, is_verified)')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('timestamp', { ascending: false });
 

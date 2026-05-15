@@ -6,7 +6,7 @@ export const getAll = async (req, res) => {
   try {
     let query = supabase
       .from('products')
-      .select('*, farmer:users(name, is_verified, verification_status)');
+      .select('*, farmer:users!farmer_id(name, is_verified, verification_status)');
 
     if (category !== 'all') query = query.eq('category', category);
     if (location !== 'All Locations') query = query.eq('location', location);
@@ -34,7 +34,7 @@ export const getById = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('*, farmer:users(name, is_verified, verification_status)')
+      .select('*, farmer:users!farmer_id(name, is_verified, verification_status)')
       .eq('id', req.params.id)
       .single();
     if (error) return res.json(null);

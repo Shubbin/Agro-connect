@@ -5,7 +5,7 @@ export const getAll = async (req, res) => {
   try {
     const { data: orders, error } = await supabase
       .from('orders')
-      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
 
@@ -21,7 +21,7 @@ export const getById = async (req, res) => {
   try {
     const { data: order, error } = await supabase
       .from('orders')
-      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
       .eq('id', req.params.id)
       .single();
 
@@ -75,7 +75,7 @@ export const create = async (req, res) => {
     // 3. Fetch populated
     const { data: populated, error: popError } = await supabase
       .from('orders')
-      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
       .eq('id', order.id)
       .single();
 
@@ -143,7 +143,7 @@ export const getFarmerOrders = async (req, res) => {
     // For vendors, we need to find orders that contain their products
     const { data: orders, error } = await supabase
       .from('orders')
-      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

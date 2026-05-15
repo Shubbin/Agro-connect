@@ -37,9 +37,16 @@ const callGroq = async (prompt, isJson = false) => {
       body: JSON.stringify(body),
     });
 
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`❌ GROQ API ERROR [${response.status}]:`, errText);
+      throw new Error(`Groq API returned ${response.status}`);
+    }
+
     const data = await response.json();
     return data.choices?.[0]?.message?.content ?? "Error";
-  } catch {
+  } catch (err) {
+    console.error('❌ callGroq Exception:', err.message);
     return "Error";
   }
 };
@@ -86,7 +93,7 @@ export const handle = async (req, res) => {
     }
 
     case 'coaching-history': {
-      const { userId } = req.query;
+      const userId = req.user?.id; // Use authenticated ID
       try {
         const { data: logs, error } = await supabase
           .from('ai_coaching_logs')
@@ -97,7 +104,8 @@ export const handle = async (req, res) => {
         if (error) throw error;
         return res.json(logs);
       } catch (err) {
-        return res.status(500).json({ error: err.message });
+        console.error('CoachingHistory error:', err.message);
+        return res.status(500).json({ error: 'Failed to fetch coaching history' });
       }
     }
 
