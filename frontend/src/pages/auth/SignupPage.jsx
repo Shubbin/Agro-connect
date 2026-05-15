@@ -9,6 +9,7 @@ import { Leaf, Check, User, Tractor, ArrowRight, Eye, EyeOff, Sparkles, Star, Sh
 export const SignupPage = () => {
   const [step, setStep] = useState('role');
   const [role, setRole] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -47,12 +48,11 @@ export const SignupPage = () => {
         role
       });
       
+      setIsSubmitted(true);
       toast({
-        title: 'Signup successful!',
-        description: 'You can now sign in with your account.',
+        title: 'Email Sent!',
+        description: 'Please check your inbox to verify your account.',
       });
-      
-      navigate('/login');
     } catch (error) {
       toast({
         title: 'Signup failed',
@@ -93,7 +93,28 @@ export const SignupPage = () => {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
         <div className="w-full max-w-lg">
-          {step === 'role' ? (
+          {isSubmitted ? (
+            <div className="text-center space-y-8 animate-fade-in">
+              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-12 h-12 text-primary animate-pulse" />
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-4xl font-black text-foreground tracking-tighter">Check your Inbox!</h2>
+                <p className="text-lg text-muted-foreground font-medium">
+                  We've sent a verification link to <span className="text-foreground font-bold">{formData.email}</span>. 
+                  Please click the link in the email to finish your setup.
+                </p>
+              </div>
+              <div className="pt-8">
+                <Button variant="outline" size="xl" className="w-full h-18 rounded-[1.25rem] font-black tracking-tight" onClick={() => navigate('/login')}>
+                  Go to Login
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Didn't get the email? <span className="text-primary font-bold cursor-pointer hover:underline" onClick={() => setIsSubmitted(false)}>Try again</span>
+              </p>
+            </div>
+          ) : step === 'role' ? (
             <div className="space-y-10 animate-fade-in">
               <div className="space-y-4">
                 <h2 className="text-4xl font-black text-foreground tracking-tighter">Join Agro-Direct</h2>

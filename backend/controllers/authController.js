@@ -46,7 +46,8 @@ export const register = async (req, res) => {
       email,
       password,
       options: {
-        data: { name, role, phone }
+        data: { name, role, phone },
+        emailRedirectTo: 'https://agro-connect-two.vercel.app/login'
       }
     });
 
@@ -64,16 +65,16 @@ export const register = async (req, res) => {
         phone, 
         password: 'SUPABASE_AUTH_MANAGED',
         role,
-        is_verified: true,
-        verification_status: 'verified'
+        is_verified: false,
+        verification_status: 'pending'
       }])
       .select()
       .single();
 
     return res.json({ 
-      message: 'Registration successful',
-      user: newUser || authData.user, 
-      token: authData.session?.access_token || 'SESSION_PENDING'
+      message: 'Please check your email to verify your account.',
+      user: newUser || authData.user,
+      session: authData.session // This will be null if email confirm is ON
     });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed' });
