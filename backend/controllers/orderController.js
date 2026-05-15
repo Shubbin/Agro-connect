@@ -1,11 +1,15 @@
-import Order from '../models/Order.js';
+import { supabase } from '../config/db.js';
 import { sendMockSms } from './smsController.js';
 
 export const getAll = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id })
-      .populate('user', 'name email')
-      .sort({ created_at: -1 });
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     return res.json(orders);
   } catch (err) {
     console.error('GetAll orders error:', err);
@@ -15,9 +19,13 @@ export const getAll = async (req, res) => {
 
 export const getById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
-      .populate('user', 'name email')
-      .populate('items.product');
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) throw error;
     return res.json(order);
   } catch (err) {
     console.error('GetById order error:', err);
@@ -26,25 +34,52 @@ export const getById = async (req, res) => {
 };
 
 export const create = async (req, res) => {
-  const { userId, total = 0, deliveryAddress = '', items = [] } = req.body;
+  const { total: clientTotal, deliveryAddress = '', items = [] } = req.body;
+  const userId = req.user.id;
 
   try {
-    const order = new Order({
-      user: userId,
-      total,
-      delivery_address: deliveryAddress,
-      status: 'pending',
-      items: items.map(item => ({
-        product: item.product._id || item.product.id,
-        quantity: item.quantity,
-        price: item.offeredPrice ?? item.product.price
-      }))
-    });
+    // 1. Calculate Total (Security best practice: calculate on server)
+    // For now, we'll use the client total if provided, or sum the items
+    const total = clientTotal || items.reduce((sum, item) => sum + (item.offeredPrice ?? item.product.price) * item.quantity, 0);
 
-    await order.save();
-    const populated = await Order.findById(order._id)
-      .populate('user', 'name email')
-      .populate('items.product');
+    // 2. Create Order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert([{
+        user_id: userId,
+        total,
+        delivery_address: deliveryAddress,
+        status: 'pending',
+        payment_status: 'pending',
+        escrow_status: 'held'
+      }])
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // 2. Create Order Items
+    const orderItems = items.map(item => ({
+      order_id: order.id,
+      product_id: item.product.id || item.product._id,
+      quantity: item.quantity,
+      price: item.offeredPrice ?? item.product.price
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) throw itemsError;
+
+    // 3. Fetch populated
+    const { data: populated, error: popError } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .eq('id', order.id)
+      .single();
+
+    if (popError) throw popError;
 
     return res.json(populated);
   } catch (err) {
@@ -56,17 +91,18 @@ export const create = async (req, res) => {
 export const updateTracking = async (req, res) => {
   const { orderId, trackingNumber, estimatedDelivery } = req.body;
   try {
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .update({
         tracking_number: trackingNumber,
         estimated_delivery: estimatedDelivery,
         status: 'shipped'
-      },
-      { new: true }
-    );
+      })
+      .eq('id', orderId)
+      .select()
+      .single();
 
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (error || !order) return res.status(404).json({ message: 'Order not found' });
 
     sendMockSms('Buyer', `Your order #${orderId} has been shipped!`);
     return res.json({ status: 'success', order });
@@ -76,17 +112,22 @@ export const updateTracking = async (req, res) => {
 };
 
 export const confirmDelivery = async (req, res) => {
-  const { orderId, otp } = req.body;
+  const { orderId } = req.body;
   try {
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    const { data: order, error } = await supabase
+      .from('orders')
+      .update({
+        status: 'delivered',
+        escrow_status: 'released',
+        actual_delivery_date: new Date().toISOString()
+      })
+      .eq('id', orderId)
+      .select()
+      .single();
 
-    order.status = 'delivered';
-    order.escrow_status = 'released';
-    order.actual_delivery_date = new Date();
-    await order.save();
+    if (error || !order) return res.status(404).json({ message: 'Order not found' });
 
-    sendMockSms('Farmer', `Order #${orderId} delivery confirmed!`);
+    sendMockSms('Vendor', `Order #${orderId} delivery confirmed!`);
     return res.json({ status: 'success', order });
   } catch (err) {
     return res.status(500).json({ message: 'Server error' });
@@ -99,10 +140,20 @@ export const generateOtp = async (req, res) => {
 
 export const getFarmerOrders = async (req, res) => {
   try {
-    // In MongoDB, we might need a merchant/farmer field on the order or items
-    // For now, let's just return all orders for testing or filter by item product farmer
-    const orders = await Order.find().populate('user', 'name email').populate('items.product');
-    return res.json(orders);
+    // For vendors, we need to find orders that contain their products
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*, user:users(name, email), items:order_items(*, product:products(*))')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Filter orders that have items belonging to this farmer/vendor
+    const farmerOrders = orders.filter(o => 
+      o.items.some(item => item.product?.farmer_id === req.user.id)
+    );
+
+    return res.json(farmerOrders);
   } catch (err) {
     return res.status(500).json({ message: 'Server error' });
   }

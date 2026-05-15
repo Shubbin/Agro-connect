@@ -43,17 +43,16 @@ export const register = async (req, res) => {
   }
 
   try {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Use Admin API to create user with auto-confirmed email
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: { name, role, phone },
-        emailRedirectTo: 'https://agro-connect-two.vercel.app/login'
-      }
+      email_confirm: true,
+      user_metadata: { name, role, phone }
     });
 
     if (authError) {
-      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', {
+      console.error('❌ TRACE [REGISTRATION]: Supabase Admin Auth Error:', {
         message: authError.message,
         status: authError.status,
         code: authError.code
@@ -71,18 +70,18 @@ export const register = async (req, res) => {
         phone, 
         password: 'SUPABASE_AUTH_MANAGED',
         role,
-        is_verified: false,
-        verification_status: 'pending'
+        is_verified: true,
+        verification_status: 'verified'
       }])
       .select()
       .single();
 
     return res.json({ 
-      message: 'Please check your email to verify your account.',
-      user: newUser || authData.user,
-      session: authData.session
+      message: 'Registration successful. You can now log in.',
+      user: newUser || authData.user
     });
   } catch (err) {
+    console.error('Registration Catch Error:', err);
     res.status(500).json({ message: 'Registration failed' });
   }
 };

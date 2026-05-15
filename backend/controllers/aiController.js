@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import AICoachingLog from '../models/AICoachingLog.js';
+import { supabase } from '../config/db.js';
 import 'dotenv/config';
 
 const callGroq = async (prompt, isJson = false) => {
@@ -72,13 +72,14 @@ export const handle = async (req, res) => {
       const parsedResponse = JSON.parse(response);
       
       if (profile.userId) {
-        const log = new AICoachingLog({
-          user: profile.userId,
-          advice_type: 'agro_score',
-          advice_content: parsedResponse.summary + " " + (parsedResponse.tips || []).join(" "),
-          agro_score_at_time: profile.agro_score
-        });
-        await log.save();
+        await supabase
+          .from('ai_coaching_logs')
+          .insert([{
+            user_id: profile.userId,
+            advice_type: 'agro_score',
+            advice_content: parsedResponse.summary + " " + (parsedResponse.tips || []).join(" "),
+            agro_score_at_time: profile.agro_score
+          }]);
       }
 
       return res.json(parsedResponse);
@@ -87,7 +88,13 @@ export const handle = async (req, res) => {
     case 'coaching-history': {
       const { userId } = req.query;
       try {
-        const logs = await AICoachingLog.find({ user: userId }).sort({ created_at: -1 });
+        const { data: logs, error } = await supabase
+          .from('ai_coaching_logs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
         return res.json(logs);
       } catch (err) {
         return res.status(500).json({ error: err.message });
