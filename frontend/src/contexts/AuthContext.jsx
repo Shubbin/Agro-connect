@@ -44,10 +44,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUp = async (data) => {
-    const response = await authAPI.register(data);
-    localStorage.setItem('agro_user', JSON.stringify(response.user));
-    localStorage.setItem('agro_token', response.token);
-    setUser(response.user);
+    // Force OTP flow even for signup
+    return await requestOtp(data.email);
   };
 
   const logout = async () => {
