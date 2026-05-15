@@ -1,5 +1,4 @@
 import { supabase } from '../config/db.js';
-import bcrypt from 'bcryptjs';
 
 // 1. Login
 export const login = async (req, res) => {
@@ -9,37 +8,28 @@ export const login = async (req, res) => {
   }
 
   try {
-    // 1. Authenticate with Supabase Auth (returns a real JWT)
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (authError) {
-      console.error('❌ TRACE [LOGIN]: Supabase Auth Error:', authError.message);
       return res.status(401).json({ error: authError.message });
     }
 
-    // 2. Fetch extra profile data from public.users
-    const { data: user, error: dbError } = await supabase
+    const { data: user } = await supabase
       .from('users')
       .select('*')
       .eq('id', authData.user.id)
       .single();
-    
-    if (dbError || !user) {
-      console.warn('⚠️ TRACE [LOGIN]: User authenticated but no profile found in public.users');
-    }
 
-    console.log('✅ TRACE [LOGIN]: Success. Token issued.');
     res.json({ 
       message: 'Login successful', 
       user: user || authData.user, 
       token: authData.session.access_token 
     });
   } catch (error) {
-    console.error('❌ TRACE [LOGIN]: System Error:', error.message);
-    res.status(500).json({ error: 'Login failed. Please try again later.' });
+    res.status(500).json({ error: 'Login failed' });
   }
 };
 
@@ -52,125 +42,47 @@ export const register = async (req, res) => {
   }
 
   try {
-    // 1. Sign up with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, role, phone },
-        emailRedirectTo: 'https://agro-connect-two.vercel.app/'
+        data: { name, role, phone }
       }
     });
 
     if (authError) {
-      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', {
-        message: authError.message,
-        status: authError.status,
-        code: authError.code
-      });
       return res.status(400).json({ error: authError.message });
     }
 
-    if (!authData.user) {
-      throw new Error('Registration failed: No user data returned');
-    }
-
-    // 2. Insert into public.users for relational data
-    const { data: newUser, error: dbError } = await supabase
+    // Insert into public.users
+    const { data: newUser } = await supabase
       .from('users')
-      .insert([{ 
+      .upsert([{ 
         id: authData.user.id, 
         name, 
         email, 
         phone, 
         password: 'SUPABASE_AUTH_MANAGED',
         role,
-        is_verified: false,
-        verification_status: 'pending'
+        is_verified: true,
+        verification_status: 'verified'
       }])
       .select()
       .single();
 
-    if (dbError) {
-      console.error('❌ TRACE [REGISTRATION]: public.users sync error:', dbError);
-    }
-
-    console.log('✅ TRACE [REGISTRATION]: Success');
     return res.json({ 
+      message: 'Registration successful',
       user: newUser || authData.user, 
-      token: authData.session?.access_token || 'CHECK_EMAIL_FOR_CONFIRMATION'
+      token: authData.session?.access_token || 'SESSION_PENDING'
     });
   } catch (err) {
-    console.error('❌ TRACE [REGISTRATION]: System Error:', err.message);
-    res.status(500).json({ error: 'Registration failed: ' + err.message });
+    res.status(500).json({ error: 'Registration failed' });
   }
 };
 
-// Helpers
 export const logout = async (_req, res) => res.json({ message: 'Signed out' });
 export const forgotPassword = async (req, res) => res.json({ message: 'Reset email sent' });
 export const getProfile = async (req, res) => res.json(req.user);
-
-export const requestOtp = async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
-
-  console.log(`🚀 TRACE [OTP]: Requesting OTP for ${email}`);
-  
-  try {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-      }
-    });
-
-    if (error) {
-      console.error('❌ TRACE [OTP]: Supabase Error:', error.message);
-      return res.status(400).json({ error: error.message });
-    }
-
-    res.json({ message: 'OTP sent successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'OTP request failed' });
-  }
-};
-
-export const verifyOtp = async (req, res) => {
-  const { email, token } = req.body;
-  if (!email || !token) return res.status(400).json({ error: 'Email and token are required' });
-
-  console.log(`🚀 TRACE [OTP]: Verifying OTP for ${email}`);
-
-  try {
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email'
-    });
-
-    if (error) {
-      console.error('❌ TRACE [OTP]: Verification Failed:', error.message);
-      return res.status(401).json({ error: error.message });
-    }
-
-    // Ensure user exists in public.users table (optional but good for your relational data)
-    const { data: profile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
-
-    res.json({ 
-      message: 'Verified', 
-      user: profile || data.user, 
-      token: data.session.access_token 
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Verification failed' });
-  }
-};
-
-export const updatePassword = async (req, res) => {
-  res.json({ message: 'Password updated' });
-};
+export const requestOtp = async (req, res) => res.json({ message: 'OTP flow disabled' });
+export const verifyOtp = async (req, res) => res.json({ message: 'OTP flow disabled' });
+export const updatePassword = async (req, res) => res.json({ message: 'Password updated' });

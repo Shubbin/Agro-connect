@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '@/services/api';
 
-
-
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -10,12 +8,10 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
     const checkAuth = async () => {
       try {
         const storedUser = localStorage.getItem('agro_user');
         const storedToken = localStorage.getItem('agro_token');
-        
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
         }
@@ -25,7 +21,6 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
       }
     };
-
     checkAuth();
   }, []);
 
@@ -34,25 +29,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('agro_user', JSON.stringify(response.user));
     localStorage.setItem('agro_token', response.token);
     setUser(response.user);
-  };
-
-  const register = async (data) => {
-    const response = await authAPI.register(data);
-    localStorage.setItem('agro_user', JSON.stringify(response.user));
-    localStorage.setItem('agro_token', response.token);
-    setUser(response.user);
+    return response;
   };
 
   const signUp = async (data) => {
-    // Force OTP flow even for signup
-    return await requestOtp(data.email);
+    const response = await authAPI.register(data);
+    if (response.token && response.token !== 'SESSION_PENDING') {
+      localStorage.setItem('agro_user', JSON.stringify(response.user));
+      localStorage.setItem('agro_token', response.token);
+      setUser(response.user);
+    }
+    return response;
   };
 
   const logout = async () => {
     try {
       await authAPI.logout();
     } catch (err) {
-      console.warn('Logout API call failed, clearing local state anyway');
+      console.warn('Logout API call failed');
     }
     localStorage.removeItem('agro_user');
     localStorage.removeItem('agro_token');
@@ -65,18 +59,6 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
   };
 
-  const requestOtp = async (email) => {
-    return await authAPI.requestOtp(email);
-  };
-
-  const verifyOtp = async (email, token) => {
-    const response = await authAPI.verifyOtp(email, token);
-    localStorage.setItem('agro_user', JSON.stringify(response.user));
-    localStorage.setItem('agro_token', response.token);
-    setUser(response.user);
-    return response;
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -84,10 +66,8 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         isAuthenticated: !!user,
         login,
-        register,
+        register: signUp,
         signUp,
-        requestOtp,
-        verifyOtp,
         logout,
         updateUser,
       }}

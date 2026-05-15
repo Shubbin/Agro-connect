@@ -8,65 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState('email'); // 'email' or 'otp'
-  const [otpToken, setOtpToken] = useState('');
   const [rememberMe, setRememberMe] = useState(localStorage.getItem('remembered_email') ? true : false);
   const [formData, setFormData] = useState({
     email: localStorage.getItem('remembered_email') || '',
     password: '',
   });
 
-  const { login, requestOtp, verifyOtp } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const handleRequestOtp = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await requestOtp(formData.email);
-      setStep('otp');
-      toast({
-        title: 'OTP Sent',
-        description: 'Please check your email for the 6-digit code.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Failed to send OTP',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await verifyOtp(formData.email, otpToken);
-      
-      toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
-      });
-
-      const storedUser = localStorage.getItem('agro_user');
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        navigate(user.role === 'farmer' ? '/farmer/dashboard' : '/marketplace');
-      }
-    } catch (error) {
-      toast({
-        title: 'Verification failed',
-        description: 'Invalid or expired OTP code.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,7 +36,6 @@ export const LoginPage = () => {
         description: 'You have successfully logged in.',
       });
 
-      // Check role from stored user to redirect
       const storedUser = localStorage.getItem('agro_user');
       if (storedUser) {
         const user = JSON.parse(storedUser);
@@ -95,7 +44,7 @@ export const LoginPage = () => {
     } catch (error) {
       toast({
         title: 'Login failed',
-        description: 'Invalid email or password. Please try again.',
+        description: error.message || 'Invalid email or password.',
         variant: 'destructive',
       });
     } finally {
@@ -131,11 +80,11 @@ export const LoginPage = () => {
               Sign <span className="text-gradient">In</span>
             </h1>
             <p className="text-lg text-muted-foreground font-medium">
-              Sign in to your account to buy or sell.
+              Access your personalized dashboard.
             </p>
           </div>
 
-          <form onSubmit={step === 'email' ? handleRequestOtp : handleVerifyOtp} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 group">
               <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
                 Your Email
@@ -147,98 +96,64 @@ export const LoginPage = () => {
                 <input
                   type="email"
                   required
-                  disabled={step === 'otp'}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full h-18 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg placeholder:font-medium placeholder:text-muted-foreground/50 disabled:opacity-50"
+                  className="w-full h-18 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg"
                   placeholder="name@email.com"
                 />
               </div>
             </div>
 
-            {step === 'otp' ? (
-              <div className="space-y-2 group animate-in slide-in-from-bottom-2 duration-500">
+            <div className="space-y-2 group">
+              <div className="flex items-center justify-between">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                  Verification Code
+                  Your Password
                 </label>
-                <div className="relative">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={otpToken}
-                    onChange={(e) => setOtpToken(e.target.value)}
-                    className="w-full h-18 pl-14 pr-6 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg tracking-[0.5em]"
-                    placeholder="000000"
-                  />
-                </div>
-                <button 
-                  type="button"
-                  onClick={() => setStep('email')}
-                  className="text-xs font-bold text-primary hover:underline underline-offset-4 mt-2"
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-bold text-primary hover:underline underline-offset-4"
                 >
-                  Use a different email
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full h-18 pl-14 pr-14 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
-            ) : (
-              <div className="space-y-2 group animate-in fade-in duration-500">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-primary transition-colors">
-                    Your Password (Optional)
-                  </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-bold text-primary hover:underline underline-offset-4"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                    <Lock className="w-6 h-6" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full h-18 pl-14 pr-14 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-0 focus:bg-white rounded-2xl transition-all font-bold text-foreground text-lg"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
-                  </button>
-                </div>
-                <p className="text-[10px] text-muted-foreground font-medium italic">
-                  * Leaving password blank will send an OTP code instead.
-                </p>
-              </div>
-            )}
+            </div>
 
-            {step === 'email' && (
-              <div className="flex items-center justify-between px-1">
-                <label className="flex items-center gap-3 cursor-pointer group/check">
-                  <div className="relative w-6 h-6">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="peer appearance-none w-6 h-6 rounded-lg bg-secondary/50 border border-border group-hover/check:border-primary/50 checked:bg-primary checked:border-primary transition-all cursor-pointer shadow-inner"
-                    />
-                    <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover/check:text-foreground transition-colors">
-                    Remember me
-                  </span>
-                </label>
-              </div>
-            )}
+            <div className="flex items-center justify-between px-1">
+              <label className="flex items-center gap-3 cursor-pointer group/check">
+                <div className="relative w-6 h-6">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer appearance-none w-6 h-6 rounded-lg bg-secondary/50 border border-border group-hover/check:border-primary/50 checked:bg-primary checked:border-primary transition-all cursor-pointer shadow-inner"
+                  />
+                  <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+                </div>
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover/check:text-foreground transition-colors">
+                  Remember me
+                </span>
+              </label>
+            </div>
 
             <div className="pt-2">
               <Button
@@ -247,29 +162,24 @@ export const LoginPage = () => {
                 className="w-full h-18 rounded-2xl btn-premium text-lg font-black tracking-tight"
                 disabled={isLoading}
               >
-                {isLoading ? 'Processing...' : (
-                  step === 'email' 
-                    ? (formData.password ? 'Sign In' : 'Get Secure Code') 
-                    : 'Verify & Enter'
-                )}
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </div>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border/50 text-center">
             <p className="text-muted-foreground font-bold">
-              New to Agro-Direct?{' '}
+              New here?{' '}
               <Link to="/signup" className="text-primary hover:underline underline-offset-8 decoration-2 ml-1">
-                Join here
+                Create account
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="mt-12 text-center space-y-4">
+        <div className="mt-12 text-center">
            <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
-             © 2026 AgroDirect Connect • Direct Farming
+             © 2026 AgroDirect Connect
            </p>
         </div>
       </div>
