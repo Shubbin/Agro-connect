@@ -4,7 +4,7 @@ import { supabase } from '../config/db.js';
 export const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ message: 'Email and password are required' });
   }
 
   try {
@@ -15,7 +15,7 @@ export const login = async (req, res) => {
 
     if (authError) {
       console.error('❌ TRACE [LOGIN]: Auth Failed:', authError.message);
-      return res.status(401).json({ error: authError.message });
+      return res.status(401).json({ message: authError.message });
     }
 
     const { data: user } = await supabase
@@ -30,7 +30,7 @@ export const login = async (req, res) => {
       token: authData.session.access_token 
     });
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ message: 'Login failed' });
   }
 };
 
@@ -39,7 +39,7 @@ export const register = async (req, res) => {
   const { name, email, password, role = 'user', phone = '' } = req.body;
 
   if (!email || !password || !name) {
-    return res.status(400).json({ error: 'All fields are required' });
+    return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
@@ -53,7 +53,12 @@ export const register = async (req, res) => {
     });
 
     if (authError) {
-      return res.status(400).json({ error: authError.message });
+      console.error('❌ TRACE [REGISTRATION]: Supabase Auth Error:', {
+        message: authError.message,
+        status: authError.status,
+        code: authError.code
+      });
+      return res.status(400).json({ message: authError.message });
     }
 
     // Insert into public.users
@@ -75,10 +80,10 @@ export const register = async (req, res) => {
     return res.json({ 
       message: 'Please check your email to verify your account.',
       user: newUser || authData.user,
-      session: authData.session // This will be null if email confirm is ON
+      session: authData.session
     });
   } catch (err) {
-    res.status(500).json({ error: 'Registration failed' });
+    res.status(500).json({ message: 'Registration failed' });
   }
 };
 
