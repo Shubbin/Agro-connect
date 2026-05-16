@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { walletAPI } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, Clock, XCircle, ArrowDownLeft, ArrowUpRight, ArrowLeft, Wallet, Building2, TrendingUp, ShieldCheck, Download, Filter, ChevronRight, X } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, ArrowDownLeft, ArrowUpRight, ArrowLeft, Wallet, Building2, TrendingUp, ShieldCheck, Download, Filter, ChevronRight, X, CreditCard, Landmark, DollarSign, RefreshCw, Landmark as BankIcon, History, Info, Smartphone, Monitor, Database, ArrowRight, Activity, FileText, Hash } from 'lucide-react';
 
 export const WalletPage = () => {
   const [balance, setBalance] = useState({ available: 0, pending: 0 });
@@ -39,15 +39,15 @@ export const WalletPage = () => {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-    }).format(price);
+    }).format(price || 0);
   };
 
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) {
       toast({
-        title: 'Invalid amount',
-        description: 'Please enter a valid withdrawal amount.',
+        title: 'Validation Error',
+        description: 'Please specify a valid monetary magnitude for withdrawal.',
         variant: 'destructive',
       });
       return;
@@ -55,8 +55,8 @@ export const WalletPage = () => {
 
     if (amount > balance.available) {
       toast({
-        title: 'Insufficient balance',
-        description: 'You cannot withdraw more than your available balance.',
+        title: 'Settlement Threshold Exceeded',
+        description: 'The requested magnitude exceeds your authorized liquid capital.',
         variant: 'destructive',
       });
       return;
@@ -64,20 +64,19 @@ export const WalletPage = () => {
 
     setIsWithdrawing(true);
     try {
-      const result = await walletAPI.requestWithdrawal(amount);
+      await walletAPI.requestWithdrawal(amount);
       toast({
-        title: 'Withdrawal requested',
-        description: result.message,
+        title: 'Withdrawal Authorized',
+        description: 'Electronic transfer has been queued for immediate processing through the institutional hub terminal.',
       });
       setShowWithdrawModal(false);
       setWithdrawAmount('');
-      // Refresh balance
       const walletData = await walletAPI.getBalance();
       setBalance({ available: walletData.available, pending: walletData.pending });
     } catch (error) {
       toast({
-        title: 'Withdrawal failed',
-        description: 'Something went wrong. Please try again.',
+        title: 'Processing Error',
+        description: 'Critical system error encountered during settlement authorization synchronization.',
         variant: 'destructive',
       });
     } finally {
@@ -85,266 +84,332 @@ export const WalletPage = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'pending':
-        return <Clock className="w-4 h-4 text-amber-600" />;
-      case 'failed':
-        return <XCircle className="w-4 h-4 text-red-600" />;
-      default:
-        return null;
-    }
-  };
-
   const getTypeIcon = (type) => {
     switch (type) {
       case 'credit':
-        return <ArrowDownLeft className="w-4 h-4 text-green-600" />;
+        return <ArrowDownLeft className="w-8 h-8 text-emerald-600" />;
       case 'debit':
       case 'withdrawal':
-        return <ArrowUpRight className="w-4 h-4 text-red-600" />;
+        return <ArrowUpRight className="w-8 h-8 text-red-600" />;
       default:
-        return null;
+        return <RefreshCw className="w-8 h-8 text-slate-400" />;
     }
   };
 
   if (isLoading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+      <MainLayout hideFooter hideAI>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+           <div className="flex flex-col items-center gap-12">
+              <div className="w-20 h-20 border-4 border-slate-200 border-t-primary rounded-full animate-spin shadow-2xl" />
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] animate-pulse">Synchronizing Institutional Financial Registry...</p>
+           </div>
         </div>
       </MainLayout>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="relative min-h-screen bg-background pb-20">
-        {/* Ambient background */}
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+    <MainLayout hideFooter hideAI>
+      <div className="bg-slate-50 min-h-screen pb-60">
+        {/* Institutional Financial Console Registry Header */}
+        <section className="bg-white border-b border-slate-200 pt-32 pb-24 relative overflow-hidden">
+           <div className="absolute inset-0 bg-slate-50/50 pointer-events-none" />
+           <div className="container mx-auto px-4 max-w-7xl relative z-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-16">
+                 <div className="space-y-8">
+                    <div className="inline-flex items-center gap-4 px-6 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.3em] shadow-[0_20px_50px_-10px_rgba(15,23,42,0.4)]">
+                       <ShieldCheck className="w-5 h-5 text-primary shadow-[0_0_10px_rgba(0,166,81,0.5)]" />
+                       Corporate Settlement Terminal
+                    </div>
+                    <div className="space-y-4">
+                       <h1 className="text-5xl md:text-6xl font-bold text-slate-900 tracking-tighter leading-none">Trade Capital Matrix</h1>
+                       <p className="text-xl font-medium text-slate-500 max-w-2xl leading-relaxed opacity-80">
+                          Monitor institutional trade settlements, manage liquid operational capital, and audit historical capital flow manifests through the global registry.
+                       </p>
+                    </div>
+                 </div>
+                 <div className="flex flex-wrap gap-6">
+                    <button className="h-20 px-12 rounded-2xl bg-white border border-slate-200 text-slate-900 font-bold text-[11px] uppercase tracking-[0.3em] hover:bg-slate-50 transition-all flex items-center gap-6 shadow-2xl active:scale-95 group/export">
+                       <Download className="w-6 h-6 text-primary group-hover/export:-translate-y-1 transition-transform" />
+                       Export Financial Manifest
+                    </button>
+                    <button 
+                      onClick={() => setShowWithdrawModal(true)}
+                      className="h-20 px-12 rounded-2xl bg-primary text-white font-bold text-[11px] uppercase tracking-[0.3em] shadow-[0_30px_70px_-15px_rgba(0,166,81,0.4)] hover:bg-primary/90 transition-all flex items-center gap-6 active:scale-95 group/sync"
+                    >
+                       <RefreshCw className="w-6 h-6 group-hover/sync:rotate-180 transition-transform duration-[1000ms]" />
+                       Initialize Settlement Sync
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </section>
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fade-in">
-            <div className="space-y-4">
-               <Link to="/farmer/dashboard" className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4">
-                  <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                  Dashboard
-               </Link>
-               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                  My <span className="text-gradient">Wallet</span>
-               </h1>
-               <p className="text-xl text-muted-foreground font-medium max-w-md">
-                 Manage your money and see all your transactions in one place.
-               </p>
-            </div>
-            <div className="flex gap-4">
-               <Button variant="outline" className="h-16 px-6 rounded-2xl border-border/50 font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-white transition-all">
-                  <Download className="w-4 h-4" />
-                  Download History
-               </Button>
-            </div>
-          </div>
-
-          {/* Balance Cards */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-12 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="lg:col-span-2 glass-premium bg-primary p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border-primary/20 shadow-2xl shadow-primary/20 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                  <TrendingUp className="w-48 h-48 text-white" />
+        <div className="container mx-auto px-4 py-32 max-w-7xl">
+          {/* Capital & Settlement Matrix Grid */}
+          <div className="grid lg:grid-cols-3 gap-16 mb-40">
+            <div className="lg:col-span-2 bg-slate-900 p-20 rounded-[4rem] border border-slate-800 shadow-[0_60px_150px_-30px_rgba(15,23,42,0.4)] relative overflow-hidden group/main">
+               <div className="absolute top-0 right-0 p-20 opacity-[0.03] -mr-32 -mt-32 group-hover/main:scale-125 transition-transform duration-[2000ms]">
+                  <TrendingUp className="w-[600px] h-[600px] text-white" />
                </div>
-               <div className="relative z-10 flex flex-col h-full justify-between">
-                  <div className="flex items-start justify-between">
-                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                           <Wallet className="w-8 h-8 text-white" />
+               <div className="relative z-10 flex flex-col h-full justify-between gap-24">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-16">
+                     <div className="flex items-center gap-12">
+                        <div className="w-28 h-28 bg-white/5 rounded-[2rem] flex items-center justify-center shadow-inner border border-white/10 group-hover/main:bg-primary group-hover/main:border-primary/20 transition-all duration-1000">
+                           <Wallet className="w-14 h-14 text-white" />
                         </div>
-                        <div>
-                           <p className="text-white/70 text-xs font-black uppercase tracking-widest">Available Money</p>
-                           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tighter">{formatPrice(balance.available)}</h2>
+                        <div className="space-y-3">
+                           <p className="text-slate-500 text-[11px] font-bold uppercase tracking-[0.4em]">Available Operational Capital</p>
+                           <h2 className="text-7xl md:text-8xl font-bold text-white tracking-tighter group-hover/main:text-primary transition-colors duration-700">{formatPrice(balance.available)}</h2>
                         </div>
                      </div>
-                     <div className="px-4 py-2 bg-white/10 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-                        Safe & Secure
+                     <div className="px-6 py-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-[11px] font-bold uppercase tracking-[0.3em] text-emerald-400 self-start shadow-2xl shadow-emerald-500/5">
+                        Status: Authorized Liquid Asset
                      </div>
                   </div>
                   
-                  <div className="mt-12 flex flex-col sm:flex-row items-center gap-6">
-                      <Button
-                        className="h-16 sm:h-20 flex-1 w-full sm:w-auto rounded-[1.25rem] sm:rounded-[1.5rem] bg-white text-primary hover:bg-white/90 text-lg font-black tracking-tight"
+                  <div className="flex flex-col sm:flex-row items-center gap-12 border-t border-white/5 pt-16">
+                      <button
+                        className="h-24 flex-1 w-full sm:w-auto rounded-[1.5rem] bg-white text-slate-900 hover:bg-slate-50 text-xl font-bold uppercase tracking-[0.3em] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] transition-all active:scale-95 flex items-center justify-center gap-8 group/btn"
                         onClick={() => setShowWithdrawModal(true)}
                       >
-                        Withdraw Money
-                      </Button>
-                     <div className="flex items-center gap-3 text-white/70">
-                        <ShieldCheck className="w-5 h-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Instant Payout Enabled</span>
+                        <RefreshCw className="w-8 h-8 text-primary group-hover/btn:rotate-180 transition-transform duration-1000" />
+                        Authorize Disbursement
+                      </button>
+                     <div className="flex items-center gap-6 text-slate-500">
+                        <ShieldCheck className="w-8 h-8 text-primary shadow-[0_0_15px_rgba(0,166,81,0.5)]" />
+                        <span className="text-[11px] font-bold uppercase tracking-[0.4em] opacity-60">Institutional Protocol v4.2.0-STABLE</span>
                      </div>
                   </div>
                </div>
             </div>
 
-            <div className="glass-premium p-10 rounded-[3rem] border-border/50 relative overflow-hidden group flex flex-col justify-between">
-               <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                  <Clock className="w-32 h-32 text-primary" />
+            <div className="bg-white p-20 rounded-[4rem] border border-slate-200 shadow-[0_60px_150px_-30px_rgba(0,0,0,0.1)] relative overflow-hidden group/escrow flex flex-col justify-between hover:border-primary/40 hover:shadow-[0_80px_200px_-40px_rgba(0,0,0,0.15)] transition-all duration-1000">
+               <div className="absolute top-0 right-0 p-16 opacity-[0.03] -mr-24 -mt-24 group-hover/escrow:scale-125 transition-transform duration-[2000ms]">
+                  <Clock className="w-[450px] h-[450px] text-slate-900" />
                </div>
-               <div>
-                  <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6">
-                     <Clock className="w-6 h-6 text-amber-600" />
+               <div className="space-y-12 relative z-10">
+                  <div className="w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center border border-amber-100 shadow-2xl group-hover/escrow:scale-110 transition-transform duration-700">
+                     <Clock className="w-10 h-10 text-amber-600 shadow-[0_0_10px_rgba(217,119,6,0.3)]" />
                   </div>
-                   <p className="text-muted-foreground text-xs font-black uppercase tracking-widest mb-1">Money in Waiting</p>
-                   <h3 className="text-3xl sm:text-4xl font-black text-foreground tracking-tighter">{formatPrice(balance.pending)}</h3>
+                  <div className="space-y-3">
+                    <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.4em]">Escrow Asset Lock Node</p>
+                    <h3 className="text-6xl font-bold text-slate-900 tracking-tighter group-hover/escrow:text-amber-600 transition-colors duration-700">{formatPrice(balance.pending)}</h3>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-8 border-t border-border/30 pt-6 italic">
-                  Waiting for the buyer to receive their order. You'll get your money 24 hours after they confirm.
-                </p>
+                <div className="pt-16 border-t border-slate-50 relative z-10 space-y-8">
+                   <div className="flex items-center gap-5">
+                      <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-primary shadow-inner">
+                         <Info className="w-5 h-5" />
+                      </div>
+                      <p className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em]">Escrow Narrative Hub</p>
+                   </div>
+                   <p className="text-base text-slate-500 font-medium leading-relaxed italic opacity-80">
+                     "Trade capital localized in secure clearing accounts. Released post-fulfillment verification cycle (24-48 business hours) through regional hub node."
+                   </p>
+                </div>
             </div>
           </div>
 
-          {/* Transaction Suite */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-             <div className="flex items-center justify-between mb-8 px-4">
-                <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
-                   Money History
-                </h2>
-                <div className="flex items-center gap-2">
-                   <Button variant="ghost" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[10px]">
-                      <Filter className="w-3 h-3 mr-2" />
-                      Filter
-                   </Button>
+          {/* Historical Financial Manifest Registry Ledger */}
+          <div className="space-y-16">
+             <div className="flex items-center justify-between px-6">
+                <div className="flex items-center gap-8">
+                   <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-[0_30px_60px_-15px_rgba(15,23,42,0.5)]">
+                      <History className="w-8 h-8 text-primary shadow-[0_0_10px_rgba(0,166,81,0.5)]" />
+                   </div>
+                   <div className="space-y-1">
+                      <h2 className="text-4xl font-bold text-slate-900 tracking-tighter">Financial Manifest Registry</h2>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none">Historical Trade Audit Ledger</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-10">
+                   <button className="flex items-center gap-4 text-[11px] font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-[0.4em] group/filter">
+                      <Filter className="w-5 h-5 group-hover/filter:scale-125 transition-transform" />
+                      Auditorial Filter Matrix
+                   </button>
                 </div>
              </div>
              
-             <div className="glass-premium rounded-[2.5rem] border-border/50 overflow-hidden shadow-xl shadow-primary/5">
+             <div className="bg-white rounded-[4rem] border border-slate-200 shadow-[0_60px_150px_-30px_rgba(0,0,0,0.1)] overflow-hidden group/registry">
                {transactions.length === 0 ? (
-                 <div className="p-24 text-center">
-                   <div className="w-20 h-20 bg-secondary rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
-                     <Wallet className="w-8 h-8 text-muted-foreground opacity-30" />
-                   </div>
-                    <p className="text-xl font-black text-muted-foreground tracking-tight">No Money History Found</p>
-                    <p className="text-sm text-muted-foreground/60 font-medium">Your transactions will show up here as you buy and sell.</p>
+                 <div className="p-60 text-center flex flex-col items-center space-y-16 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover/registry:opacity-100 transition-opacity duration-[2000ms]" />
+                    <div className="w-36 h-36 bg-slate-50 border border-slate-100 rounded-[3rem] flex items-center justify-center mx-auto shadow-inner relative z-10 transform -rotate-12 group-hover/registry:rotate-0 transition-transform duration-1000">
+                      <FileText className="w-16 h-16 text-slate-100" />
+                    </div>
+                    <div className="space-y-6 relative z-10">
+                       <p className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">Zero Manifests Archive</p>
+                       <p className="text-xl text-slate-500 font-medium max-w-md mx-auto leading-relaxed opacity-80">Historical capital flows will be recorded here upon institutional trade initialization and verified settlement cycle.</p>
+                    </div>
+                    <button className="h-16 px-10 rounded-2xl bg-white border border-slate-200 text-slate-900 text-[11px] font-bold uppercase tracking-[0.3em] shadow-2xl relative z-10 active:scale-95 transition-all">
+                       Initialize Sync Logic
+                    </button>
                  </div>
                ) : (
-                 <div className="divide-y divide-border/30">
-                   {transactions.map((txn) => (
-                      <div key={txn.id} className="p-4 sm:p-8 flex items-center gap-4 sm:gap-8 hover:bg-primary/[0.01] transition-all group">
-                        <div className={cn(
-                          "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                          txn.type === 'credit' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
-                        )}>
-                          {getTypeIcon(txn.type)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <p className="text-lg font-black text-foreground tracking-tight truncate group-hover:text-primary transition-colors">
-                            {txn.description}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">
-                            {txn.date}
-                          </p>
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className={cn(
-                            "text-lg sm:text-xl font-black tracking-tighter mb-1",
-                            txn.type === 'credit' ? 'text-green-600' : 'text-foreground'
-                          )}>
-                            {txn.type === 'credit' ? '+' : '-'}{formatPrice(txn.amount)}
-                          </p>
-                          <div className="flex items-center gap-2 justify-end">
-                             <span className={cn(
-                                "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
-                                txn.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                txn.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                'bg-red-500/10 text-red-600 border-red-500/20'
-                             )}>
-                                {txn.status}
-                             </span>
-                          </div>
-                        </div>
-                        
-                        <ChevronRight className="w-5 h-5 text-muted-foreground/20 group-hover:translate-x-1 group-hover:text-primary/40 transition-all hidden sm:block" />
-                      </div>
-                   ))}
+                 <div className="divide-y divide-slate-50">
+                    {transactions.map((txn) => (
+                       <div key={txn.id} className="p-16 flex items-center gap-16 hover:bg-slate-50/50 transition-all duration-700 group/row cursor-pointer relative overflow-hidden">
+                         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/row:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                         <div className={cn(
+                           "w-20 h-20 rounded-[1.5rem] flex items-center justify-center shrink-0 border shadow-2xl transition-all duration-700 group-hover/row:scale-110 group-hover/row:rotate-6 relative z-10",
+                           txn.type === 'credit' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-500/5' : 'bg-red-50 text-red-600 border-red-100 shadow-red-500/5'
+                         )}>
+                           {getTypeIcon(txn.type)}
+                         </div>
+                         
+                         <div className="flex-1 min-w-0 space-y-3 relative z-10">
+                           <p className="text-2xl font-bold text-slate-900 truncate group-hover/row:text-primary transition-colors tracking-tighter">
+                             {txn.description}
+                           </p>
+                           <div className="flex flex-wrap items-center gap-10 text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                              <span className="flex items-center gap-3"><Hash className="w-4 h-4 text-primary" /> NODE: #{txn.id.toString().toUpperCase().slice(-8)}</span>
+                              <span className="text-slate-100 opacity-20">|</span>
+                              <span className="flex items-center gap-3"><Clock className="w-4 h-4" /> {txn.date}</span>
+                              <span className="text-slate-100 opacity-20">|</span>
+                              <span className="flex items-center gap-3"><Landmark className="w-4 h-4" /> Hub Authorization: Lagos</span>
+                           </div>
+                         </div>
+                         
+                         <div className="text-right flex flex-col items-end gap-6 relative z-10">
+                           <p className={cn(
+                             "text-4xl font-bold tracking-tighter leading-none",
+                             txn.type === 'credit' ? 'text-emerald-600' : 'text-slate-900'
+                           )}>
+                             {txn.type === 'credit' ? '+' : '-'}{formatPrice(txn.amount)}
+                           </p>
+                           <span className={cn(
+                              "text-[10px] font-bold uppercase tracking-[0.3em] px-5 py-2 rounded-xl shadow-2xl border",
+                              txn.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-emerald-500/5' :
+                              txn.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-500/5' :
+                              'bg-red-50 text-red-600 border-red-100'
+                           )}>
+                              {txn.status}
+                           </span>
+                         </div>
+                         
+                         <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-200 group-hover/row:text-primary group-hover/row:border-primary/20 shadow-2xl transition-all group-hover/row:translate-x-3 relative z-10 active:scale-90">
+                            <ChevronRight className="w-7 h-7" />
+                         </div>
+                       </div>
+                    ))}
                  </div>
                )}
              </div>
           </div>
+          
+          {/* Institutional Dashboard Sync Node Hub */}
+          <div className="pt-32 flex items-center justify-center gap-20 opacity-10">
+             <Smartphone className="w-10 h-10 text-slate-900" />
+             <Monitor className="w-10 h-10 text-slate-900" />
+             <Landmark className="w-10 h-10 text-slate-900" />
+             <LayoutGrid className="w-10 h-10 text-slate-900" />
+             <Activity className="w-10 h-10 text-slate-900" />
+             <Database className="w-10 h-10 text-slate-900" />
+          </div>
         </div>
       </div>
 
-      {/* Premium Withdrawal Interface */}
+      {/* Corporate Settlement Authorization Modal Terminal */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xl bg-background/80 animate-fade-in">
-          <div className="glass-premium p-6 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] border-primary/20 w-full max-w-lg shadow-2xl relative overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
-             <div className="absolute top-0 right-0 p-12 opacity-[0.03]">
-                <Download className="w-48 h-48 text-primary" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/90 backdrop-blur-2xl animate-fade-in">
+          <div className="bg-white p-20 rounded-[4rem] border border-slate-200 w-full max-w-3xl shadow-[0_100px_200px_-50px_rgba(0,0,0,0.6)] relative overflow-hidden animate-fade-up">
+             <div className="absolute top-0 right-0 p-24 opacity-[0.03] -mr-32 -mt-32 pointer-events-none group-hover:scale-125 transition-transform duration-[2000ms]">
+                <RefreshCw className="w-[800px] h-[800px] text-slate-900" />
              </div>
-
-             <div className="flex items-center justify-between mb-10">
-                 <h3 className="text-3xl font-black text-foreground tracking-tight">Withdraw Money</h3>
+             
+             <div className="flex items-center justify-between mb-20 relative z-10">
+                <div className="flex items-center gap-8">
+                   <div className="w-20 h-20 bg-slate-900 rounded-[1.75rem] flex items-center justify-center text-primary shadow-[0_30px_60px_-15px_rgba(15,23,42,0.5)]">
+                      <RefreshCw className="w-10 h-10 shadow-[0_0_15px_rgba(0,166,81,0.5)]" />
+                   </div>
+                   <div className="space-y-2">
+                      <h3 className="text-4xl font-bold text-slate-900 tracking-tighter">Settlement Authorization</h3>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em]">Execute Institutional Corporate Disbursement</p>
+                   </div>
+                </div>
                 <button 
                   onClick={() => setShowWithdrawModal(false)}
-                  className="w-12 h-12 glass-premium rounded-2xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-90"
+                  className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all active:scale-90 shadow-inner border border-slate-100"
                 >
-                   <X className="w-6 h-6" />
+                   <X className="w-8 h-8" />
                 </button>
              </div>
             
-            <div className="glass-premium bg-primary/[0.03] rounded-3xl p-6 mb-10 border-primary/10">
-               <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Total Money You Can Withdraw</p>
-              <p className="text-4xl font-black text-gradient tracking-tighter">{formatPrice(balance.available)}</p>
+            <div className="bg-slate-900 p-16 rounded-[3rem] mb-20 relative overflow-hidden border border-slate-800 shadow-[0_40px_100px_-20px_rgba(15,23,42,0.5)] group/balance">
+               <div className="absolute top-0 right-0 p-16 opacity-10 -mr-16 -mt-16 group-hover/balance:scale-125 transition-transform duration-[2000ms]">
+                  <DollarSign className="w-64 h-64 text-white" />
+               </div>
+               <p className="text-slate-500 text-[11px] font-bold uppercase tracking-[0.4em] mb-4 relative z-10 opacity-60">Authorized Liquid Capital Magnitude</p>
+               <p className="text-6xl md:text-7xl font-bold text-white tracking-tighter relative z-10 group-hover/balance:text-primary transition-colors duration-700">{formatPrice(balance.available)}</p>
             </div>
 
-            <div className="space-y-8 relative z-10">
-              <div className="group">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                    Amount to Withdraw (₦)
+            <div className="space-y-16 relative z-10">
+              <div className="space-y-6">
+                <label className="block text-[11px] font-bold uppercase tracking-[0.4em] text-slate-400 ml-2">
+                    Settlement Disbursement Magnitude (NGN)
                 </label>
-                <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-muted-foreground opacity-30">₦</span>
+                <div className="relative group/input">
+                  <div className="absolute left-10 top-1/2 -translate-y-1/2 text-4xl font-bold text-slate-200 group-focus-within/input:text-primary transition-colors duration-700">₦</div>
                   <input
                     type="number"
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                    className="w-full h-20 pl-14 pr-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 text-2xl font-black tracking-tight rounded-[1.5rem] transition-all"
+                    className="w-full h-24 pl-24 pr-10 bg-slate-50 border border-slate-200 text-5xl font-bold text-slate-900 tracking-tighter rounded-[2.5rem] focus:ring-[20px] focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner"
                     placeholder="0.00"
                   />
                 </div>
               </div>
 
-              <div className="glass-premium bg-secondary/50 rounded-3xl p-6 border-border/50">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
-                    <Building2 className="w-6 h-6" />
+              <div className="bg-slate-50 p-12 rounded-[3rem] border border-slate-100 space-y-8 shadow-inner group/bank">
+                <div className="flex items-center justify-between border-b border-slate-200/50 pb-8 relative overflow-hidden">
+                   <div className="flex items-center gap-5 relative z-10">
+                      <BankIcon className="w-6 h-6 text-primary" />
+                      <p className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.4em]">Institutional Disbursement Terminal Hub</p>
+                   </div>
+                   <div className="w-8 h-8 bg-primary/10 rounded-full animate-ping opacity-20" />
+                </div>
+                <div className="flex items-center gap-10">
+                  <div className="w-20 h-20 bg-white rounded-[1.75rem] border border-slate-200 flex items-center justify-center text-slate-300 shadow-2xl group-hover/bank:scale-110 group-hover/bank:bg-slate-900 group-hover/bank:text-primary transition-all duration-1000">
+                    <Building2 className="w-10 h-10" />
                   </div>
-                  <div>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Where your money goes</p>
-                    <p className="text-sm font-black text-foreground">GTBank • Trans-Regional Terminal **** 1234</p>
+                  <div className="space-y-2">
+                    <p className="text-2xl font-bold text-slate-900 tracking-tighter">Main Operations Terminal Account</p>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] flex items-center gap-4">
+                       <Smartphone className="w-4 h-4 text-primary" />
+                       Protocol: Electronic Ledger Registry • **** 7821
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-[10px] text-muted-foreground font-medium text-center px-4">
-                 Your withdrawal will be processed and sent to your bank account within 24 hours.
-              </p>
+              <div className="flex items-start gap-6 px-6 opacity-80">
+                 <ShieldCheck className="w-7 h-7 text-emerald-500 shrink-0 mt-1 shadow-[0_0_10px_rgba(0,166,81,0.3)]" />
+                 <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.3em] leading-relaxed">
+                    "Electronic disbursement authorized and synchronized within 24 business hours to the verified institutional terminal specified above. All transactions recorded in blockchain audit ledger registry v4.0."
+                 </p>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-12">
-              <Button
-                className="h-20 flex-1 rounded-[1.5rem] btn-premium text-lg font-black tracking-tight shadow-xl shadow-primary/20"
+            <div className="mt-20">
+              <button
+                className="h-24 w-full rounded-[2rem] bg-primary text-white font-bold text-xl uppercase tracking-[0.3em] shadow-[0_40px_100px_-20px_rgba(0,166,81,0.5)] hover:bg-primary/90 transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-8 group/final"
                 onClick={handleWithdraw}
                 disabled={isWithdrawing}
               >
                 {isWithdrawing ? (
-                   <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-                      Executing...
-                   </div>
-                 ) : 'Confirm Withdrawal'}
-              </Button>
+                   <>
+                      <RefreshCw className="w-10 h-10 animate-spin" />
+                      Synchronizing Registry Hub...
+                   </>
+                 ) : (
+                    <>
+                       Authorize Institutional Disbursement
+                       <ArrowRight className="w-7 h-7 group-hover/final:translate-x-4 transition-transform duration-700" />
+                    </>
+                 )}
+              </button>
             </div>
           </div>
         </div>

@@ -6,25 +6,26 @@ import { productsAPI, aiAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Upload, ArrowLeft, Lightbulb, X, Sparkles, Plus, Image as ImageIcon, MapPin, Tag, Package, HelpCircle } from 'lucide-react';
+import { Upload, ArrowLeft, Lightbulb, X, Sparkles, Plus, Image as ImageIcon, MapPin, Tag, Package, HelpCircle, ChevronRight, Info, ShieldCheck, Database, FileText, Globe, Landmark, RefreshCw, Smartphone, Monitor, Database as DatabaseIcon, Layers, Target, Activity } from 'lucide-react';
 
 const categories = [
-  { value: 'produce', label: 'Fresh Produce' },
-  { value: 'tools', label: 'Farm Tools' },
-  { value: 'equipment', label: 'Equipment' },
+  { value: 'produce', label: 'Fresh Produce & Grains' },
+  { value: 'tools', label: 'Manual Farm Implements' },
+  { value: 'equipment', label: 'Industrial Machinery' },
 ];
 
 const units = [
   { value: 'kg', label: 'Kilogram (kg)' },
-  { value: 'bag', label: 'Bag' },
-  { value: 'crate', label: 'Crate' },
-  { value: 'ton', label: 'Ton' },
-  { value: 'piece', label: 'Piece' },
+  { value: 'bag', label: 'Standard Bag (50kg)' },
+  { value: 'crate', label: 'Industrial Crate' },
+  { value: 'ton', label: 'Metric Ton' },
+  { value: 'piece', label: 'Individual Unit' },
 ];
 
 const locations = [
-  'Lagos', 'Kano', 'Kaduna', 'Oyo', 'Rivers', 'Ogun', 'Sokoto', 'Ebonyi', 'Imo',
-  'Anambra', 'Benue', 'Plateau', 'Enugu', 'Delta', 'Abia'
+  'Lagos Strategic Hub', 'Kano Industrial North', 'Kaduna Supply Node', 'Oyo Logistics Hub', 'Rivers Delta Node', 
+  'Ogun Border Hub', 'Sokoto Grain Belt', 'Ebonyi Rice Hub', 'Imo Supply Hub',
+  'Anambra Trade Hub', 'Benue Grain Hub', 'Plateau Highland Hub', 'Enugu South-East Hub', 'Delta Coastal Hub', 'Abia Trade Node'
 ];
 
 export const ProductFormPage = () => {
@@ -47,8 +48,8 @@ export const ProductFormPage = () => {
     unit: 'kg',
     minOrder: '',
     available: '',
-    location: 'Lagos',
-    images: ['/placeholder.svg'],
+    location: 'Lagos Strategic Hub',
+    images: ['https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=2080&auto=format&fit=crop'],
   });
 
   useEffect(() => {
@@ -66,13 +67,13 @@ export const ProductFormPage = () => {
               minOrder: product.minOrder.toString(),
               available: product.available.toString(),
               location: product.location,
-              images: product.images || ['/placeholder.svg'],
+              images: product.images || [formData.images[0]],
             });
           }
         } catch (error) {
           toast({
-            title: 'Error',
-            description: 'Could not load product details.',
+            title: 'Retrieval Failure',
+            description: 'The requested asset record could not be localized within the network.',
             variant: 'destructive',
           });
           navigate('/farmer/products');
@@ -84,7 +85,6 @@ export const ProductFormPage = () => {
     }
   }, [id, isEditing, navigate, toast]);
 
-  // Fetch AI suggestions when product data changes
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (formData.name && formData.category) {
@@ -96,7 +96,7 @@ export const ProductFormPage = () => {
           });
           setAiSuggestions(result.suggestions || []);
         } catch (error) {
-          // Silently fail for AI suggestions
+          // AI suggestions silences errors
         }
       }
     }, 1000);
@@ -106,11 +106,10 @@ export const ProductFormPage = () => {
   const handleImageUpload = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // In a real app, you would upload to a server and get URLs back
       const newImages = Array.from(files).map(file => URL.createObjectURL(file));
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images.filter(img => img !== '/placeholder.svg'), ...newImages],
+        images: [...prev.images.filter(img => !img.includes('placeholder')), ...newImages],
       }));
     }
   };
@@ -127,8 +126,8 @@ export const ProductFormPage = () => {
     
     if (!formData.name || !formData.price || !formData.available) {
       toast({
-        title: 'Missing information',
-        description: 'Please fill in all required fields.',
+        title: 'Validation Error',
+        description: 'Mandatory technical specifications are missing from the manifest.',
         variant: 'destructive',
       });
       return;
@@ -138,37 +137,32 @@ export const ProductFormPage = () => {
 
     try {
       const productData = {
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
+        ...formData,
         price: parseFloat(formData.price),
-        unit: formData.unit,
         minOrder: parseInt(formData.minOrder) || 1,
         available: parseInt(formData.available),
-        location: formData.location,
         farmerId: user?.id,
-        images: formData.images.length > 0 ? formData.images : ['/placeholder.svg'],
       };
 
       if (isEditing && id) {
         await productsAPI.update(id, productData);
         toast({
-          title: 'Product updated',
-          description: 'Your product has been updated successfully.',
+          title: 'Ledger Updated',
+          description: 'Marketplace asset specifications successfully synchronized.',
         });
       } else {
         await productsAPI.create(productData);
         toast({
-          title: 'Product created',
-          description: 'Your product has been listed on the marketplace.',
+          title: 'Asset Initialized',
+          description: 'New commodity assigned to the institutional discovery hub.',
         });
       }
 
       navigate('/farmer/products');
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Could not save product. Please try again.',
+        title: 'Synchronization Error',
+        description: 'Critical system failure: Could not commit asset to the registry.',
         variant: 'destructive',
       });
     } finally {
@@ -179,8 +173,11 @@ export const ProductFormPage = () => {
   if (isFetching) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+           <div className="flex flex-col items-center gap-8">
+              <div className="w-16 h-16 border-4 border-slate-200 border-t-primary rounded-full animate-spin shadow-2xl" />
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] animate-pulse">Synchronizing Asset Data...</p>
+           </div>
         </div>
       </MainLayout>
     );
@@ -188,318 +185,337 @@ export const ProductFormPage = () => {
 
   return (
     <MainLayout>
-      <div className="relative min-h-screen bg-background pb-20">
-        {/* Ambient background */}
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="bg-slate-50 min-h-screen pb-40">
+        {/* Institutional Record Header */}
+        <section className="bg-white border-b border-slate-200 pt-24 pb-20 relative overflow-hidden">
+           <div className="absolute inset-0 bg-slate-50/50 pointer-events-none" />
+           <div className="container mx-auto px-4 max-w-7xl relative z-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                 <div className="space-y-6">
+                    <button
+                      onClick={() => navigate('/farmer/products')}
+                      className="flex items-center gap-3 text-[10px] font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-[0.2em] group"
+                    >
+                       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1" />
+                       Inventory Registry
+                    </button>
+                    <div className="space-y-3">
+                       <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tighter">
+                          {isEditing ? 'Asset Modification' : 'Asset Initialization'}
+                       </h1>
+                       <p className="text-lg font-medium text-slate-500 max-w-xl leading-relaxed">
+                          {isEditing ? 'Adjust technical specifications and procurement settlement terms for this verified asset node.' : 'Initialize a new commodity position for institutional trade discovery and supply chain optimization.'}
+                       </p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </section>
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 animate-fade-in">
-             <div className="space-y-4">
-                <Link to="/farmer/products" className="group flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black uppercase tracking-widest text-[10px] mb-4">
-                   <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                   My Products
-                </Link>
-                <h1 className="text-5xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                   {isEditing ? 'Edit' : 'Post New'} <span className="text-gradient">Product</span>
-                </h1>
-                <p className="text-xl text-muted-foreground font-medium max-w-md">
-                   {isEditing ? 'Update your product details to help more buyers find it.' : 'Fill in the details below to put your product up for sale.'}
-                </p>
-             </div>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-12">
-            {/* Form Section */}
-            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-10 animate-fade-in-up">
-              {/* Product Specifications Section */}
-              <div className="glass-premium p-10 rounded-[3rem] border-border/50 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                   <Tag className="w-32 h-32 text-primary" />
+        <div className="container mx-auto px-4 py-20 max-w-7xl">
+          <div className="grid lg:grid-cols-3 gap-20">
+            {/* High-Density Specification Console */}
+            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-16">
+              
+              {/* Technical Specifications Matrix */}
+              <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-12 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-12 opacity-[0.03] -mr-12 -mt-12 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                   <FileText className="w-64 h-64 text-slate-900" />
                 </div>
                 
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                    <Tag className="w-6 h-6" />
+                <div className="flex items-center gap-5 border-b border-slate-50 pb-10 relative z-10">
+                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-primary shadow-2xl">
+                    <DatabaseIcon className="w-7 h-7" />
                   </div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">Specifications</h2>
+                  <div>
+                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Technical Data Manifest</h2>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] leading-none mt-2">Core Asset Parameters</p>
+                  </div>
                 </div>
 
-                <div className="space-y-8 relative z-10">
-                  <div className="grid sm:grid-cols-2 gap-8">
-                    <div className="sm:col-span-2 group">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        What are you selling?
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all"
-                        placeholder="e.g., Organic Vine-Ripened Tomatoes"
-                      />
+                <div className="space-y-12 relative z-10">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Asset Nomenclature</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full h-18 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 placeholder:text-slate-300 focus:ring-8 focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner"
+                      placeholder="e.g. Industrial Grade White Maize (Moisture: 13%)"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Technical Specification Narrative</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full min-h-[240px] p-8 bg-slate-50 border border-slate-200 rounded-2xl text-base font-medium text-slate-700 leading-relaxed focus:ring-8 focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none resize-none shadow-inner"
+                      placeholder="Provide exhaustive analysis of quality metrics, nutrient profiles, harvest synchronization logs, and logistics compliance..."
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-10">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Commodity Classification</label>
+                      <div className="relative group">
+                         <select
+                           value={formData.category}
+                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                           className="w-full h-18 pl-6 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 outline-none focus:ring-8 focus:ring-primary/5 focus:border-primary/40 transition-all appearance-none cursor-pointer shadow-inner"
+                         >
+                           {categories.map((cat) => (
+                             <option key={cat.value} value={cat.value}>{cat.label}</option>
+                           ))}
+                         </select>
+                         <Layers className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none group-hover:text-primary transition-colors" />
+                      </div>
                     </div>
 
-                    <div className="sm:col-span-2 group">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Describe your product
-                      </label>
-                      <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full min-h-[160px] p-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-3xl transition-all resize-none"
-                        placeholder="Provide details about your product..."
-                      />
-                    </div>
-
-                    <div className="group">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Category
-                      </label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all appearance-none"
-                      >
-                        {categories.map((cat) => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="group">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                        Where is it located?
-                      </label>
-                      <select
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all appearance-none"
-                      >
-                        {locations.map((loc) => (
-                          <option key={loc} value={loc}>{loc}</option>
-                        ))}
-                      </select>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Logistics Hub Node</label>
+                      <div className="relative group">
+                         <select
+                           value={formData.location}
+                           onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                           className="w-full h-18 pl-6 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 outline-none focus:ring-8 focus:ring-primary/5 focus:border-primary/40 transition-all appearance-none cursor-pointer shadow-inner"
+                         >
+                           {locations.map((loc) => (
+                             <option key={loc} value={loc}>{loc}</option>
+                           ))}
+                         </select>
+                         <Globe className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-primary pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Economic & Logistics Configuration */}
-              <div className="glass-premium p-10 rounded-[3rem] border-border/50 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                   <Package className="w-32 h-32 text-primary" />
+              {/* Trade Settlement Parameters */}
+              <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-12 relative group overflow-hidden">
+                <div className="absolute top-0 right-0 p-12 opacity-[0.03] -mr-12 -mt-12 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                   <Landmark className="w-64 h-64 text-slate-900" />
                 </div>
                 
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                    <Package className="w-6 h-6" />
+                <div className="flex items-center gap-5 border-b border-slate-50 pb-10 relative z-10">
+                  <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+                    <Target className="w-7 h-7" />
                   </div>
-                   <h2 className="text-2xl font-black text-foreground tracking-tight">Price & Shipping</h2>
+                  <div>
+                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Settlement & Economic Data</h2>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] leading-none mt-2">Trade Logic Configuration</p>
+                  </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-8 relative z-10">
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                       Price per unit (₦)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all"
-                      placeholder="650"
-                    />
+                <div className="grid md:grid-cols-2 gap-12 relative z-10">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Unit Settlement Rate (₦)</label>
+                    <div className="relative group">
+                       <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-300 group-focus-within:text-primary transition-colors">₦</div>
+                       <input
+                         type="number"
+                         required
+                         value={formData.price}
+                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                         className="w-full h-18 pl-16 pr-6 bg-slate-50 border border-slate-200 rounded-2xl text-xl font-bold text-slate-900 tracking-tighter focus:ring-8 focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner"
+                         placeholder="0.00"
+                       />
+                    </div>
                   </div>
 
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                       How do you sell it? (Kg, Bag, etc.)
-                    </label>
-                    <select
-                      value={formData.unit}
-                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all appearance-none"
-                    >
-                      {units.map((u) => (
-                        <option key={u.value} value={u.value}>{u.label}</option>
-                      ))}
-                    </select>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Asset Magnitude Class</label>
+                    <div className="relative group">
+                       <select
+                         value={formData.unit}
+                         onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                         className="w-full h-18 pl-6 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 outline-none focus:ring-8 focus:ring-primary/5 focus:border-primary/40 transition-all appearance-none cursor-pointer shadow-inner"
+                       >
+                         {units.map((u) => (
+                           <option key={u.value} value={u.value}>{u.label}</option>
+                         ))}
+                       </select>
+                       <RefreshCw className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none group-hover:rotate-180 transition-transform duration-700" />
+                    </div>
                   </div>
 
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                       Minimum you can sell
-                    </label>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Procurement Floor (Min. Batch)</label>
                     <input
                       type="number"
                       min="1"
                       value={formData.minOrder}
                       onChange={(e) => setFormData({ ...formData, minOrder: e.target.value })}
-                      className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all"
-                      placeholder="10"
+                      className="w-full h-18 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 focus:ring-8 focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner"
                     />
                   </div>
 
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">
-                       How much do you have?
-                    </label>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1">Total Available Magnitude</label>
                     <input
                       type="number"
                       required
                       min="0"
                       value={formData.available}
                       onChange={(e) => setFormData({ ...formData, available: e.target.value })}
-                      className="w-full h-16 px-6 glass-premium bg-white/50 border-border/50 group-hover:border-primary/30 focus:border-primary/50 rounded-2xl transition-all"
-                      placeholder="500"
+                      className="w-full h-18 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-slate-900 focus:ring-8 focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Visual Assets Allocation */}
-              <div className="glass-premium p-10 rounded-[3rem] border-border/50 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                   <ImageIcon className="w-32 h-32 text-primary" />
-                </div>
-                
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                    <ImageIcon className="w-6 h-6" />
-                  </div>
-                   <h2 className="text-2xl font-black text-foreground tracking-tight">Product Photos</h2>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-8 relative z-10">
-                  {formData.images.map((img, index) => (
-                    <div key={index} className="relative aspect-square glass-premium rounded-2xl border-border/50 p-1.5 group/img overflow-hidden">
-                       <div className="w-full h-full rounded-xl overflow-hidden bg-muted">
-                          <img
-                            src={img}
-                            alt={`Asset ${index + 1}`}
-                            className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500"
-                          />
-                       </div>
-                       <button
-                         type="button"
-                         onClick={() => removeImage(index)}
-                         className="absolute top-3 right-3 w-8 h-8 glass-premium bg-destructive text-white border-destructive/20 rounded-xl flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110"
-                       >
-                         <X className="w-4 h-4" />
-                       </button>
-                    </div>
-                  ))}
-                  
-                  {formData.images.length < 5 && (
-                    <label className="aspect-square border-2 border-dashed border-border/50 hover:border-primary/40 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-primary/[0.02] group/upload">
-                      <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center mb-3 group-hover/upload:scale-110 transition-transform">
-                         <Upload className="w-6 h-6 text-muted-foreground group-hover/upload:text-primary transition-colors" />
-                      </div>
-                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Add Photo</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                
-                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest px-1">
-                    Limit: 05 Photos. First photo will be shown on the main page.
-                </p>
+              {/* Visual Manifest Hub */}
+              <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-12 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-12 opacity-[0.03] -mr-12 -mt-12 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                    <ImageIcon className="w-64 h-64 text-slate-900" />
+                 </div>
+                 
+                 <div className="flex items-center gap-5 border-b border-slate-50 pb-10 relative z-10">
+                   <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+                     <Monitor className="w-7 h-7" />
+                   </div>
+                   <div>
+                      <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Visual Manifest Hub</h2>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] leading-none mt-2">Institutional Proof of Specification</p>
+                   </div>
+                 </div>
+                 
+                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-8 relative z-10">
+                   {formData.images.map((img, index) => (
+                     <div key={index} className="relative aspect-square rounded-3xl border border-slate-200 p-2 group/img overflow-hidden bg-slate-50 shadow-sm hover:shadow-2xl transition-all duration-500">
+                        <img src={img} className="w-full h-full object-cover rounded-2xl grayscale group-hover/img:grayscale-0 transition-all duration-1000" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-4 right-4 w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-all hover:bg-red-500 shadow-2xl"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-slate-900/60 backdrop-blur-md opacity-0 group-hover/img:opacity-100 transition-opacity">
+                           <p className="text-[8px] font-bold text-white uppercase tracking-[0.2em] text-center">{index === 0 ? 'Primary Node' : `Ref: ${index + 1}`}</p>
+                        </div>
+                     </div>
+                   ))}
+                   
+                   {formData.images.length < 5 && (
+                     <label className="aspect-square border-4 border-dashed border-slate-200 hover:border-primary/40 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-primary/5 group/upload shadow-inner">
+                        <div className="w-14 h-14 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-slate-300 group-hover/upload:text-primary group-hover/upload:bg-slate-900 group-hover/upload:border-slate-800 transition-all duration-500 shadow-xl">
+                           <Upload className="w-7 h-7" />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-6">Upload Asset</span>
+                       <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+                     </label>
+                   )}
+                 </div>
+                 <div className="flex items-center gap-4 text-slate-400 pt-6 border-t border-slate-50">
+                    <Info className="w-5 h-5 text-primary" />
+                    <p className="text-xs font-medium text-slate-500">Maximum Magnitude: 5 assets. Primary manifest determines terminal discovery thumbnail.</p>
+                 </div>
               </div>
 
-              {/* Action Suite */}
-              <div className="flex items-center gap-6 pt-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                 <Button
+              {/* Terminal Execution Deck */}
+              <div className="flex items-center gap-8 pt-16 border-t border-slate-200">
+                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="h-20 flex-1 rounded-[1.5rem] btn-premium text-xl font-black tracking-tight"
+                    className="h-20 flex-1 bg-primary text-white rounded-2xl font-bold text-lg uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-6 group"
                  >
                     {isLoading ? (
-                      <div className="flex items-center gap-3">
-                         <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-                         Synchronizing...
-                      </div>
+                       <RefreshCw className="w-8 h-8 animate-spin" />
                     ) : (
-                      isEditing ? 'Save Changes' : 'Post Product'
+                       <>
+                          {isEditing ? 'Authorize Specification Update' : 'Initialize Asset Node'}
+                          <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
+                       </>
                     )}
-                 </Button>
-                 <Button
+                 </button>
+                 <button
                    type="button"
-                   variant="outline"
                    onClick={() => navigate('/farmer/products')}
-                   className="h-20 px-8 rounded-[1.5rem] border-border/50 font-black tracking-tight hover:bg-white text-muted-foreground"
+                   className="h-20 px-12 border-2 border-slate-200 bg-white text-slate-400 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all active:scale-95 shadow-sm"
                  >
-                   Discard
-                 </Button>
+                   Discard Manifest
+                 </button>
               </div>
             </form>
 
-            {/* Intelligent Assistance Sidebar */}
-            <div className="lg:col-span-1 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-               <div className="sticky top-28 space-y-8">
-                  {showAiTips && aiSuggestions.length > 0 && (
-                    <div className="glass-premium p-10 rounded-[3rem] border-primary/20 bg-primary/[0.01] relative overflow-hidden group shadow-xl shadow-primary/5">
-                      <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-                         <Sparkles className="w-32 h-32 text-primary" />
-                      </div>
-                      
-                      <div className="flex items-center justify-between mb-8 relative z-10">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                            <Lightbulb className="w-5 h-5" />
-                          </div>
-                          <h3 className="text-xl font-black text-foreground tracking-tight">AI Audit</h3>
+            {/* Strategic Information Sidebar */}
+            <div className="space-y-12">
+               {showAiTips && aiSuggestions.length > 0 && (
+                 <div className="bg-slate-900 p-12 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-12 opacity-10 -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-1000">
+                      <Sparkles className="w-48 h-48 text-white" />
+                   </div>
+                   
+                   <div className="flex items-center justify-between mb-12 relative z-10">
+                     <div className="flex items-center gap-4 text-white">
+                        <Sparkles className="w-7 h-7 text-primary" />
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em]">Trade Optimization Report</h3>
+                     </div>
+                     <button onClick={() => setShowAiTips(false)} className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition-all">
+                        <X className="w-5 h-5" />
+                     </button>
+                   </div>
+  
+                   <div className="space-y-8 relative z-10">
+                     {aiSuggestions.map((suggestion, index) => (
+                       <div key={index} className="bg-white/5 p-8 rounded-2xl border border-white/10 space-y-4 group/tip hover:bg-white/10 transition-all border-l-4 border-l-primary shadow-inner">
+                         <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">{suggestion.field} Strategy</p>
+                         <p className="text-sm text-slate-300 font-medium italic leading-relaxed">"{suggestion.suggestion}"</p>
+                       </div>
+                     ))}
+                   </div>
+                   
+                   <div className="mt-16 pt-10 border-t border-white/5 flex items-center justify-center gap-4 opacity-30">
+                      <ShieldCheck className="w-6 h-6 text-white" />
+                      <p className="text-[9px] font-bold text-white uppercase tracking-[0.3em]">Institutional Compliance Checked</p>
+                   </div>
+                 </div>
+               )}
+
+               <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-12 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                  <div className="flex items-center gap-4 text-slate-900 border-b border-slate-50 pb-8 relative z-10">
+                     <HelpCircle className="w-7 h-7 text-primary" />
+                     <h4 className="text-[10px] font-bold uppercase tracking-[0.3em]">Protocol Requirements</h4>
+                  </div>
+                  <ul className="space-y-10 relative z-10">
+                     {[
+                       'Utilize high-fidelity institutional photography only.',
+                       'Quantify specific technical specifications (Moisture, Grade).',
+                       'Align unit settlement magnitude with regional hub liquidity.',
+                       'Synchronize inventory levels post-fulfillment cycle completion.'
+                     ].map((tip, i) => (
+                       <li key={i} className="flex items-start gap-6 group cursor-default">
+                          <div className="w-2 h-2 bg-primary rounded-full mt-3 shrink-0 group-hover:scale-150 transition-transform shadow-[0_0_10px_rgba(0,166,81,0.5)]" />
+                          <span className="text-sm text-slate-500 font-medium leading-relaxed group-hover:text-slate-900 transition-colors">{tip}</span>
+                       </li>
+                     ))}
+                  </ul>
+                  <div className="pt-10 border-t border-slate-50 relative z-10">
+                     <div className="flex items-center gap-5 text-slate-400">
+                        <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                        <div className="space-y-1">
+                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-900">Verified Listing Status</p>
+                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Authorized Producer Terminal</p>
                         </div>
-                        <button
-                          onClick={() => setShowAiTips(false)}
-                          className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
+                     </div>
+                  </div>
+               </div>
 
-                      <div className="space-y-6 relative z-10">
-                        {aiSuggestions.map((suggestion, index) => (
-                          <div key={index} className="glass-premium bg-white/40 p-5 rounded-2xl border-border/30 group/tip hover:border-primary/30 transition-all">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
-                               <Sparkles className="w-3 h-3" />
-                               {suggestion.field} Optimization
-                            </p>
-                            <p className="text-sm text-muted-foreground font-medium italic leading-relaxed">
-                               "{suggestion.suggestion}"
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="glass-premium p-10 rounded-[3rem] border-border/50 relative overflow-hidden">
-                     <h4 className="text-xs font-black uppercase tracking-widest text-foreground mb-6 flex items-center gap-2">
-                        <HelpCircle className="w-4 h-4 text-primary" />
-                        Best Practices
-                     </h4>
-                     <ul className="space-y-4">
-                        {[
-                          'Ensure images use natural lighting',
-                          'Define precise harvest dates in description',
-                          'Verify current market rates via AI assistant',
-                          'Maintain stock buffer for offline orders'
-                        ].map((tip, i) => (
-                          <li key={i} className="flex items-start gap-3 group">
-                             <div className="w-1.5 h-1.5 rounded-full bg-primary/30 mt-1.5 group-hover:scale-150 transition-transform group-hover:bg-primary" />
-                             <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{tip}</span>
-                          </li>
-                        ))}
-                     </ul>
+               <div className="bg-slate-900 p-12 rounded-[2.5rem] border border-slate-800 shadow-2xl space-y-8 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-8 opacity-[0.03] -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-1000">
+                     <Activity className="w-48 h-48 text-white" />
+                  </div>
+                  <div className="relative z-10 space-y-6">
+                     <div className="flex items-center gap-4">
+                        <Monitor className="w-6 h-6 text-primary" />
+                        <p className="text-[10px] font-bold text-white uppercase tracking-[0.3em]">System Sync</p>
+                     </div>
+                     <p className="text-xs font-medium text-slate-400 leading-relaxed italic">
+                        All asset modifications are recorded in the institutional blockchain ledger for audit transparency and trade settlement verification.
+                     </p>
                   </div>
                </div>
             </div>

@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { MapPin, Star, ShoppingCart, ShieldCheck } from 'lucide-react';
+import { MapPin, Star, ShoppingCart, ShieldCheck, Database, Landmark, UserCheck, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
@@ -27,8 +27,8 @@ export const ProductCard = ({ product }) => {
     
     if (!isAuthenticated) {
       toast({
-        title: 'Please Sign In',
-        description: 'Please join us or sign in to add items to your basket.',
+        title: 'Authentication Required',
+        description: 'Please initialize an institutional session to manage procurement baskets.',
         variant: 'destructive',
       });
       navigate('/signup', { state: { from: '/marketplace' } });
@@ -39,13 +39,13 @@ export const ProductCard = ({ product }) => {
       if (!product || !product.id) return;
       await addItem(product.id, product.minOrder || 1);
       toast({
-        title: 'Added to basket',
-        description: `${product.name} is now in your basket.`,
+        title: 'Manifest Updated',
+        description: `${product.name} has been synchronized with your active basket.`,
       });
     } catch (error) {
       toast({
-        title: 'Problem',
-        description: 'Could not add item to basket. Please try again.',
+        title: 'Synchronization Error',
+        description: 'Critical failure during basket update. Please re-initialize terminal.',
         variant: 'destructive',
       });
     }
@@ -54,93 +54,91 @@ export const ProductCard = ({ product }) => {
   if (!product) return null;
 
   return (
-    <Link to={`/product/${product.id}`} className="block group h-full">
-      <div className="glass-card h-full flex flex-col bg-white/40 border-white/60 rounded-[2.5rem] p-3 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+    <Link to={`/product/${product.id}`} className="group block h-full">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:border-primary/40 flex flex-col h-full relative group/card">
         
-        {/* Cinematic Image Stage */}
-        <div className="relative aspect-[4/4] overflow-hidden rounded-[2rem] bg-muted mb-4">
+        {/* Institutional Asset Visualization */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
           <img
             src={product.images?.[0] || '/placeholder.svg'}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+            className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-1000 group-hover/card:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
-          {/* Status Overlay */}
-          <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-            <span className="glass-premium bg-white/40 backdrop-blur-md text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/20">
+          <div className="absolute inset-0 bg-slate-900/0 group-hover/card:bg-slate-900/5 transition-all duration-700 pointer-events-none" />
+          
+          {/* Classification Tags */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
+            <span className="bg-white px-3 py-1.5 rounded-lg text-[9px] font-bold text-slate-900 uppercase tracking-[0.2em] border border-slate-200 shadow-xl shadow-slate-900/5">
               {product.category}
             </span>
-            <div className="w-8 h-8 rounded-full glass-premium bg-white/40 backdrop-blur-md flex items-center justify-center border border-white/20">
-               <ShieldCheck className="w-4 h-4 text-primary" />
-            </div>
           </div>
           
-          {/* Quick Stats Overlay */}
-          <div className="absolute bottom-4 left-4 flex gap-2">
-            <div className="glass-premium bg-black/20 backdrop-blur-md text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-xl text-white border border-white/10 flex items-center gap-1.5">
-               <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-               {product.available} {product.unit} Available
-            </div>
+          <div className="absolute top-4 right-4">
+             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-slate-200 shadow-xl shadow-slate-900/5 group-hover/card:bg-slate-900 group-hover/card:text-primary transition-all duration-500">
+                <Landmark className="w-5 h-5" />
+             </div>
+          </div>
+          
+          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover/card:translate-y-0 transition-transform duration-500 bg-white/90 backdrop-blur-md border-t border-slate-100">
+             <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                   <Database className="w-3.5 h-3.5 text-primary" />
+                   SKU: {product.id.slice(-8).toUpperCase()}
+                </span>
+                <ChevronRight className="w-4 h-4 text-primary" />
+             </div>
           </div>
         </div>
 
-        {/* Intelligence Area */}
-        <div className="px-3 pb-3 flex-1 flex flex-col">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h3 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+        {/* Technical Specification Deck */}
+        <div className="p-8 flex-1 flex flex-col space-y-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-start gap-4">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-tight group-hover/card:text-primary transition-colors line-clamp-2">
                 {product.name}
               </h3>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Lot {product.id.slice(0, 4)}</span>
-                <span className="text-muted-foreground/30">•</span>
-                <div className="flex items-center gap-1">
-                   <Star className="w-3 h-3 text-accent-gold fill-current" />
-                   <span className="text-[10px] font-black text-foreground">{product.rating || 4.5}</span>
-                </div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 border border-amber-100 rounded-md">
+                 <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                 <span className="text-[10px] font-bold text-amber-700">{product.rating || 4.5}</span>
               </div>
             </div>
-            <div className="text-right">
-               <p className="text-sm font-black text-primary tracking-tighter">
-                 {formatPrice(product.price)}
-               </p>
-               <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/50">Per {product.unit}</p>
+
+            <div className="flex items-center gap-2 text-slate-400">
+               <MapPin className="w-4 h-4 text-primary" />
+               <p className="text-[10px] font-bold uppercase tracking-widest">{product.location}</p>
             </div>
           </div>
 
-          <div className="mt-auto space-y-4">
-            {/* Producer Info */}
-            <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-2xl border border-border/30">
-               <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center font-black text-[10px] text-white">
-                  {product.farmerName?.[0] || 'F'}
-               </div>
-               <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                     <p className="text-[10px] font-black text-foreground truncate uppercase tracking-tight">{product.farmerName || 'Trusted Farmer'}</p>
-                     <VerificationBadge status={product.farmerVerified ? 'verified' : 'unverified'} className="scale-75 origin-left" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                     <MapPin className="w-2.5 h-2.5 text-primary" />
-                     <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest truncate">{product.location}</p>
-                  </div>
-               </div>
-            </div>
+          <div className="mt-auto space-y-8 pt-6 border-t border-slate-50">
+             {/* Verified Producer Matrix */}
+             <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-xs shadow-lg border border-slate-800">
+                   {product.farmerName?.[0] || 'F'}
+                </div>
+                <div className="flex-1 min-w-0">
+                   <div className="flex items-center gap-2">
+                      <p className="text-[11px] font-bold text-slate-900 truncate tracking-tight">{product.farmerName || 'Verified Producer'}</p>
+                      <UserCheck className="w-3.5 h-3.5 text-primary" />
+                   </div>
+                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authorized Node Partner</p>
+                </div>
+             </div>
 
-            {/* Action Group */}
-            <div className="flex gap-2">
-               <Link to={`/product/${product.id}`} className="flex-1">
-                  <button className="w-full h-12 rounded-xl bg-white border border-border/50 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-muted transition-all active:scale-95">
-                     View Details
-                  </button>
-               </Link>
-               <button 
-                 onClick={handleAddToCart}
-                 className="w-12 h-12 rounded-xl btn-premium flex items-center justify-center transition-all hover:scale-105"
-               >
-                 <ShoppingCart className="w-4 h-4" />
-               </button>
-            </div>
+             <div className="flex items-center justify-between gap-6 pt-2">
+                <div className="space-y-0.5">
+                   <p className="text-2xl font-bold text-slate-900 tracking-tighter leading-none mb-1">
+                      {formatPrice(product.price)}
+                   </p>
+                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Unit Settlement / {product.unit}</p>
+                </div>
+                <button 
+                  onClick={handleAddToCart}
+                  className="w-14 h-14 flex items-center justify-center rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-2xl shadow-slate-900/10 active:scale-90 group/btn border border-slate-800"
+                >
+                  <ShoppingCart className="w-5 h-5 group-hover/btn:text-primary transition-colors" />
+                </button>
+             </div>
           </div>
         </div>
       </div>
