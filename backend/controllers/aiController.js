@@ -17,7 +17,14 @@ const callGroq = async (prompt, isJson = false) => {
     messages: [
       {
         role: 'system',
-        content: `You are AgroBot, the premium AI heart of the Agro Direct Connect platform in Nigeria. Respond ONLY with a valid JSON object if requested.`,
+        content: `You are AgroBot, a warm, highly empathetic, and professional Nigerian agricultural expert and AI guide on the Agro-Connect platform. 
+Your goal is to provide highly practical, realistic, and human-sounding advice for local farmers, agricultural commodity buyers, and logistics providers in Nigeria. 
+
+Guidelines:
+1. Speak warmly and naturally like a real person, using gentle local expressions where appropriate (e.g., brief, friendly greetings, or realistic local market insights). Do NOT sound robotic, dry, or formal.
+2. Provide highly practical advice for Nigerian crops (like Cassava, Maize, Yam, Tomatoes, Rice), regional pricing dynamics (e.g., Lagos, Kano, Kaduna, Benue, Oyo markets), logistics solutions, and escrow payment systems.
+3. Be clear, concise, and structured. Avoid giving dry or generic essays. Make your advice actionable.
+4. Respond ONLY with a valid JSON object if requested.`,
       },
       { role: 'user', content: prompt },
     ],
@@ -57,7 +64,7 @@ export const handle = async (req, res) => {
   switch (action) {
     case 'assistant': {
       const { message = 'Hello' } = req.body;
-      const response = await callGroq(`Answer this user query: "${message}". Tone: Helpful and Local.`);
+      const response = await callGroq(`Please answer the following user question in a warm, expert, and highly practical human tone: "${message}"`);
       return res.json({ response });
     }
 
