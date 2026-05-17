@@ -24,16 +24,27 @@ export const AIAssistantButton = () => {
 
     // Simulate AI response with clean, simple, helpful layman replies
     setTimeout(() => {
-      const responses = [
-        "You can easily view and browse all active farm produce and listings on our Marketplace page. Prices are updated in real-time.",
-        "You can track your order history and check active sales directly from your dashboard. Our secure escrow payments protect both buyers and sellers.",
-        "Once a farmer ships an order and enters a tracking number, you will see the shipping updates directly on your Orders page.",
-        "You can view your available wallet balance, trust ratings, and sales statistics directly on your Profile page.",
-      ];
+      const query = userMessage.toLowerCase();
+      const greetings = ["hi", "hello", "hey", "yo", "hola", "greetings", "good morning", "good afternoon", "good evening"];
+      const words = query.split(/[\s,?.!]+/);
+      const isGreeting = words.some(w => greetings.includes(w));
+
+      let reply = "";
+      if (isGreeting) {
+        reply = "Hello there! Welcome to Agro-Connect. How can I help you today?";
+      } else if (query.includes("payment") || query.includes("money") || query.includes("pay") || query.includes("escrow") || query.includes("secure")) {
+        reply = "Your payments are completely safe on Agro-Connect! We hold your money securely in escrow until you receive and check your farm products. Once you confirm delivery, the funds are released to the farmer.";
+      } else if (query.includes("shipping") || query.includes("deliver") || query.includes("track") || query.includes("order") || query.includes("receive")) {
+        reply = "Once a farmer ships your order and enters the tracking details, you will see all active shipping updates directly on your Orders page.";
+      } else if (query.includes("marketplace") || query.includes("crops") || query.includes("buy") || query.includes("sell") || query.includes("produce")) {
+        reply = "You can easily view and browse all active fresh farm produce, tools, and machinery on our Marketplace page. Prices are transparent and direct from local farmers.";
+      } else {
+        reply = "I am here to make farm trading easy for you! You can ask me about finding crops, checking your orders, tracking payments, or navigating your dashboard.";
+      }
       
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: responses[Math.floor(Math.random() * responses.length)] },
+        { role: 'assistant', content: reply },
       ]);
       setIsLoading(false);
     }, 1000);
