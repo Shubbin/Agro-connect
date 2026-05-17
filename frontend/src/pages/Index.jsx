@@ -22,11 +22,6 @@ export const HomePage = () => {
             <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
               
               <div className="flex-1 space-y-8 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-                  <ShieldCheck className="w-4 h-4" />
-                  Direct Farm Trading
-                </div>
-                
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
                   Buy and Sell Crops <br />
                   <span className="text-primary">Directly with Farmers</span>
@@ -104,7 +99,6 @@ export const HomePage = () => {
         <section className="py-20 bg-slate-50">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.25em]">Built for Safe Trading</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">How Agro-Connect Works</h2>
               <p className="text-sm text-slate-500 leading-relaxed font-semibold">
                 We make buying and selling agricultural products safe, easy, and reliable.
@@ -154,7 +148,6 @@ export const HomePage = () => {
            <div className="absolute inset-0 opacity-[0.03] bg-[url('https://images.unsplash.com/photo-1495107333309-f0675bc155f8?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay pointer-events-none" />
            
            <div className="container mx-auto px-4 relative z-10 max-w-4xl text-center space-y-8">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">Get Started Today</span>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                  Ready to Start Trading?
               </h2>

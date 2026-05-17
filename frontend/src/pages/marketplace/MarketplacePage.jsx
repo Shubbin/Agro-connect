@@ -58,17 +58,12 @@ export const MarketplacePage = () => {
         {/* Marketplace Header */}
         <section className="bg-white border-b border-gray-200 py-12">
           <div className="container mx-auto px-4 max-w-7xl">
-            <div className="max-w-4xl space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                 <ShieldCheck className="w-4 h-4" />
-                 100% Verified Farmers
-              </div>
-              
+            <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
                 Explore the Marketplace
               </h1>
               <p className="text-lg text-gray-600">
-                Find and purchase high-quality produce, tools, and machinery directly from verified local farmers in Nigeria. Secure escrow payments and reliable logistics included.
+                Buy fresh crops, farming tools, and machinery directly from local farmers in Nigeria. Get secure payments and safe delivery with every order.
               </p>
               
               {/* Search Bar */}

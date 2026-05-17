@@ -54,7 +54,7 @@ export const Navbar = () => {
           </div>
           <div className="flex flex-col">
              <span className="text-xl font-bold text-gray-900 leading-tight">
-               AgroDirect
+               Agro-Connect
              </span>
           </div>
         </Link>
