@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Minus, Plus, Trash2, ArrowRight, Leaf, ShieldCheck, Truck, ChevronRight, Hash, Info, Lock, Landmark, Database, RefreshCw, Archive, ShoppingBag, Activity, FileText, Smartphone, Monitor, LayoutGrid, Calendar, Box, Shield, Globe } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, ArrowRight, ShieldCheck, ShoppingBag, Info, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const CartPage = () => {
@@ -22,28 +21,28 @@ export const CartPage = () => {
   const handleRemove = async (itemId) => {
     await removeItem(itemId);
     toast({
-      title: 'Procurement Manifest Synchronized',
-      description: 'Asset record successfully purged from the active trade session registry.',
+      title: 'Item Removed',
+      description: 'The product has been successfully removed from your cart.',
     });
   };
 
   if (items.length === 0) {
     return (
       <MainLayout hideFooter hideAI>
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
-          <div className="w-48 h-48 bg-white border border-slate-200 rounded-[4rem] flex items-center justify-center shadow-inner mb-16 transform -rotate-12 hover:rotate-0 transition-transform duration-1000 group/empty">
-            <Archive className="w-20 h-20 text-slate-100 group-hover:text-primary transition-colors duration-700" />
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6">
+          <div className="w-24 h-24 bg-white border border-gray-200 rounded-2xl flex items-center justify-center shadow-inner mb-6">
+            <Inbox className="w-10 h-10 text-gray-300" />
           </div>
-          <div className="text-center space-y-8 mb-20 max-w-2xl px-10">
-             <h2 className="text-6xl font-bold text-slate-900 tracking-tighter leading-none">Procurement Matrix Empty</h2>
-             <p className="text-2xl text-slate-500 font-medium leading-relaxed opacity-80">
-                No agricultural commodity assets have been allocated for institutional procurement in this active trade cycle manifest registry.
+          <div className="text-center space-y-2 mb-8 max-w-md">
+             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Your Cart is Empty</h2>
+             <p className="text-gray-500">
+                You haven't added any products to your cart yet. Visit our marketplace to find fresh produce and premium farming tools.
              </p>
           </div>
           <Link to="/marketplace">
-             <button className="h-24 px-20 rounded-[1.5rem] bg-slate-900 text-white font-bold text-[11px] uppercase tracking-[0.4em] hover:bg-slate-800 shadow-[0_40px_100px_-20px_rgba(15,23,42,0.4)] transition-all active:scale-95 flex items-center gap-8 group/discovery">
-                Initialize Asset Discovery Hub
-                <ChevronRight className="w-7 h-7 group-discovery:translate-x-4 transition-transform duration-700" />
+             <button className="h-12 px-6 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm inline-flex items-center gap-2">
+                Continue Shopping
+                <ArrowRight className="w-4 h-4" />
              </button>
           </Link>
         </div>
@@ -55,7 +54,7 @@ export const CartPage = () => {
     const farmerId = item.product.farmerId || 'unknown';
     if (!acc[farmerId]) {
       acc[farmerId] = {
-        farmerName: item.product.farmerName || 'Verified Principal Producer Node',
+        farmerName: item.product.farmerName || 'Verified Seller',
         items: [],
       };
     }
@@ -65,138 +64,101 @@ export const CartPage = () => {
 
   return (
     <MainLayout hideFooter hideAI>
-      <div className="bg-slate-50 min-h-screen pb-60">
-        {/* Institutional Procurement Matrix Header Registry */}
-        <section className="bg-white border-b border-slate-200 pt-32 pb-24 relative overflow-hidden">
-           <div className="absolute inset-0 bg-slate-50/50 pointer-events-none" />
-           <div className="container mx-auto px-4 max-w-7xl relative z-10">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-16">
-                 <div className="space-y-10">
-                    <div className="inline-flex items-center gap-6 text-[11px] font-bold text-white uppercase tracking-[0.4em] bg-slate-900 px-8 py-3 rounded-2xl border border-slate-800 shadow-[0_30px_70px_-15px_rgba(15,23,42,0.4)]">
-                       <ShoppingCart className="w-6 h-6 text-primary shadow-[0_0_10px_rgba(0,166,81,0.5)]" />
-                       Procurement Manifest Review
+      <div className="bg-gray-50 min-h-screen pb-20">
+        
+        {/* Header Section */}
+        <section className="bg-white border-b border-gray-200 py-12">
+           <div className="container mx-auto px-4 max-w-7xl">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                 <div className="space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                       <ShoppingCart className="w-4 h-4" />
+                       Shopping Cart
                     </div>
-                    <div className="space-y-6">
-                       <h1 className="text-6xl md:text-7xl font-bold text-slate-900 tracking-tighter leading-none transition-all">Trade Procurement Matrix</h1>
-                       <p className="text-2xl font-medium text-slate-500 max-w-4xl leading-relaxed opacity-80">
-                          Audit selected commodity assets and verify technical specifications before authorizing final trade settlement synchronization and logistics hub mobilization.
-                       </p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-8 text-slate-400 bg-white px-10 py-6 rounded-[2.5rem] border border-slate-200 shadow-2xl relative group/node overflow-hidden">
-                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/node:opacity-100 transition-opacity duration-1000" />
-                    <Database className="w-8 h-8 text-primary shadow-[0_0_10px_rgba(0,166,81,0.3)] group-hover/node:scale-110 transition-transform duration-700 relative z-10" />
-                    <div className="space-y-1 relative z-10">
-                       <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-slate-400 leading-none mb-2 opacity-60">Session Authorization</p>
-                       <p className="text-2xl font-black text-slate-900 tracking-tighter leading-none">#{Date.now().toString().slice(-8).toUpperCase()}</p>
-                    </div>
+                    <h1 className="text-4xl font-bold text-gray-900 tracking-tight">My Cart</h1>
+                    <p className="text-gray-600">
+                       Review the items in your cart, adjust quantities, and proceed to checkout to secure your order.
+                    </p>
                  </div>
               </div>
            </div>
         </section>
 
-        <div className="container mx-auto px-4 py-32 max-w-7xl">
-          <div className="grid lg:grid-cols-3 gap-32">
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+          <div className="grid lg:grid-cols-3 gap-8">
             
-            {/* High-Fidelity Commodity Asset Stream Ledger */}
-            <div className="lg:col-span-2 space-y-32">
+            {/* Products List Panel */}
+            <div className="lg:col-span-2 space-y-8">
               {Object.entries(itemsByFarmer).map(([farmerId, { farmerName, items: farmerItems }]) => (
-                <div key={farmerId} className="space-y-16">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-12 px-6">
-                     <div className="flex items-center gap-8">
-                        <div className="w-18 h-18 bg-slate-900 rounded-[1.5rem] flex items-center justify-center text-primary shadow-[0_30px_60px_-15px_rgba(15,23,42,0.4)] border border-slate-800">
-                           <Landmark className="w-10 h-10 shadow-[0_0_10px_rgba(0,166,81,0.3)]" />
-                        </div>
-                        <div className="space-y-2">
-                           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none opacity-60">Source Producer Terminal Node</p>
-                           <h3 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-4 leading-none">
-                              {farmerName}
-                              <ShieldCheck className="w-7 h-7 text-primary" />
-                           </h3>
-                        </div>
+                <div key={farmerId} className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-3 px-2">
+                     <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Farmer / Seller</span>
+                        <h3 className="font-bold text-gray-800 flex items-center gap-1">
+                           {farmerName}
+                           <ShieldCheck className="w-4 h-4 text-primary" />
+                        </h3>
                      </div>
-                     <div className="flex items-center gap-4 px-6 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-2xl">
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">Terminal Synchronized</span>
-                     </div>
+                     <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Verified Seller</span>
                   </div>
                   
-                  <div className="bg-white rounded-[4rem] border border-slate-200 shadow-[0_60px_150px_-30px_rgba(0,0,0,0.1)] overflow-hidden divide-y divide-slate-50">
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden divide-y divide-gray-100">
                     {farmerItems.map((item) => (
-                      <div key={item.id} className="p-16 flex flex-col xl:flex-row gap-20 hover:bg-slate-50/30 transition-all duration-1000 group/asset">
-                        <div className="w-64 h-64 bg-slate-50 rounded-[3rem] overflow-hidden shrink-0 border border-slate-100 shadow-inner group-hover/asset:scale-110 group-hover/asset:rotate-6 transition-all duration-[2000ms] relative">
-                           <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover/asset:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                      <div key={item.id} className="p-6 flex flex-col sm:flex-row gap-6 hover:bg-gray-50/50 transition-colors group">
+                        <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100">
                            <img
                              src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=2080&auto=format&fit=crop'}
                              alt={item.product.name}
-                             className="w-full h-full object-cover grayscale group-hover/asset:grayscale-0 transition-all duration-[2000ms]"
+                             className="w-full h-full object-cover"
                            />
                         </div>
                         
-                        <div className="flex-1 min-w-0 flex flex-col justify-between py-6">
-                          <div className="space-y-10">
-                             <div className="flex items-start justify-between gap-12">
-                                <div className="space-y-4">
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div className="space-y-1">
+                             <div className="flex items-start justify-between gap-4">
+                                <div>
                                    <Link
                                      to={`/product/${item.product.id}`}
-                                     className="text-5xl font-black text-slate-900 hover:text-primary transition-all tracking-tighter line-clamp-1 leading-[0.9]"
+                                     className="font-bold text-gray-900 hover:text-primary transition-colors text-lg leading-snug line-clamp-1"
                                    >
                                      {item.product.name}
                                    </Link>
-                                   <div className="flex flex-wrap items-center gap-10">
-                                      <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] opacity-60">
-                                         <Hash className="w-5 h-5 text-primary" />
-                                         ASSET NODE: {item.product.id.slice(-8).toUpperCase()}
-                                      </div>
-                                      <div className="w-2 h-2 rounded-full bg-slate-200" />
-                                      <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] opacity-60">
-                                         <LayoutGrid className="w-5 h-5" />
-                                         {item.product.category || 'Commodity Asset'}
-                                      </div>
-                                   </div>
+                                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Product ID: {item.product.id.slice(-8).toUpperCase()}</p>
                                 </div>
                                 <button
                                   onClick={() => handleRemove(item.id)}
-                                  className="w-20 h-20 rounded-[1.5rem] flex items-center justify-center text-slate-100 hover:text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100 shadow-sm active:scale-90 group/del"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                                 >
-                                  <Trash2 className="w-8 h-8 group-hover/del:scale-125 group-hover/del:rotate-12 transition-transform duration-700" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                              </div>
-                             <div className="pt-2">
-                                <div className="inline-flex items-center gap-6 bg-slate-900 px-8 py-3 rounded-2xl border border-slate-800 shadow-[0_30px_60px_-15px_rgba(15,23,42,0.4)]">
-                                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] opacity-60 leading-none">Institutional Exchange Rate</p>
-                                   <p className="text-2xl font-black text-white tracking-tighter leading-none">{formatPrice(item.product.price)} <span className="text-primary text-[10px] uppercase ml-2 tracking-widest">/ {item.product.unit} MAGNITUDE</span></p>
-                                </div>
-                             </div>
+                             <p className="text-sm font-bold text-gray-700">{formatPrice(item.product.price)} <span className="text-xs text-gray-400 font-medium">/ {item.product.unit}</span></p>
                           </div>
                           
-                          <div className="flex flex-wrap items-center justify-between gap-16 mt-16 pt-16 border-t border-slate-50">
-                            <div className="flex items-center bg-white rounded-[1.75rem] border border-slate-200 p-4 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] group/qty">
+                          <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-100">
+                            <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 p-1">
                               <button
-                                className="w-16 h-16 flex items-center justify-center hover:bg-slate-50 rounded-2xl transition-all active:scale-90 text-slate-200 hover:text-slate-900 border border-transparent hover:border-slate-100 shadow-sm"
+                                className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-md transition-all text-gray-400 hover:text-gray-800 shadow-sm"
                                 onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                               >
-                                <Minus className="w-8 h-8" />
+                                <Minus className="w-4 h-4" />
                               </button>
-                              <div className="w-32 flex flex-col items-center">
-                                 <span className="text-4xl font-black text-slate-900 tracking-tighter leading-none group-hover/qty:text-primary transition-colors duration-700">
-                                   {item.quantity}
-                                 </span>
-                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mt-3 leading-none opacity-60">{item.product.unit} MANIFEST</span>
-                              </div>
+                              <span className="w-12 text-center text-sm font-bold text-gray-900">
+                                {item.quantity}
+                              </span>
                               <button
-                                className="w-16 h-16 flex items-center justify-center hover:bg-slate-50 rounded-2xl transition-all active:scale-90 text-slate-200 hover:text-slate-900 border border-transparent hover:border-slate-100 shadow-sm"
+                                className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-md transition-all text-gray-400 hover:text-gray-800 shadow-sm"
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               >
-                                <Plus className="w-8 h-8" />
+                                <Plus className="w-4 h-4" />
                               </button>
                             </div>
                             
-                            <div className="text-right space-y-4">
-                               <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 leading-none opacity-60">Allocated Asset Settlement Magnitude</p>
-                               <p className="text-6xl font-black text-slate-900 tracking-tighter group-hover/asset:text-primary transition-all duration-1000 leading-none">
+                            <div className="text-right">
+                               <span className="text-xs text-gray-400 block mb-0.5">Subtotal</span>
+                               <span className="font-bold text-gray-900 text-lg">
                                  {formatPrice(item.product.price * item.quantity)}
-                               </p>
+                               </span>
                             </div>
                           </div>
                         </div>
@@ -207,112 +169,70 @@ export const CartPage = () => {
               ))}
             </div>
 
-            {/* Institutional Trade Settlement Command Terminal */}
+            {/* Order Summary Panel */}
             <div className="lg:col-span-1">
-              <div className="sticky top-40 space-y-16">
-                <div className="bg-white p-16 rounded-[4rem] border border-slate-200 shadow-[0_80px_200px_-50px_rgba(0,0,0,0.15)] relative overflow-hidden group/settle">
-                  <div className="absolute top-0 right-0 p-16 opacity-[0.03] -mr-24 -mt-24 group-hover/settle:scale-150 transition-transform duration-[2000ms] pointer-events-none">
-                     <Lock className="w-96 h-96 text-slate-900" />
-                  </div>
-                  <div className="flex items-center gap-8 mb-20 pb-10 border-b border-slate-100 relative z-10">
-                     <div className="w-20 h-20 bg-slate-900 rounded-[1.75rem] flex items-center justify-center text-primary shadow-[0_40px_100px_-20px_rgba(15,23,42,0.4)] border border-slate-800">
-                        <ShoppingBag className="w-10 h-10 shadow-[0_0_15px_rgba(0,166,81,0.5)]" />
+              <div className="sticky top-6 space-y-6">
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                        <ShoppingBag className="w-5 h-5" />
                      </div>
-                     <div className="space-y-2">
-                        <h2 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">Settlement Matrix</h2>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] opacity-60 leading-none">Trade Terminal Hub v4.2.0</p>
+                     <div>
+                        <h2 className="font-bold text-gray-900 leading-tight">Order Summary</h2>
+                        <p className="text-xs text-gray-400 font-semibold">{items.length} items in cart</p>
                      </div>
                   </div>
                   
-                  <div className="space-y-12 mb-20 relative z-10">
-                    <div className="flex justify-between items-center group/row">
-                       <div className="space-y-2">
-                          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.4em] block opacity-60">Aggregate Asset Value</span>
-                          <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">{items.length} Procurement Hub Nodes Active</span>
-                       </div>
-                       <span className="text-2xl font-black text-slate-900 tracking-tighter group-hover/row:scale-110 transition-transform duration-700">{formatPrice(total)}</span>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                       <span className="text-gray-500 font-semibold">Items Subtotal</span>
+                       <span className="font-bold text-gray-900">{formatPrice(total)}</span>
                     </div>
                     
-                    <div className="flex justify-between items-start gap-10 group/row">
-                       <div className="space-y-2">
-                          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.4em] block opacity-60">Supply Chain Logistics Hub</span>
-                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">Calculated per Authorized Fulfillment Terminal</span>
-                       </div>
-                       <div className="text-right">
-                          <div className="flex items-center gap-4 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 shadow-2xl group-hover/row:bg-white transition-all duration-700">
-                             <RefreshCw className="w-5 h-5 text-primary animate-spin" />
-                             <span className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em]">Pending Sync</span>
-                          </div>
-                       </div>
+                    <div className="flex justify-between items-center text-sm">
+                       <span className="text-gray-500 font-semibold">Delivery Fee</span>
+                       <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-semibold border border-emerald-100">Calculated at checkout</span>
                     </div>
                     
-                    <div className="pt-16 border-t border-slate-100 group/total">
+                    <div className="pt-4 border-t border-gray-100">
                        <div className="flex justify-between items-end">
-                         <div className="space-y-6">
-                            <p className="text-[12px] font-bold uppercase tracking-[0.5em] text-slate-400 opacity-60 leading-none">Total Settlement Magnitude</p>
-                            <p className="text-7xl font-black text-slate-900 tracking-tighter group-hover/total:text-primary transition-all duration-[1000ms] leading-none">{formatPrice(total)}</p>
-                         </div>
+                          <span className="text-base font-bold text-gray-900">Total Price</span>
+                          <span className="text-2xl font-bold text-primary leading-none">{formatPrice(total)}</span>
                        </div>
                     </div>
                   </div>
 
-                  <Link to="/checkout" className="block group relative z-10">
-                     <button className="w-full h-28 bg-primary text-white rounded-[2rem] font-bold text-2xl uppercase tracking-[0.4em] shadow-[0_40px_100px_-20px_rgba(0,166,81,0.6)] hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-8 group/authorize">
-                        Authorize Settlement
-                        <ArrowRight className="w-10 h-10 transition-transform group-hover/authorize:translate-x-4 duration-700" />
+                  <Link to="/checkout" className="block">
+                     <button className="w-full h-12 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2">
+                        Proceed to Checkout
+                        <ArrowRight className="w-4 h-4" />
                      </button>
                   </Link>
-                  
-                  <div className="mt-20 flex items-center justify-between gap-10 opacity-10 border-t border-slate-50 pt-16">
-                     <Shield className="w-10 h-10 text-slate-900" />
-                     <div className="h-px flex-1 bg-slate-200" />
-                     <Truck className="w-10 h-10 text-slate-900" />
-                     <div className="h-px flex-1 bg-slate-200" />
-                     <Landmark className="w-10 h-10 text-slate-900" />
-                     <div className="h-px flex-1 bg-slate-200" />
-                     <Globe className="w-10 h-10 text-slate-900" />
-                  </div>
                 </div>
 
-                {/* Trade Compliance Protocol Logic Widget */}
-                <div className="bg-slate-900 p-16 rounded-[4rem] border border-slate-800 shadow-[0_60px_120px_-30px_rgba(15,23,42,0.5)] space-y-10 relative overflow-hidden group/compliance">
-                   <div className="absolute top-0 right-0 p-14 opacity-10 -mr-16 -mt-16 group-hover/compliance:rotate-12 transition-transform duration-[2000ms]">
-                      <ShieldCheck className="w-[300px] h-[300px] text-white" />
+                {/* Escrow Guarantee Widget */}
+                <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-6 opacity-5 -mr-8 -mt-8 group-hover:scale-110 transition-transform">
+                      <ShieldCheck className="w-40 h-40 text-white" />
                    </div>
-                   <div className="flex items-center gap-6 relative z-10">
-                      <div className="w-16 h-16 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center shadow-inner group-hover/compliance:bg-primary/20 transition-all duration-700">
-                         <Info className="w-8 h-8 text-primary shadow-[0_0_15px_rgba(0,166,81,0.3)]" />
+                   <div className="flex items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center">
+                         <Info className="w-5 h-5 text-primary" />
                       </div>
-                      <div className="space-y-1">
-                         <p className="text-[12px] font-bold text-white uppercase tracking-[0.4em]">Compliance Protocol</p>
-                         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Authorized Oversight Active</p>
+                      <div>
+                         <p className="text-xs font-bold text-white uppercase tracking-wider">Escrow Safeguard Active</p>
+                         <p className="text-[10px] text-slate-400 font-medium">100% Secure Payments</p>
                       </div>
                    </div>
-                   <p className="text-xl font-medium text-slate-400 leading-relaxed italic relative z-10 opacity-80 border-l-2 border-primary/20 pl-8 transition-opacity duration-1000 group-hover/compliance:opacity-100">
-                      "Verify procurement parameters against industrial grade requirements. Authorized escrow release is contingent upon logistics hub node synchronization and quality verification."
+                   <p className="text-xs text-slate-300 leading-relaxed pl-13 border-l border-primary/20">
+                      AgroDirect protects your payments in secure escrow. The farmer only gets paid once you confirm that you have safely received your order.
                    </p>
-                   <div className="pt-12 relative z-10 flex items-center justify-between border-t border-white/5">
-                      <div className="flex items-center gap-5">
-                         {[...Array(3)].map((_, i) => <div key={i} className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(0,166,81,0.5)]" style={{ animationDelay: `${i * 0.3}s` }} />)}
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.5em]">Auth Level 1 Specification Verified</span>
-                   </div>
                 </div>
                 
-                <Link to="/marketplace" className="flex items-center justify-center gap-6 text-[11px] font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-[0.4em] group/backhub">
-                  <ArrowRight className="w-6 h-6 rotate-180 group-hover/backhub:-translate-x-4 transition-transform duration-700" />
-                  Return to Discovery Hub Terminal
+                <Link to="/marketplace" className="flex items-center justify-center gap-2 text-xs font-semibold text-gray-500 hover:text-primary transition-colors">
+                  <ArrowRight className="w-4 h-4 rotate-180" />
+                  Go Back to Marketplace
                 </Link>
-                
-                {/* Institutional Synchronization Node Registry */}
-                <div className="pt-40 flex items-center justify-center gap-20 opacity-10">
-                   <Smartphone className="w-10 h-10 text-slate-900" />
-                   <Monitor className="w-10 h-10 text-slate-900" />
-                   <Landmark className="w-10 h-10 text-slate-900" />
-                   <LayoutGrid className="w-10 h-10 text-slate-900" />
-                   <Activity className="w-10 h-10 text-slate-900" />
-                   <Database className="w-10 h-10 text-slate-900" />
-                </div>
               </div>
             </div>
           </div>

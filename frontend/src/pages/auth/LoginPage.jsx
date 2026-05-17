@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, Eye, EyeOff, Mail, Lock, Check, ArrowRight, ShieldCheck, Sparkles, Database, Landmark, Globe, Activity, ChevronRight, RefreshCw, Key, Shield, UserCheck, LayoutGrid, Smartphone, Monitor } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Leaf, Eye, EyeOff, Mail, Lock, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -33,8 +32,8 @@ export const LoginPage = () => {
       await login(formData.email, formData.password);
       
       toast({
-        title: 'Institutional Authorization Granted',
-        description: 'Trade session successfully synchronized with the national clearing hub registry.',
+        title: 'Login Successful',
+        description: 'Welcome back to AgroDirect!',
       });
 
       const storedUser = localStorage.getItem('agro_user');
@@ -44,8 +43,8 @@ export const LoginPage = () => {
       }
     } catch (error) {
       toast({
-        title: 'Authorization Failure',
-        description: error.message || 'Invalid credentials within the secure access protocol manifest.',
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -54,205 +53,142 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white relative overflow-hidden">
+    <div className="min-h-screen flex bg-white">
       {/* 
-        Institutional Identity Sidebar Ledger
+        Image Side
       */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-slate-900">
+      <div className="hidden lg:block lg:w-1/2 relative">
          <img 
            src="https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?q=80&w=2072&auto=format&fit=crop" 
-           alt="Institutional Agriculture Nigeria" 
-           className="w-full h-full object-cover grayscale opacity-20 scale-105 group-hover:scale-100 transition-transform duration-[3000ms]"
+           alt="Agriculture" 
+           className="w-full h-full object-cover"
          />
-         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/80 to-primary/20" />
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(15,23,42,0.9)_100%)]" />
+         <div className="absolute inset-0 bg-primary/20 mix-blend-multiply" />
+         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent" />
          
-         <div className="absolute inset-0 flex flex-col justify-between p-24 relative z-10">
-            <Link to="/" className="inline-flex items-center gap-6 group/logo">
-               <div className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center shadow-2xl transition-all duration-700 group-hover/logo:scale-110 group-hover/logo:rotate-12">
-                  <Leaf className="w-9 h-9 text-primary shadow-[0_0_15px_rgba(0,166,81,0.5)]" />
-               </div>
-               <div className="flex flex-col">
-                  <span className="text-3xl font-black text-white tracking-tighter leading-none">
-                     Agro<span className="text-primary italic">Direct</span>
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.5em] leading-none mt-2">Authorized Exchange</span>
-               </div>
-            </Link>
-
-            <div className="space-y-16">
-               <div className="space-y-10">
-                  <div className="inline-flex items-center gap-6 bg-white/5 text-white px-8 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-[0.4em] backdrop-blur-3xl border border-white/10 shadow-2xl">
-                     <ShieldCheck className="w-6 h-6 text-primary shadow-[0_0_10px_rgba(0,166,81,0.5)]" />
-                     Institutional Trade Authority
-                  </div>
-                  <h2 className="text-7xl md:text-8xl font-black text-white tracking-tighter leading-[0.85] transition-all">
-                     Synchronizing <br />
-                     <span className="text-primary italic">Trade Hubs</span> <br />
-                     at Scale.
-                  </h2>
-                  <p className="text-slate-400 text-2xl font-medium max-w-2xl leading-relaxed opacity-80 border-l-4 border-primary/20 pl-10">
-                     Access the national clearing registry for verified producers and industrial commodity procurement nodes.
-                  </p>
-               </div>
-               
-               <div className="grid grid-cols-2 gap-16 pt-16 border-t border-white/5">
-                  <div className="space-y-4 group/stat">
-                     <div className="flex items-center gap-5">
-                        <Database className="w-8 h-8 text-primary group-hover/stat:scale-125 transition-transform duration-700" />
-                        <p className="text-5xl font-black text-white tracking-tighter leading-none">8.1k+</p>
-                     </div>
-                     <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.4em] leading-none ml-1">Asset Node Manifests</p>
-                  </div>
-                  <div className="space-y-4 group/stat">
-                     <div className="flex items-center gap-5">
-                        <Landmark className="w-8 h-8 text-primary group-hover/stat:scale-125 transition-transform duration-700" />
-                        <p className="text-5xl font-black text-white tracking-tighter leading-none">₦2.4B</p>
-                     </div>
-                     <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.4em] leading-none ml-1">Aggregate Settlement Value</p>
-                  </div>
-               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-slate-500 border-t border-white/5 pt-12">
-               <div className="flex items-center gap-5">
-                  <Globe className="w-6 h-6 opacity-30" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.4em]">Regional Trade Matrix v4.2.0</span>
-               </div>
-               <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-emerald-500">Systems Operational</span>
-               </div>
-            </div>
+         <div className="absolute bottom-0 left-0 p-16 text-white">
+            <h2 className="text-4xl font-bold mb-4">
+               Welcome back to AgroDirect.
+            </h2>
+            <p className="text-lg text-white/80 max-w-md">
+               Access your account to manage your farm products, track orders, and connect with buyers.
+            </p>
          </div>
       </div>
 
       {/* 
-        Institutional Authorization Terminal Node
+        Login Form Side
       */}
-      <div className="flex-1 flex flex-col justify-center p-12 md:p-32 lg:p-48 bg-white relative">
-         <div className="absolute top-0 left-0 w-full h-2 bg-slate-50" />
-         <div className="max-w-xl w-full mx-auto space-y-24">
-            <div className="space-y-8">
-               <div className="w-20 h-20 bg-slate-50 rounded-[1.75rem] flex items-center justify-center text-slate-200 shadow-inner group-hover:bg-white group-hover:shadow-2xl transition-all duration-700">
-                  <Key className="w-10 h-10" />
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 sm:p-12 md:p-16 bg-gray-50">
+         <div className="w-full max-w-md space-y-10">
+            
+            {/* Logo Mobile Only */}
+            <Link to="/" className="flex lg:hidden items-center gap-3 mb-8">
+               <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <Leaf className="w-6 h-6 text-primary" />
                </div>
-               <div className="space-y-4">
-                  <h1 className="text-6xl font-black text-slate-900 tracking-tighter leading-none">Authorization Terminal</h1>
-                  <p className="text-slate-500 font-medium text-2xl leading-relaxed opacity-80">
-                     Enter your secure credentials to synchronize with the institutional trade hub command console.
-                  </p>
-               </div>
+               <span className="text-xl font-bold text-gray-900">AgroDirect</span>
+            </Link>
+
+            <div className="space-y-3">
+               <h1 className="text-3xl font-bold text-gray-900">Login</h1>
+               <p className="text-gray-500">
+                  Enter your email and password to access your account.
+               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-12">
-               <div className="space-y-6">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.5em] ml-2 opacity-60">
-                     Security Email Manifest
+            <form onSubmit={handleSubmit} className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">
+                     Email Address
                   </label>
-                  <div className="relative group/input">
-                     <Mail className="absolute left-8 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-200 group-focus-within/input:text-primary transition-all duration-700" />
+                  <div className="relative">
+                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                      <input
                         type="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full h-24 pl-20 pr-8 bg-slate-50 border border-slate-100 rounded-[2rem] text-2xl font-black text-slate-900 placeholder:text-slate-200 focus:ring-[20px] focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner tracking-tight"
-                        placeholder="e.g. operations@enterprise.ng"
+                        className="w-full h-14 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-base text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
+                        placeholder="you@example.com"
                      />
                   </div>
                </div>
 
-               <div className="space-y-6">
-                  <div className="flex items-center justify-between px-2">
-                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.5em] opacity-60">
-                        Authorization Access Key
+               <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                     <label className="text-sm font-semibold text-gray-700">
+                        Password
                      </label>
-                     <Link to="/forgot-password" title="Recover Access Key" className="text-[11px] font-bold text-primary uppercase tracking-[0.3em] hover:underline transition-all active:scale-95">
-                        Recover Key?
+                     <Link to="/forgot-password" title="Forgot Password" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                        Forgot Password?
                      </Link>
                   </div>
-                  <div className="relative group/input">
-                     <Lock className="absolute left-8 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-200 group-focus-within/input:text-primary transition-all duration-700" />
+                  <div className="relative">
+                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                      <input
                         type={showPassword ? 'text' : 'password'}
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full h-24 pl-20 pr-20 bg-slate-50 border border-slate-100 rounded-[2rem] text-2xl font-black text-slate-900 placeholder:text-slate-200 focus:ring-[20px] focus:ring-primary/5 focus:border-primary/40 focus:bg-white transition-all outline-none shadow-inner tracking-tight"
+                        className="w-full h-14 pl-12 pr-12 bg-white border border-gray-200 rounded-xl text-base text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
                         placeholder="••••••••"
                      />
                      <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-200 hover:text-primary transition-all duration-700 active:scale-90"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                      >
-                        {showPassword ? <EyeOff className="w-8 h-8" /> : <Eye className="w-8 h-8" />}
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                      </button>
                   </div>
                </div>
 
-               <div className="flex items-center justify-between px-2">
-                  <label className="flex items-center gap-4 cursor-pointer group/check">
-                     <div className="relative w-8 h-8">
+               <div className="flex items-center">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                     <div className="relative flex items-center justify-center">
                         <input
                            type="checkbox"
                            checked={rememberMe}
                            onChange={(e) => setRememberMe(e.target.checked)}
-                           className="peer appearance-none w-8 h-8 rounded-xl border-4 border-slate-100 checked:bg-primary checked:border-primary transition-all duration-700 shadow-inner"
+                           className="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded focus:ring-primary/20 focus:ring-2 checked:bg-primary checked:border-primary transition-colors cursor-pointer"
                         />
-                        <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-all duration-700" />
+                        <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
                      </div>
-                     <span className="text-[12px] font-black text-slate-400 group-hover/check:text-slate-900 transition-colors uppercase tracking-[0.3em]">
-                        Persistent Node Session
+                     <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors select-none">
+                        Remember Me
                      </span>
                   </label>
                </div>
 
-               <div className="pt-8">
+               <div className="pt-2">
                   <button
                      type="submit"
                      disabled={isLoading}
-                     className="w-full h-28 bg-primary text-white rounded-[2rem] font-bold text-2xl uppercase tracking-[0.4em] shadow-[0_40px_100px_-20px_rgba(0,166,81,0.6)] hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-8 group/authorize"
+                     className="w-full h-14 bg-primary text-white rounded-xl font-semibold text-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
                   >
                      {isLoading ? (
-                        <RefreshCw className="w-10 h-10 animate-spin" />
+                        <>
+                           <Loader2 className="w-5 h-5 animate-spin" />
+                           Logging in...
+                        </>
                      ) : (
                         <>
-                           Authorize Access
-                           <ArrowRight className="w-10 h-10 transition-transform group-hover/authorize:translate-x-4 duration-700" />
+                           Login
+                           <ArrowRight className="w-5 h-5" />
                         </>
                      )}
                   </button>
                </div>
             </form>
 
-            <div className="pt-24 border-t border-slate-50 flex flex-col items-center gap-16">
-               <div className="flex flex-col sm:flex-row items-center gap-8 text-slate-400">
-                  <p className="text-xl font-medium opacity-60">New institutional partner?</p>
-                  <Link to="/signup" className="h-16 px-10 rounded-[1.25rem] bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.3em] flex items-center border border-slate-800 hover:bg-slate-800 transition-all shadow-[0_30px_60px_-15px_rgba(15,23,42,0.4)] active:scale-95 group/registry">
-                     Initialize Registry Hub
-                     <ChevronRight className="w-5 h-5 ml-4 group-hover/registry:translate-x-2 transition-transform duration-700" />
+            <div className="text-center pt-6">
+               <p className="text-gray-600">
+                  Don't have an account yet?{' '}
+                  <Link to="/signup" className="text-primary font-semibold hover:underline">
+                     Sign Up
                   </Link>
-               </div>
-               
-               <div className="flex items-center gap-16 opacity-10 grayscale">
-                  <div className="flex items-center gap-4">
-                     <Shield className="w-8 h-8 text-slate-900" />
-                     <span className="text-[10px] font-bold uppercase tracking-[0.5em]">SSL v3 Protocol Secured</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                     <Activity className="w-8 h-8 text-slate-900" />
-                     <span className="text-[10px] font-bold uppercase tracking-[0.5em]">Institutional Hub Grade</span>
-                  </div>
-               </div>
-               
-               {/* Mobile Display Sync Indicators */}
-               <div className="flex items-center gap-10 opacity-5">
-                  <Smartphone className="w-6 h-6" />
-                  <Monitor className="w-6 h-6" />
-                  <LayoutGrid className="w-6 h-6" />
-               </div>
+               </p>
             </div>
          </div>
       </div>
