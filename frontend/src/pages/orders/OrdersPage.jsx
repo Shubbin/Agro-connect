@@ -159,25 +159,27 @@ export const OrdersPage = () => {
                          {/* Product List */}
                          <div className="lg:col-span-2 space-y-4">
                            {order.items.map((item) => (
-                             <div key={item.id} className="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-                               <div className="w-20 h-20 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100 shadow-sm">
-                                  <img
-                                    src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=2080&auto=format&fit=crop'}
-                                    alt={item.product?.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                               <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                  <h4 className="font-bold text-gray-900 truncate text-lg leading-snug">{item.product?.name}</h4>
-                                  <p className="text-sm text-gray-500">
-                                     Qty: <span className="font-semibold text-gray-800">{item.quantity} {item.product?.unit}</span>
-                                     <span className="mx-2">•</span>
-                                     Unit Price: <span className="font-semibold text-gray-800">{formatPrice(item.product?.price)}</span>
-                                  </p>
+                             <div key={item.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                               <div className="flex items-center gap-4 flex-grow">
+                                  <div className="w-16 h-16 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100 shadow-sm">
+                                    <img
+                                      src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=2080&auto=format&fit=crop'}
+                                      alt={item.product?.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-grow min-w-0 flex flex-col justify-center">
+                                     <h4 className="font-bold text-gray-900 truncate text-base leading-snug">{item.product?.name}</h4>
+                                     <p className="text-xs text-gray-500">
+                                        Qty: <span className="font-semibold text-gray-800">{item.quantity} {item.product?.unit}</span>
+                                        <span className="mx-1.5">•</span>
+                                        Price: <span className="font-semibold text-gray-800">{formatPrice(item.product?.price)}</span>
+                                     </p>
+                                  </div>
                                </div>
-                               <div className="text-right flex flex-col justify-center shrink-0">
-                                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subtotal</p>
-                                 <p className="font-bold text-gray-900 text-lg">
+                               <div className="text-left sm:text-right flex sm:flex-col justify-between sm:justify-center items-center sm:items-end shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 mt-2 sm:mt-0">
+                                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Subtotal</p>
+                                 <p className="font-extrabold text-gray-900 text-sm sm:text-base">
                                    {formatPrice((item.product?.price || 0) * item.quantity)}
                                  </p>
                                </div>

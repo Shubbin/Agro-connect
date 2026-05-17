@@ -131,13 +131,26 @@ export const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
-        <button
-          className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile Menu Toggle & Actions */}
+        <div className="flex lg:hidden items-center gap-2">
+          {isAuthenticated && user?.role === 'user' && (
+            <Link to="/cart" className="relative p-2 text-gray-600 hover:text-primary hover:bg-primary/5 rounded-xl transition-colors mr-1">
+              <ShoppingCart className="w-6 h-6" />
+              {itemCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-primary text-white text-[9px] font-extrabold rounded-full flex items-center justify-center translate-x-0.5 -translate-y-0.5 shadow-sm">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+          )}
+          
+          <button
+            className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Menu Drawer */}
