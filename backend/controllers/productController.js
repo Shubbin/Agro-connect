@@ -1,15 +1,25 @@
 import { supabase } from '../config/db.js';
 
 export const getAll = async (req, res) => {
-  const { category = 'all', location = 'All Locations', search = '' } = req.query;
+  const { category = 'all', location = '', search = '' } = req.query;
 
   try {
     let query = supabase
       .from('products')
       .select('*, farmer:users!farmer_id(name, is_verified, verification_status)');
 
-    if (category !== 'all') query = query.eq('category', category);
-    if (location !== 'All Locations') query = query.eq('location', location);
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
+    
+    if (location && location !== 'All Locations') {
+      if (location === 'Lagos Hub') {
+        query = query.or('location.eq.Lagos Hub,location.eq.Lagos Regional Hub');
+      } else {
+        query = query.eq('location', location);
+      }
+    }
+
     if (search) {
       query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     }
@@ -26,6 +36,7 @@ export const getAll = async (req, res) => {
 
     return res.json(formatted);
   } catch (err) {
+    console.error('Fetch products failed:', err);
     return res.status(500).json({ message: 'Fetch products failed' });
   }
 };
