@@ -258,7 +258,7 @@ export const ProductDetailsPage = () => {
                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Verified Farmer</p>
                   </div>
                 </div>
-                <Link to={`/chat?farmerId=${product.farmer_id}&farmerName=${encodeURIComponent(product.farmerName || 'Farmer')}`} className="relative z-10 shrink-0">
+                <Link to={`/chat?farmerId=${product.farmer_id}&farmerName=${encodeURIComponent(product.farmerName || 'Farmer')}&productId=${product.id}&productName=${encodeURIComponent(product.name)}&productPrice=${product.price}&productImage=${encodeURIComponent(product.images?.[0] || '')}&productUnit=${encodeURIComponent(product.unit || 'kg')}`} className="relative z-10 shrink-0">
                    <button className="h-10 px-4 rounded-lg bg-white/5 border border-white/10 text-white text-xs font-semibold hover:bg-white/10 hover:text-primary transition-colors flex items-center gap-1.5">
                      <span>Chat with Farmer</span>
                      <MessageCircle className="w-4 h-4 text-primary" />
