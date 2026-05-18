@@ -5,9 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/services/api';
 import {
   User, ShieldCheck, TrendingUp, Package, ShoppingBag,
-  Star, AlertTriangle, Zap, CheckCircle2,
+  Star, AlertTriangle, Zap, CheckCircle2, X, Sun, Moon,
   BarChart3, Wallet, Clock, Award, ChevronRight, RefreshCw,
-  Users, BadgeCheck, Sparkles, Activity, Mail, Phone, Settings, LogOut, Landmark, Info, Globe, Calendar, Database, FileText, ShoppingCart, MessageSquare, ArrowRight
+  Users, BadgeCheck, Sparkles, Activity, Mail, Phone, Settings, LogOut, Landmark, Info, Globe, Calendar, Database, FileText, ShoppingCart, MessageSquare, ArrowRight, FileCheck, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -93,6 +93,18 @@ export const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Settings Panel State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'verification', 'role'
+  const [settingsName, setSettingsName] = useState('');
+  const [settingsPhone, setSettingsPhone] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [idType, setIdType] = useState('NIN');
+  const [idNumber, setIdNumber] = useState('');
+  const [idImageUrl, setIdImageUrl] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [msg, setMsg] = useState({ text: '', type: '' });
+
   const fetchProfile = async () => {
     const userId = user?.id || user?._id;
     if (!userId) return;
@@ -101,6 +113,10 @@ export const ProfilePage = () => {
     try {
       const data = await apiRequest(`/profile?userId=${userId}`);
       setProfile(data);
+      if (data?.user) {
+        setSettingsName(data.user.name || '');
+        setSettingsPhone(data.user.phone || '');
+      }
     } catch (err) {
       console.error('Profile load error:', err);
     } finally {
@@ -108,10 +124,78 @@ export const ProfilePage = () => {
     }
   };
 
-  useEffect(() => { fetchProfile(); }, [user]);
+  useEffect(() => {
+    fetchProfile();
+  }, [user]);
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setMsg({ text: '', type: '' });
+    try {
+      const updated = await apiRequest('/profile/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: settingsName, phone: settingsPhone })
+      });
+      setProfile(prev => prev ? { ...prev, user: { ...prev.user, name: settingsName, phone: settingsPhone } } : prev);
+      setMsg({ text: 'Profile details saved successfully!', type: 'success' });
+    } catch (err) {
+      setMsg({ text: err.message || 'Failed to update profile details', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (!idNumber) return setMsg({ text: 'Please enter a valid ID number', type: 'error' });
+    setIsSubmitting(true);
+    setMsg({ text: '', type: '' });
+    try {
+      const data = await apiRequest('/profile/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idType, idNumber, idImageUrl })
+      });
+      setProfile(prev => prev ? { 
+        ...prev, 
+        user: { 
+          ...prev.user, 
+          verification_status: 'pending', 
+          is_verified: false 
+        } 
+      } : prev);
+      setMsg({ text: 'ID submitted! Verification is now pending manual administrative review.', type: 'success' });
+      setIdNumber('');
+    } catch (err) {
+      setMsg({ text: err.message || 'Failed to submit verification request', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpgrade = async () => {
+    setIsSubmitting(true);
+    setMsg({ text: '', type: '' });
+    try {
+      await apiRequest('/profile/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      setMsg({ text: 'Congratulations! Your account has been upgraded to Seller/Farmer role.', type: 'success' });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      setMsg({ text: err.message || 'Failed to upgrade role', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!user) return (
-    <MainLayout hideFooter hideAI>
+    <MainLayout hideFooter>
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
         <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-gray-200 shadow-sm text-center space-y-6">
           <div className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
@@ -132,10 +216,13 @@ export const ProfilePage = () => {
     </MainLayout>
   );
 
-  const isFarmer = user.role === 'farmer';
+  const displayUser = profile?.user || user;
+  const isFarmer = displayUser.role === 'farmer';
+  const hasPendingVerification = displayUser.verification_status === 'pending';
+  const isFullyVerified = displayUser.verification_status === 'verified';
 
   return (
-    <MainLayout hideFooter hideAI>
+    <MainLayout hideFooter>
       <div className="min-h-screen bg-gray-50 pb-20">
         
         {/* User Profile Header */}
@@ -147,9 +234,9 @@ export const ProfilePage = () => {
                  {/* Identity Initials */}
                  <div className="relative group shrink-0">
                    <div className="w-24 h-24 rounded-2xl bg-slate-900 flex items-center justify-center text-4xl font-bold text-white shadow-sm border border-slate-800 relative overflow-hidden">
-                      {user.name?.[0]?.toUpperCase()}
+                      {displayUser.name?.[0]?.toUpperCase()}
                    </div>
-                   {user.is_verified == 1 && (
+                   {isFullyVerified && (
                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 shadow-sm">
                        <BadgeCheck className="w-5 h-5 text-primary" />
                      </div>
@@ -159,36 +246,56 @@ export const ProfilePage = () => {
                  {/* Identity Manifest */}
                  <div className="space-y-3">
                    <div className="flex flex-wrap items-center gap-3">
-                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{user.name}</h1>
-                     <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm", 
-                       isFarmer ? 'bg-primary/10 text-primary border-primary/20' : 'bg-slate-900 text-white border-slate-800'
+                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{displayUser.name}</h1>
+                     
+                     <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm flex items-center gap-1", 
+                       isFullyVerified 
+                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                         : hasPendingVerification 
+                           ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' 
+                           : 'bg-red-50 text-red-700 border-red-200'
                      )}>
-                       {isFarmer ? 'Verified Farmer' : 'Verified Buyer'}
+                       {isFullyVerified ? (
+                         <>
+                           <ShieldCheck className="w-3.5 h-3.5" />
+                           {isFarmer ? 'Verified Farmer' : 'Verified Buyer'}
+                         </>
+                       ) : hasPendingVerification ? (
+                         <>
+                           <Clock className="w-3.5 h-3.5" />
+                           Verification Pending
+                         </>
+                       ) : (
+                         <>
+                           <AlertTriangle className="w-3.5 h-3.5" />
+                           Unverified Account
+                         </>
+                       )}
                      </div>
                    </div>
                    
                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 font-semibold">
                      <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-primary" />
-                        <span>{user.email}</span>
+                        <span>{displayUser.email}</span>
                      </div>
-                     {user.phone && (
+                     {displayUser.phone && (
                         <div className="flex items-center gap-2">
                            <Phone className="w-4 h-4 text-primary" />
-                           <span>{user.phone}</span>
+                           <span>{displayUser.phone}</span>
                         </div>
                      )}
                      <div className="flex items-center gap-2 text-gray-400 font-medium">
                         <Calendar className="w-4 h-4" />
-                        <span>Member since {new Date(user.created_at || Date.now()).getFullYear()}</span>
-                     </div>
+                        <span>Member since {new Date(displayUser.created_at || Date.now()).getFullYear()}</span>
+                      </div>
                    </div>
                  </div>
               </div>
 
               {/* Actions & Settings */}
               <div className="flex flex-wrap gap-3 w-full md:w-auto">
-                 <button className="h-10 px-4 rounded-xl bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 shadow-sm flex items-center gap-1.5 active:scale-95">
+                 <button onClick={() => setIsSettingsOpen(true)} className="h-10 px-4 rounded-xl bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 shadow-sm flex items-center gap-1.5 active:scale-95">
                     <Settings className="w-4 h-4 text-primary" />
                     Account Settings
                  </button>
@@ -220,7 +327,7 @@ export const ProfilePage = () => {
                         <>
                           <StatCard label="Total Earnings" value={formatNaira(profile.stats?.totalRevenue)} sub="Gross revenue made" icon={TrendingUp} />
                           <StatCard label="Escrow Payments" value={formatNaira(profile.stats?.pendingRevenue)} sub="Funds held in escrow" icon={Clock} />
-                          <StatCard label="Active Products" value={profile.stats?.totalProducts ?? profile.inventoryValue ? 12 : 0} sub="Items listed on marketplace" icon={Database} />
+                          <StatCard label="Active Products" value={profile.stats?.productCount ?? 0} sub="Items listed on marketplace" icon={Database} />
                           <StatCard label="Delivery Rate" value={`${profile.stats?.deliveryRate ?? 98}%`} sub="Logistics success indicator" icon={ShieldCheck} />
                         </>
                       ) : (
@@ -376,8 +483,8 @@ export const ProfilePage = () => {
                    <p className="text-xs text-gray-500 leading-relaxed">We had a brief connection issue while loading your profile stats. Please refresh below.</p>
                 </div>
                 <button onClick={fetchProfile} className="h-10 px-4 rounded-xl bg-primary text-white font-semibold text-xs shadow-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 mx-auto">
-                  <RefreshCw className="w-4 h-4" />
-                  Retry Loading Profile
+                   <RefreshCw className="w-4 h-4" />
+                   Retry Loading Profile
                 </button>
               </div>
             )}
@@ -385,6 +492,314 @@ export const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Account Settings Overlay Modal (Premium Custom Glassmorphism UI with Dark Mode Toggle) */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className={cn(
+            "w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl border transition-all duration-300 relative",
+            isDarkMode 
+              ? "bg-slate-950 text-gray-100 border-slate-800" 
+              : "bg-white text-gray-800 border-gray-100"
+          )}>
+            
+            {/* Modal Header */}
+            <div className={cn(
+              "p-6 flex items-center justify-between border-b",
+              isDarkMode ? "border-slate-800" : "border-gray-100"
+            )}>
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary animate-spin" />
+                <h3 className="font-bold text-lg tracking-tight">Account Configurations</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setIsDarkMode(!isDarkMode)} 
+                  className={cn(
+                    "p-2 rounded-xl border transition-all active:scale-90",
+                    isDarkMode 
+                      ? "bg-slate-900 text-yellow-400 border-slate-800 hover:bg-slate-800" 
+                      : "bg-gray-50 text-slate-700 border-gray-200 hover:bg-gray-100"
+                  )}
+                  title="Toggle Settings Dark Theme"
+                >
+                  {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+                <button 
+                  onClick={() => { setIsSettingsOpen(false); setMsg({ text: '', type: '' }); }}
+                  className={cn(
+                    "p-2 rounded-xl transition-colors",
+                    isDarkMode ? "hover:bg-slate-900 text-gray-400" : "hover:bg-gray-100 text-gray-500"
+                  )}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="grid grid-cols-4 min-h-[400px]">
+              
+              {/* Sidebar Tabs */}
+              <div className={cn(
+                "col-span-1 p-4 border-r flex flex-col gap-1.5",
+                isDarkMode ? "bg-slate-900/40 border-slate-800" : "bg-gray-50/50 border-gray-100"
+              )}>
+                <button 
+                  onClick={() => { setActiveTab('profile'); setMsg({ text: '', type: '' }); }}
+                  className={cn(
+                    "w-full flex items-center gap-2 p-2.5 rounded-xl text-left text-xs font-bold transition-all",
+                    activeTab === 'profile' 
+                      ? "bg-primary text-white shadow-sm" 
+                      : isDarkMode 
+                        ? "text-gray-400 hover:bg-slate-900" 
+                        : "text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <User className="w-4 h-4" />
+                  My Profile
+                </button>
+                
+                <button 
+                  onClick={() => { setActiveTab('verification'); setMsg({ text: '', type: '' }); }}
+                  className={cn(
+                    "w-full flex items-center gap-2 p-2.5 rounded-xl text-left text-xs font-bold transition-all",
+                    activeTab === 'verification' 
+                      ? "bg-primary text-white shadow-sm" 
+                      : isDarkMode 
+                        ? "text-gray-400 hover:bg-slate-900" 
+                        : "text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Verification
+                </button>
+
+                {!isFarmer && (
+                  <button 
+                    onClick={() => { setActiveTab('role'); setMsg({ text: '', type: '' }); }}
+                    className={cn(
+                      "w-full flex items-center gap-2 p-2.5 rounded-xl text-left text-xs font-bold transition-all",
+                      activeTab === 'role' 
+                        ? "bg-primary text-white shadow-sm" 
+                        : isDarkMode 
+                          ? "text-gray-400 hover:bg-slate-900" 
+                          : "text-gray-600 hover:bg-gray-100"
+                    )}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Become Seller
+                  </button>
+                )}
+              </div>
+
+              {/* Main Tab Panel */}
+              <div className="col-span-3 p-6 overflow-y-auto max-h-[450px] space-y-6">
+                
+                {msg.text && (
+                  <div className={cn(
+                    "p-3 rounded-xl border text-xs font-bold flex items-center gap-2 animate-bounce",
+                    msg.type === 'success' 
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                      : "bg-red-50 border-red-200 text-red-700"
+                  )}>
+                    {msg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                    <span>{msg.text}</span>
+                  </div>
+                )}
+
+                {/* TAB 1: PROFILE EDIT */}
+                {activeTab === 'profile' && (
+                  <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-sm">Personal Profile Parameters</h4>
+                      <p className="text-[10px] text-gray-400">Update your primary identity settings synced with the transactional nodes.</p>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Full Legal Name</label>
+                        <input 
+                          type="text" 
+                          value={settingsName} 
+                          onChange={(e) => setSettingsName(e.target.value)}
+                          className={cn(
+                            "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none focus:border-primary transition-all",
+                            isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"
+                          )}
+                          required 
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Linked Phone Number</label>
+                        <input 
+                          type="tel" 
+                          value={settingsPhone} 
+                          onChange={(e) => setSettingsPhone(e.target.value)}
+                          className={cn(
+                            "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none focus:border-primary transition-all",
+                            isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"
+                          )}
+                          required 
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Email Address (Immutable)</label>
+                        <input 
+                          type="email" 
+                          value={displayUser.email} 
+                          disabled
+                          className={cn(
+                            "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none opacity-50 cursor-not-allowed",
+                            isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-gray-100 border-gray-200 text-gray-500"
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="h-11 w-full bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/95 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                      Save Profile Parameters
+                    </button>
+                  </form>
+                )}
+
+                {/* TAB 2: VERIFICATION PROCESS */}
+                {activeTab === 'verification' && (
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-sm">KYC Trust Registry</h4>
+                      <p className="text-[10px] text-gray-400">Provide official identity artifacts to unlock verified badge trust indices.</p>
+                    </div>
+
+                    {isFullyVerified ? (
+                      <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col items-center text-center space-y-3">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+                          <ShieldCheck className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h5 className="font-bold text-emerald-800 text-sm">Identity Fully Verified</h5>
+                          <p className="text-[10px] text-emerald-600 max-w-xs font-semibold">Your account has satisfied the highest compliance standards. Trust credentials active.</p>
+                        </div>
+                      </div>
+                    ) : hasPendingVerification ? (
+                      <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col items-center text-center space-y-3">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-amber-500 shadow-sm animate-pulse">
+                          <Clock className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h5 className="font-bold text-amber-800 text-sm">KYC Compliance Review Pending</h5>
+                          <p className="text-[10px] text-amber-600 max-w-xs font-semibold">Our compliance team is auditing your ID document. Approvals usually resolve within 1–2 hours.</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleVerify} className="space-y-4 pt-2">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Select Document Type</label>
+                            <select 
+                              value={idType} 
+                              onChange={(e) => setIdType(e.target.value)}
+                              className={cn(
+                                "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none focus:border-primary transition-all",
+                                isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"
+                              )}
+                            >
+                              <option value="NIN">National ID (NIN)</option>
+                              <option value="International Passport">International Passport</option>
+                              <option value="Drivers License">Driver's License</option>
+                              <option value="Voters Card">Voter's Card</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Document Number / ID</label>
+                            <input 
+                              type="text" 
+                              value={idNumber} 
+                              onChange={(e) => setIdNumber(e.target.value)}
+                              placeholder="e.g. 12345678901"
+                              className={cn(
+                                "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none focus:border-primary transition-all",
+                                isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"
+                              )}
+                              required 
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">ID Image / Document URL (Optional)</label>
+                          <input 
+                            type="url" 
+                            value={idImageUrl} 
+                            onChange={(e) => setIdImageUrl(e.target.value)}
+                            placeholder="https://example.com/id-image.jpg"
+                            className={cn(
+                              "w-full h-11 px-3 rounded-xl border text-sm font-semibold outline-none focus:border-primary transition-all",
+                              isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"
+                            )}
+                          />
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          disabled={isSubmitting}
+                          className="h-11 w-full bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/95 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                          {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}
+                          Submit ID for Audit Review
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+
+                {/* TAB 3: UPGRADE TO SELLER */}
+                {activeTab === 'role' && !isFarmer && (
+                  <div className="space-y-6">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-sm">Grow Your Agri-Business</h4>
+                      <p className="text-[10px] text-gray-400">Become an active Agro-Connect Seller to list products, receive secure payments, and trade enterprise stock.</p>
+                    </div>
+
+                    <div className={cn(
+                      "p-6 rounded-2xl border text-center space-y-4",
+                      isDarkMode ? "bg-slate-900 border-slate-800" : "bg-gray-50 border-gray-100"
+                    )}>
+                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto">
+                        <Sparkles className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <div className="space-y-1 max-w-sm mx-auto">
+                        <h5 className="font-bold text-sm">Become a Merchant/Farmer</h5>
+                        <p className="text-[11px] text-gray-400 font-semibold leading-relaxed">Instantly unlock the farmer inventory suite, ledger invoicing, Paystack escrow systems, and AI smart advisors.</p>
+                      </div>
+
+                      <button 
+                        onClick={handleUpgrade}
+                        disabled={isSubmitting}
+                        className="h-11 px-6 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/95 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5 mx-auto"
+                      >
+                        {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Award className="w-4 h-4" />}
+                        Become an Active Seller
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </MainLayout>
   );
 };

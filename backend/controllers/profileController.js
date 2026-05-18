@@ -390,3 +390,103 @@ export const getProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { name, phone } = req.body;
+
+  try {
+    const { data: updatedUser, error } = await supabase
+      .from('users')
+      .update({ name, phone, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select('id, name, email, phone, role, is_verified, verification_status, created_at, agro_score, trust_badges')
+      .single();
+
+    if (error) throw error;
+    return res.json(updatedUser);
+  } catch (err) {
+    console.error('updateProfile error:', err);
+    return res.status(500).json({ message: 'Failed to update profile' });
+  }
+};
+
+export const submitVerification = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { idType, idNumber, idImageUrl } = req.body;
+  if (!idType || !idNumber) {
+    return res.status(400).json({ message: 'ID Type and ID Number are required' });
+  }
+
+  try {
+    // 1. Update user fields
+    const { data: updatedUser, error } = await supabase
+      .from('users')
+      .update({
+        id_type: idType,
+        id_number: idNumber,
+        id_image_url: idImageUrl || null,
+        verification_status: 'pending',
+        is_verified: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select('id, name, email, phone, role, is_verified, verification_status, created_at, agro_score, trust_badges, id_type, id_number, id_image_url')
+      .single();
+
+    if (error) throw error;
+
+    // 2. Insert audit trail in verification_requests table (swallow error if table not yet created by user)
+    try {
+      await supabase
+        .from('verification_requests')
+        .insert([{
+          user_id: userId,
+          id_type: idType,
+          id_number: idNumber,
+          id_image_url: idImageUrl || null,
+          status: 'pending'
+        }]);
+    } catch (auditErr) {
+      console.warn('⚠️ Optional audit log failed (table might be pending creation):', auditErr.message);
+    }
+
+    return res.json({
+      message: 'Verification request submitted successfully',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('submitVerification error:', err);
+    return res.status(500).json({ message: 'Failed to submit verification' });
+  }
+};
+
+export const upgradeToSeller = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const { data: updatedUser, error } = await supabase
+      .from('users')
+      .update({
+        role: 'farmer',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select('id, name, email, phone, role, is_verified, verification_status, created_at, agro_score, trust_badges')
+      .single();
+
+    if (error) throw error;
+    return res.json({
+      message: 'Successfully upgraded to Seller/Farmer role!',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('upgradeToSeller error:', err);
+    return res.status(500).json({ message: 'Failed to upgrade to seller' });
+  }
+};

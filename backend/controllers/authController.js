@@ -69,7 +69,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: authError.message });
     }
 
-    // Insert or update public.users
+    // Insert or update public.users (newly signed up users are unverified by default)
     const { data: newUser, error: dbError } = await supabase
       .from('users')
       .upsert([{ 
@@ -79,8 +79,8 @@ export const register = async (req, res) => {
         phone, 
         password: 'SUPABASE_AUTH_MANAGED',
         role,
-        is_verified: true,
-        verification_status: 'verified'
+        is_verified: false,
+        verification_status: 'unverified'
       }])
       .select()
       .single();

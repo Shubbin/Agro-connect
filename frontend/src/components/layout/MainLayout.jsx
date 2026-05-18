@@ -6,6 +6,8 @@ import { OfflineIndicator } from '@/components/ui/OfflineIndicator';
 
 
 export const MainLayout = ({children, hideFooter = false, hideAI = false }) => {
+  const isStandaloneChat = typeof window !== 'undefined' && window.location.pathname === '/ai-assistant';
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -13,7 +15,7 @@ export const MainLayout = ({children, hideFooter = false, hideAI = false }) => {
         {children}
       </main>
       {!hideFooter && <Footer />}
-      {!hideAI && <AIAssistantButton />}
+      {!isStandaloneChat && <AIAssistantButton />}
       <OfflineIndicator />
     </div>
   );
