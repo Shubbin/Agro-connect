@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Send, Search, MoreHorizontal, Paperclip, Smile, ShieldCheck, User, Mic, MicOff, X, Image as ImageIcon, Film, Play, Pause, ChevronRight, MessageSquare, Info, UserCheck, RefreshCw, FileText, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
@@ -7,6 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export const ChatPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const farmerId = searchParams.get('farmerId');
+  const farmerName = searchParams.get('farmerName');
+
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
   const [message, setMessage] = useState('');
@@ -37,9 +43,35 @@ export const ChatPage = () => {
     const fetchConversations = async () => {
       try {
         const data = await chatAPI.getConversations(user.id);
-        setConversations(data);
-        if (data.length > 0 && !selectedConv) {
-          setSelectedConv(data[0]);
+        let updatedList = [...data];
+        
+        // If farmerId is passed in URL query, check if conversation already exists
+        if (farmerId) {
+          const exists = data.some(c => c.participantId === farmerId);
+          if (!exists) {
+            // Synthesize a new placeholder conversation for the farmer
+            const tempConv = {
+              id: `${user.id}_${farmerId}`,
+              participantId: farmerId,
+              participantName: decodeURIComponent(farmerName || 'Farmer'),
+              participantRole: 'farmer',
+              isVerified: true,
+              lastMessage: 'Start a conversation...',
+              unread: 0,
+              timestamp: new Date().toISOString()
+            };
+            updatedList.unshift(tempConv);
+          }
+        }
+
+        setConversations(updatedList);
+
+        // Auto-select the conversation matching farmerId, or default to first conversation
+        if (farmerId && !selectedConv) {
+          const match = updatedList.find(c => c.participantId === farmerId);
+          if (match) setSelectedConv(match);
+        } else if (updatedList.length > 0 && !selectedConv) {
+          setSelectedConv(updatedList[0]);
         }
       } catch (error) {
         console.error('Failed to fetch conversations:', error);
@@ -51,7 +83,7 @@ export const ChatPage = () => {
     fetchConversations();
     const interval = setInterval(fetchConversations, 5000);
     return () => clearInterval(interval);
-  }, [user, selectedConv]);
+  }, [user, selectedConv, farmerId, farmerName]);
 
   // Poll for messages
   useEffect(() => {
