@@ -40,10 +40,10 @@ export const Navbar = () => {
 
   return (
     <header className={cn(
-      "sticky top-0 z-[100] transition-all duration-300",
+      "sticky top-0 z-[100] transition-all duration-300 py-4",
       scrolled 
-        ? "bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm py-4" 
-        : "bg-white border-b border-gray-100 py-6"
+        ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-md shadow-slate-100/50" 
+        : "bg-white border-b border-gray-100"
     )}>
       <nav className="container mx-auto px-4 max-w-7xl flex items-center justify-between">
         
