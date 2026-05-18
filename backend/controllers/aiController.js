@@ -257,7 +257,7 @@ export const handle = async (req, res) => {
         let userVerified = false;
 
         const { data: profile } = await supabase
-          .from('profiles')
+          .from('users')
           .select('name, role, is_verified, verification_status')
           .eq('id', userId)
           .maybeSingle();
