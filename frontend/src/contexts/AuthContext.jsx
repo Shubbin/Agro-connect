@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '@/services/api';
+import { supabase } from '@/lib/supabase';
 
 const AuthContext = createContext(null);
 
@@ -14,6 +15,11 @@ export const AuthProvider = ({ children }) => {
         const storedToken = localStorage.getItem('agro_token');
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
+          // Restore Supabase SDK Session client-side to align all context instances
+          await supabase.auth.setSession({
+            access_token: storedToken,
+            refresh_token: ''
+          });
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -28,6 +34,13 @@ export const AuthProvider = ({ children }) => {
     const response = await authAPI.login({ email, password });
     localStorage.setItem('agro_user', JSON.stringify(response.user));
     localStorage.setItem('agro_token', response.token);
+    
+    // Sync Supabase SDK client-side session immediately
+    await supabase.auth.setSession({
+      access_token: response.token,
+      refresh_token: ''
+    });
+
     setUser(response.user);
     return response;
   };
@@ -37,6 +50,13 @@ export const AuthProvider = ({ children }) => {
     if (response.token && response.token !== 'SESSION_PENDING') {
       localStorage.setItem('agro_user', JSON.stringify(response.user));
       localStorage.setItem('agro_token', response.token);
+      
+      // Sync Supabase SDK client-side session immediately
+      await supabase.auth.setSession({
+        access_token: response.token,
+        refresh_token: ''
+      });
+
       setUser(response.user);
     }
     return response;
@@ -48,6 +68,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.warn('Logout API call failed');
     }
+    // Log out client-side Supabase instance too
+    await supabase.auth.signOut();
+    
     localStorage.removeItem('agro_user');
     localStorage.removeItem('agro_token');
     localStorage.removeItem('agro_cart');

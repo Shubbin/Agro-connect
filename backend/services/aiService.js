@@ -76,12 +76,12 @@ class AgroAIService {
     try {
       const prompt = `
         You are 'AgroBot', the AI assistant for Agro-Connect.
-        Answer this question concisely: "${question}"
+        Answer this question concisely in a highly professional, human, Nigerian-friendly tone: "${question}"
       `;
 
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
       });
 
       return chatCompletion.choices[0].message.content;

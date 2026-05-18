@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getByFarmer } from '../controllers/productController.js';
-import { getFarmerOrders } from '../controllers/orderController.js';
+import { getFarmerOrders, respondToOffer } from '../controllers/orderController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = Router();
@@ -10,5 +10,8 @@ router.get('/products', protect, getByFarmer);
 
 // GET /farmer/orders
 router.get('/orders', protect, getFarmerOrders);
+
+// POST /farmer/offer/respond
+router.post('/offer/respond', protect, respondToOffer);
 
 export default router;

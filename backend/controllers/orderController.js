@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { sendMockSms } from './smsController.js';
+import payoutService from '../services/payoutService.js';
 
 export const getAll = async (req, res) => {
   try {
@@ -39,14 +40,17 @@ export const create = async (req, res) => {
 
   try {
     // 1. Calculate Total (Security best practice: calculate on server)
-    // For now, we'll use the client total if provided, or sum the items
     const total = clientTotal || items.reduce((sum, item) => sum + (item.offeredPrice ?? item.product.price) * item.quantity, 0);
 
-    // 2. Create Order
+    // 2. Set merchant_id to the farmer of the first item's product
+    const merchantId = items[0]?.product?.farmer_id || items[0]?.product?.merchant_id || null;
+
+    // 3. Create Order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert([{
         user_id: userId,
+        merchant_id: merchantId,
         total,
         delivery_address: deliveryAddress,
         status: 'pending',
@@ -58,7 +62,7 @@ export const create = async (req, res) => {
 
     if (orderError) throw orderError;
 
-    // 2. Create Order Items
+    // 4. Create Order Items
     const orderItems = items.map(item => ({
       order_id: order.id,
       product_id: item.product.id || item.product._id,
@@ -72,7 +76,20 @@ export const create = async (req, res) => {
 
     if (itemsError) throw itemsError;
 
-    // 3. Fetch populated
+    // 5. Create Invoice record automatically for billing
+    const invoiceNum = `INV-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    await supabase
+      .from('invoices')
+      .insert([{
+        order_id: order.id,
+        seller_id: merchantId,
+        buyer_id: userId,
+        invoice_number: invoiceNum,
+        total_amount: total,
+        status: 'unpaid'
+      }]);
+
+    // 6. Fetch populated
     const { data: populated, error: popError } = await supabase
       .from('orders')
       .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
@@ -127,10 +144,20 @@ export const confirmDelivery = async (req, res) => {
 
     if (error || !order) return res.status(404).json({ message: 'Order not found' });
 
-    sendMockSms('Vendor', `Order #${orderId} delivery confirmed!`);
+    // Fulfill Escrow / Payout release flow securely
+    await payoutService.recordPayout(order);
+
+    // Also update invoice status to paid if payment was done
+    await supabase
+      .from('invoices')
+      .update({ status: 'paid' })
+      .eq('order_id', orderId);
+
+    sendMockSms('Vendor', `Order #${orderId} delivery confirmed! Payout released to your wallet.`);
     return res.json({ status: 'success', order });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error' });
+    console.error('Confirm Delivery Error:', err.message);
+    return res.status(500).json({ message: 'Server error: ' + err.message });
   }
 };
 
@@ -140,25 +167,46 @@ export const generateOtp = async (req, res) => {
 
 export const getFarmerOrders = async (req, res) => {
   try {
-    // For vendors, we need to find orders that contain their products
+    // For vendors, we find orders that belong to this merchant_id
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*, user:users!user_id(name, email), items:order_items(*, product:products(*))')
+      .eq('merchant_id', req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-
-    // Filter orders that have items belonging to this farmer/vendor
-    const farmerOrders = orders.filter(o => 
-      o.items.some(item => item.product?.farmer_id === req.user.id)
-    );
-
-    return res.json(farmerOrders);
+    return res.json(orders);
   } catch (err) {
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
-export const respondToOffer = (_req, res) => {
-  return res.json({ message: 'Offer response recorded' });
+export const respondToOffer = async (req, res) => {
+  const { cartItemId, accept } = req.body;
+  if (!cartItemId) {
+    return res.status(400).json({ message: 'Cart Item ID is required' });
+  }
+
+  try {
+    const status = accept ? 'accepted' : 'rejected';
+    const { data: cartItem, error } = await supabase
+      .from('cart_items')
+      .update({ offer_status: status })
+      .eq('id', cartItemId)
+      .select()
+      .single();
+
+    if (error || !cartItem) {
+      return res.status(404).json({ message: 'Cart item not found or update failed' });
+    }
+
+    return res.json({ 
+      success: true, 
+      message: `Offer ${status} successfully`, 
+      cartItem 
+    });
+  } catch (err) {
+    console.error('Respond to offer error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
 };

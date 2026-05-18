@@ -254,11 +254,19 @@ export const chatAPI = {
 // ============ AI API ============
 
 export const aiAPI = {
-  chat: async (message) => {
+  chat: async (message, sessionId = null) => {
     return apiRequest('/ai/assistant', {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, sessionId }),
     });
+  },
+
+  getSessions: async () => {
+    return apiRequest('/ai/sessions');
+  },
+
+  getHistory: async (sessionId) => {
+    return apiRequest(`/ai/history?sessionId=${sessionId}`);
   },
 
   getOnboardingTips: async (role) => {
@@ -343,6 +351,9 @@ export const uploadAPI = {
 export const statsAPI = {
   getSummary: async () => {
     return apiRequest('/stats');
+  },
+  getFarmerDashboard: async () => {
+    return apiRequest('/stats/farmer');
   },
 };
 

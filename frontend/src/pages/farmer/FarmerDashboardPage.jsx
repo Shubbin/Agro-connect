@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { walletAPI, ordersAPI, productsAPI } from '@/services/api';
+import { walletAPI, ordersAPI, productsAPI, statsAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Plus, Package, ShoppingCart, Wallet, MessageCircle, ArrowRight, ShieldCheck, 
@@ -32,6 +32,8 @@ const categoryDistribution = [
 
 export const FarmerDashboardPage = () => {
   const { user } = useAuth();
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [chartData, setChartData] = useState(salesTrendData);
   const [stats, setStats] = useState({ 
     products: 0, 
     orders: 0, 
@@ -47,10 +49,11 @@ export const FarmerDashboardPage = () => {
 
     const fetchData = async () => {
       try {
-        const [wallet, orders, products] = await Promise.all([
+        const [wallet, orders, products, dashboard] = await Promise.all([
           walletAPI.getBalance().catch(() => ({ available: 0, pending: 0 })),
           ordersAPI.getFarmerOrders().catch(() => []),
           productsAPI.getByFarmer(user.id).catch(() => []),
+          statsAPI.getFarmerDashboard().catch(() => null),
         ]);
         
         setStats({
@@ -62,6 +65,18 @@ export const FarmerDashboardPage = () => {
           productListings: products.slice(0, 4),
           isLoading: false
         });
+
+        if (dashboard) {
+          setDashboardStats(dashboard);
+          if (dashboard.analyticsHistory && dashboard.analyticsHistory.length > 0) {
+            const mappedHistory = dashboard.analyticsHistory.map(item => ({
+              month: item.date,
+              sales: item.sales,
+              orders: item.orders
+            }));
+            setChartData(mappedHistory);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
         setStats(prev => ({ ...prev, isLoading: false }));
@@ -201,7 +216,7 @@ export const FarmerDashboardPage = () => {
               {/* Responsive Area Chart */}
               <div className="h-72 w-full pt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#00A651" stopOpacity={0.2}/>
@@ -223,21 +238,25 @@ export const FarmerDashboardPage = () => {
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 bg-gray-50/30 p-4 rounded-2xl">
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Revenue</p>
-                  <p className="text-base font-extrabold text-gray-900 mt-0.5">₦1.90M</p>
+                  <p className="text-base font-extrabold text-gray-900 mt-0.5">{dashboardStats?.totalRevenue || '₦0'}</p>
                   <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
                     <ArrowUpRight className="w-3 h-3" /> +24% YoY
                   </span>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Average Order</p>
-                  <p className="text-base font-extrabold text-gray-900 mt-0.5">₦32,500</p>
+                  <p className="text-base font-extrabold text-gray-900 mt-0.5">
+                    {stats.recentOrders.length > 0
+                      ? formatPrice(stats.recentOrders.reduce((sum, o) => sum + o.total, 0) / stats.recentOrders.length)
+                      : '₦0'}
+                  </p>
                   <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
                     <ArrowUpRight className="w-3 h-3" /> +12% MoM
                   </span>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Success Rate</p>
-                  <p className="text-base font-extrabold text-gray-900 mt-0.5">98.4%</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Pending Settlement</p>
+                  <p className="text-base font-extrabold text-gray-900 mt-0.5">{dashboardStats?.pendingPayouts || '₦0'}</p>
                   <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Fully Verified
                   </span>

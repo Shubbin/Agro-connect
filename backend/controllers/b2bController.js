@@ -53,6 +53,10 @@ export const createTradeSession = async (req, res) => {
   const { items, buyerId, plan } = req.body;
   const merchant = req.merchant; // From API Key middleware
 
+  if (!merchant || !merchant.id) {
+    return res.status(401).json({ error: 'B2B Merchant profile not resolved. Valid API Key required.' });
+  }
+
   try {
     let totalAmount = 0;
     items.forEach(item => totalAmount += (item.price * item.quantity));
@@ -87,9 +91,16 @@ export const createTradeSession = async (req, res) => {
 
     await supabase.from('order_items').insert(orderItems);
 
+    // Fetch full merchant info for webhook triggers
+    const { data: merchantUser } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', merchant.id)
+      .single();
+
     // Trigger Webhook Notification
-    if (merchant.webhook_url) {
-      webhookService.notify(merchant.webhook_url, merchant.api_key, 'trade.created', {
+    if (merchantUser && merchantUser.webhook_url) {
+      webhookService.notify(merchantUser.webhook_url, merchant.api_key, 'trade.created', {
         tradeId: order.id,
         total: totalAmount,
         buyerId
@@ -97,9 +108,9 @@ export const createTradeSession = async (req, res) => {
     }
 
     res.status(201).json({
-      message: 'Trade session initiated',
+      message: 'Trade session initiated successfully',
       tradeId: order.id,
-      checkoutUrl: `https://agroconnect.com.ng/trade/pay/${order.id}`
+      checkoutUrl: `${req.headers.origin || 'http://localhost:5173'}/trade/pay/${order.id}`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -109,17 +120,22 @@ export const createTradeSession = async (req, res) => {
 // 3. Trade Analytics for B2B Partners
 export const getTradeStats = async (req, res) => {
   try {
+    const merchantId = req.user?.id || req.merchant?.id;
+    if (!merchantId) {
+      return res.status(401).json({ error: 'Authentication credentials missing' });
+    }
+
     const { data: orders, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('merchant_id', req.user.id);
+      .eq('merchant_id', merchantId);
 
     if (error) throw error;
 
     const stats = orders.reduce((acc, o) => {
       acc.volume += Number(o.total);
-      acc.commissions += Number(o.platform_commission);
-      acc.payouts += Number(o.merchant_payout_amount);
+      acc.commissions += Number(o.platform_commission || 0);
+      acc.payouts += Number(o.merchant_payout_amount || 0);
       return acc;
     }, { volume: 0, commissions: 0, payouts: 0, count: orders.length });
 

@@ -70,11 +70,13 @@ export const resolveDispute = async (req, res) => {
 
     // 2. Process financial resolution
     if (resolution === 'refunded') {
-      // Return funds to buyer's wallet (Logic would normally involve payment provider)
       await supabase.from('orders').update({ escrow_status: 'refunded', status: 'cancelled' }).eq('id', orderId);
+      // Update payouts associated with this order to failed
+      await supabase.from('payouts').update({ status: 'failed' }).eq('order_id', orderId);
     } else if (resolution === 'released') {
-      // Release funds to seller
       await supabase.from('orders').update({ escrow_status: 'released', status: 'delivered' }).eq('id', orderId);
+      // Fulfill / Process payout status
+      await supabase.from('payouts').update({ status: 'processed', payout_date: new Date().toISOString() }).eq('order_id', orderId);
     }
 
     // 3. Update dispute status
@@ -98,7 +100,48 @@ export const resolveDispute = async (req, res) => {
   }
 };
 
-// 4. AI-Powered Dispute Analysis
+// 4. Get User's own Disputes (Buyer or Seller)
+export const getUserDisputes = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // 1. Fetch disputes filed by this user
+    const { data: filedDisputes, error: filedError } = await supabase
+      .from('disputes')
+      .select('*, order:orders(*)')
+      .eq('reporter_id', userId);
+
+    if (filedError) throw filedError;
+
+    // 2. Fetch disputes filed against this vendor's orders
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('merchant_id', userId);
+
+    let vendorDisputes = [];
+    if (orders && orders.length > 0) {
+      const orderIds = orders.map(o => o.id);
+      const { data: againstDisputes, error: againstError } = await supabase
+        .from('disputes')
+        .select('*, order:orders(*)')
+        .in('order_id', orderIds);
+
+      if (!againstError && againstDisputes) {
+        vendorDisputes = againstDisputes;
+      }
+    }
+
+    // Merge distinct disputes
+    const mergedMap = new Map();
+    [...(filedDisputes || []), ...vendorDisputes].forEach(d => mergedMap.set(d.id, d));
+    
+    res.json(Array.from(mergedMap.values()));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 5. AI-Powered Dispute Analysis
 export const analyzeDisputeAI = async (req, res) => {
   const { disputeId } = req.params;
 

@@ -142,7 +142,6 @@ export const OrdersPage = () => {
                             <p className="font-medium text-gray-800">{order.farmerName || 'Verified Farmer'}</p>
                          </div>
                       </div>
-                      
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border",
@@ -153,6 +152,13 @@ export const OrdersPage = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Order Timeline Progress Stepper */}
+                    {order.status !== 'cancelled' && (
+                      <div className="px-6 border-b border-gray-100 bg-white">
+                        <OrderTimeline status={order.status} />
+                      </div>
+                    )}
 
                     {/* Order Details */}
                     <div className="p-6 grid lg:grid-cols-3 gap-8">

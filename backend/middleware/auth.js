@@ -72,6 +72,31 @@ export const merchantApiKey = async (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   if (!apiKey) return res.status(401).json({ error: 'API key required' });
   
-  // Optional: Add logic to verify keys in Supabase
-  next();
+  try {
+    const { data: keyRecord, error } = await supabase
+      .from('merchant_api_keys')
+      .select('*')
+      .eq('api_key', apiKey)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error || !keyRecord) {
+      console.warn(`[AUTH API KEY] Invalid or inactive API key provided: ${apiKey}`);
+      return res.status(401).json({ error: 'Invalid or inactive B2B API Key' });
+    }
+
+    // Attach merchant info
+    req.merchant = { id: keyRecord.merchant_id, api_key: apiKey };
+    
+    // Log API usage timestamp
+    await supabase
+      .from('merchant_api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('id', keyRecord.id);
+
+    next();
+  } catch (err) {
+    console.error('[AUTH API KEY] Verification error:', err.message);
+    return res.status(500).json({ error: 'B2B Authentication service error' });
+  }
 };

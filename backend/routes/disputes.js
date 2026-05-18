@@ -4,9 +4,9 @@ import { protect } from '../middleware/auth.js';
 
 const router = Router();
 
-// Buyer routes
+// Buyer/Seller routes
 router.post('/', protect, disputeController.createDispute);
-router.get('/my-disputes', protect, (req, res) => res.json([])); // Placeholder
+router.get('/my-disputes', protect, disputeController.getUserDisputes);
 
 // Admin routes
 router.get('/admin/all', protect, disputeController.getAllDisputes);

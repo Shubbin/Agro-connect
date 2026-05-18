@@ -15,50 +15,54 @@ const AIAssistantPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef(null);
 
-  // Load user-namespaced sessions from localStorage on login/change
+  // Load database sessions on mount or login
   useEffect(() => {
     if (user) {
-      const userId = user.id || user._id;
-      const key = `agro_ai_sessions_${userId}`;
-      const saved = localStorage.getItem(key);
-      setSessions(saved ? JSON.parse(saved) : []);
-      
-      const activeKey = `agro_ai_active_session_${userId}`;
-      setActiveSessionId(localStorage.getItem(activeKey) || null);
+      const loadSessions = async () => {
+        try {
+          const fetchedSessions = await aiAPI.getSessions().catch(() => []);
+          setSessions(fetchedSessions.map(s => ({
+            id: s.id,
+            title: s.title,
+            timestamp: s.created_at || s.updated_at,
+            messages: []
+          })));
+        } catch (err) {
+          console.error('Failed to load AI sessions:', err);
+        }
+      };
+      loadSessions();
     } else {
       setSessions([]);
       setActiveSessionId(null);
     }
   }, [user]);
 
-  // Persist sessions to user-namespaced localStorage
+  // Load message history on activeSessionId change
   useEffect(() => {
-    if (user) {
-      const userId = user.id || user._id;
-      const key = `agro_ai_sessions_${userId}`;
-      localStorage.setItem(key, JSON.stringify(sessions));
-    }
-  }, [sessions, user]);
-
-  // Persist active session ID to user-namespaced localStorage
-  useEffect(() => {
-    if (user) {
-      const userId = user.id || user._id;
-      const activeKey = `agro_ai_active_session_${userId}`;
-      if (activeSessionId) {
-        localStorage.setItem(activeKey, activeSessionId);
-      } else {
-        localStorage.removeItem(activeKey);
+    if (!activeSessionId || activeSessionId === 'new') return;
+    
+    const loadHistory = async () => {
+      try {
+        const history = await aiAPI.getHistory(activeSessionId).catch(() => []);
+        setSessions(prev => prev.map(s => 
+          s.id === activeSessionId 
+            ? { ...s, messages: history }
+            : s
+        ));
+      } catch (err) {
+        console.error('Failed to load session history:', err);
       }
-    }
-  }, [activeSessionId, user]);
+    };
+    loadHistory();
+  }, [activeSessionId]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId) || null;
   const messages = activeSession ? activeSession.messages : [
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hello! I am your Agro-Connect AI Assistant. I can help you check real-time market prices, find verified farmers, calculate logistics, or navigate your orders and dashboard. How can I help you today?",
+      content: "Hello! I am Ago, your warm agricultural expert and AI guide. Ask me about crop pricing dynamics, regional bargains, bulk logistics, or dashboard insights! How can I help you today?",
       timestamp: new Date().toISOString()
     }
   ];
@@ -70,12 +74,13 @@ const AIAssistantPage = () => {
   }, [messages, activeSessionId]);
 
   const startNewChat = () => {
-    setActiveSessionId(null);
+    setActiveSessionId('new');
     setShowHistory(false);
   };
 
-  const deleteSession = (e, id) => {
+  const deleteSession = async (e, id) => {
     e.stopPropagation();
+    // We filter locally first, sessions are managed by database lifecycle
     setSessions(prev => prev.filter(s => s.id !== id));
     if (activeSessionId === id) setActiveSessionId(null);
   };
@@ -90,34 +95,26 @@ const AIAssistantPage = () => {
       timestamp: new Date().toISOString()
     };
 
-    let updatedSessions = [...sessions];
     let currentSessionId = activeSessionId;
-
     if (!currentSessionId) {
-      currentSessionId = Date.now().toString();
-      const newSession = {
-        id: currentSessionId,
-        title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
-        messages: [userMessage],
-        timestamp: new Date().toISOString()
-      };
-      updatedSessions = [newSession, ...sessions];
-      setSessions(updatedSessions);
-      setActiveSessionId(currentSessionId);
-    } else {
-      updatedSessions = sessions.map(s => 
-        s.id === currentSessionId 
-          ? { ...s, messages: [...s.messages, userMessage], timestamp: new Date().toISOString() }
-          : s
-      );
-      setSessions(updatedSessions);
+      currentSessionId = 'new';
     }
+
+    // Instantly append user message for seamless performance
+    setSessions(prev => {
+      const match = prev.find(s => s.id === currentSessionId);
+      if (match) {
+        return prev.map(s => s.id === currentSessionId ? { ...s, messages: [...s.messages, userMessage] } : s);
+      } else {
+        return [{ id: 'new', title: input.substring(0, 30) + '...', timestamp: new Date().toISOString(), messages: [userMessage] }, ...prev];
+      }
+    });
 
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await aiAPI.chat(input);
+      const response = await aiAPI.chat(input, currentSessionId === 'new' ? null : currentSessionId);
       const botMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -125,11 +122,33 @@ const AIAssistantPage = () => {
         timestamp: new Date().toISOString()
       };
 
-      setSessions(prev => prev.map(s => 
-        s.id === currentSessionId 
-          ? { ...s, messages: [...s.messages, botMessage] }
-          : s
-      ));
+      const serverSessionId = response.sessionId;
+
+      // Sync activeSessionId and session data
+      setSessions(prev => {
+        const withBot = prev.map(s => 
+          s.id === currentSessionId 
+            ? { ...s, id: serverSessionId, messages: [...s.messages, botMessage] }
+            : s
+        );
+        return withBot;
+      });
+
+      setActiveSessionId(serverSessionId);
+
+      // Trigger asynchronous background session refresh to synchronize server titles
+      aiAPI.getSessions().then(fetched => {
+        setSessions(prev => fetched.map(s => {
+          const prevMatch = prev.find(x => x.id === s.id);
+          return {
+            id: s.id,
+            title: s.title,
+            timestamp: s.created_at || s.updated_at,
+            messages: prevMatch ? prevMatch.messages : []
+          };
+        }));
+      }).catch(() => {});
+
     } catch (error) {
       console.error('AI Chat Error:', error);
       const errorMessage = {
