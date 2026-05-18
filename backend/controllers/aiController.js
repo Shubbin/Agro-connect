@@ -58,25 +58,43 @@ const generateLocalFallback = (prompt, isJson) => {
     }
     return JSON.stringify({ message: "Analytics operational." });
   } else {
+    // Conversational assistant fallback matching exact personality requirements
     const greetings = ["hi", "hello", "hey", "yo", "hola", "greetings", "good morning", "good afternoon", "good evening"];
-    const containsGreeting = greetings.some(g => query.includes(g));
+    const containsGreeting = greetings.some(g => query.trim() === g || query.startsWith(g + ' ') || query.endsWith(' ' + g));
 
     if (containsGreeting) {
-      return "Ah, welcome! I am Ago, your Agro-Connect mentor. I can help you search for fresh local crops, check your wallet, track secure escrow payments, or get B2B API keys. What can I do for you today, my friend?";
+      return "Hey 👋 How can I help you today?";
     }
-    if (query.includes("payment") || query.includes("money") || query.includes("escrow") || query.includes("pay")) {
-      return "On Agro-Connect, your payments are 100% secure! When you buy crops, your money goes into a secure escrow vault. The farmer only gets paid when you receive the crops and click 'Confirm Delivery' on your Orders page.";
+    
+    if (query.includes("platform") || query.includes("what is this") || query.includes("about this")) {
+      return "Agro-Connect is a platform that connects farmers, buyers, and suppliers in one marketplace. You can buy fresh agricultural products, track orders, use escrow payments for secure transactions, and manage farming-related business activities from the dashboard.";
     }
-    if (query.includes("logistic") || query.includes("ship") || query.includes("delivery") || query.includes("track")) {
-      return "We offer high-speed direct farm logistics! Once the seller ships your products and registers the shipment, you will see real-time updates directly on your Orders tracker page.";
+
+    if (query.includes("where is my order") || query.includes("track my order") || (query.includes("order") && (query.includes("where") || query.includes("track")))) {
+      return "Sure — can you share your order ID so I can check the status for you?";
     }
-    if (query.includes("kyc") || query.includes("verify") || query.includes("badge")) {
-      return "Boosting your trust score is very easy! Just go to your Profile settings, upload a government ID card under 'Identity Verification', and you will receive a verified badge instantly to reassure trade partners.";
+
+    if (query.includes("payment") || query.includes("money") || query.includes("escrow") || query.includes("pay") || query.includes("secure")) {
+      return "Your payments are held securely in escrow by Agro-Connect. Once the crops are delivered and you verify the quality, you confirm the delivery, and the funds are released to the farmer immediately.";
     }
-    if (query.includes("withdraw") || query.includes("wallet")) {
-      return "Your digital wallet handles all payments! Farmers can request direct instant withdrawals to any verified bank account in Nigeria once escrow funds are released upon delivery confirmation.";
+
+    if (query.includes("logistic") || query.includes("ship") || query.includes("delivery")) {
+      return "We offer reliable B2B direct logistics to transport crops from local farms straight to your hub. You can track shipping status and active delivery updates directly on your Orders page.";
     }
-    return "God bless your day! I am here to help you navigate our agricultural marketplace, configure B2B API integrations, secure escrow payments, or optimize logistics. Tell me more, my friend!";
+
+    if (query.includes("kyc") || query.includes("verify") || query.includes("badge") || query.includes("identity")) {
+      return "You can verify your identity by uploading an official document (NIN, Voter's Card, or Passport) on your Profile settings page. This awards a Verified Badge, which boosts trust for potential trade partners.";
+    }
+
+    if (query.includes("withdraw") || query.includes("wallet") || query.includes("payout")) {
+      return "Farmers can withdraw available wallet funds instantly into any Nigerian bank account. Head over to the Wallet page to request a withdrawal.";
+    }
+
+    if (query.includes("api") || query.includes("b2b key") || query.includes("developer")) {
+      return "You can generate B2B API keys in your Account Settings. This allows you to integrate our bulk logistics or pricing indices directly into your own enterprise systems.";
+    }
+
+    return "Let me know what you need help with. I can guide you through finding crop listings, checking order status, tracking wallet payouts, or B2B developer integrations.";
   }
 };
 
@@ -91,8 +109,23 @@ const callGroq = async (prompt, isJson = false, pastMessages = []) => {
   const messages = [
     {
       role: 'system',
-      content: `You are Ago, a warm, highly empathetic, and professional Nigerian agricultural expert and AI trade advisor on the Agro-Connect platform.
-Your goal is to provide highly practical, realistic, and human-sounding advice for local farmers, agricultural commodity buyers, and logistics providers in Nigeria.
+      content: `You are Ago, the AI assistant for Agro-Connect.
+
+PERSONALITY & BEHAVIOR GUIDELINES:
+- Sound natural, smart, conversational, and human-like.
+- Never repeat the same greeting or introduction twice.
+- Talk like a helpful modern assistant, not a robotic customer care bot.
+- Keep responses concise unless the user asks for details.
+- Be interactive and adaptive based on the user's message.
+- Use friendly language naturally, but do NOT overuse phrases like "my friend", "welcome", or "Ah".
+- Avoid sounding scripted.
+- ALWAYS answer the user’s actual question directly first.
+- THEN optionally offer related help.
+- Do not repeat your capabilities in every reply.
+- Only introduce yourself once at the beginning of the conversation.
+- Maintain memory within the conversation context.
+- Ask follow-up questions when appropriate.
+- Sound confident and intelligent.
 
 PLATFORM INFORMATION:
 1. Core Mission: Agro-Connect is Nigeria's premium digital marketplace that connects local farmers directly with buyers (individual and commercial) without middlemen. It guarantees fair pricing, secure escrow payments, and reliable B2B direct logistics.
@@ -121,12 +154,7 @@ PLATFORM INFORMATION:
     - Oyo (Bodija Market)
     - Kano (Dawanau Market)
     - Benue (Gboko Market)
-    Key crops tracked include Cassava, Maize, Yam, Tomatoes, Rice, and Cowpea.
-
-COMMUNICATION STYLE GUIDELINES:
-- Avoid robotic, dry, or formal "AI speak". Speak warmly and enthusiastically like a trusted, experienced agricultural mentor or friend.
-- Use friendly, authentic Nigerian-friendly greetings and phrases naturally (e.g., "Ah, my friend!", "How far!", "Welcome to Agro-Connect!", "God bless your harvest!"). Keep it highly respectful, warm, and commercial-grade.
-- Keep answers structured but conversational, clear, and action-oriented. Provide realistic, factual, and direct answers. Respond ONLY with a valid JSON object if requested.`,
+    Key crops tracked include Cassava, Maize, Yam, Tomatoes, Rice, and Cowpea.`,
     },
     ...pastMessages,
     { role: 'user', content: prompt },
