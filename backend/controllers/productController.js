@@ -64,10 +64,17 @@ export const create = async (req, res) => {
       return res.status(403).json({ message: 'Only farmers can create listings' });
     }
 
-    // Force farmer_id to be current user's ID
+    // Sanitize product data for database insertion (only valid table columns)
     const productData = {
-      ...req.body,
-      farmer_id: userId
+      farmer_id: userId,
+      name: req.body.name,
+      description: req.body.description || '',
+      category: req.body.category || 'produce',
+      price: parseFloat(req.body.price) || 0,
+      unit: req.body.unit || 'kg',
+      available: parseInt(req.body.available) || 0,
+      images: Array.isArray(req.body.images) ? req.body.images : [],
+      location: req.body.location || 'Lagos Regional Hub'
     };
 
     const { data, error } = await supabase
@@ -102,9 +109,16 @@ export const update = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized: This product does not belong to you' });
     }
 
-    // Clean body to prevent changing farmer_id
-    const updateData = { ...req.body };
-    delete updateData.farmer_id;
+    // Sanitize update data (only valid table columns)
+    const updateData = {};
+    if (req.body.name !== undefined) updateData.name = req.body.name;
+    if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.category !== undefined) updateData.category = req.body.category;
+    if (req.body.price !== undefined) updateData.price = parseFloat(req.body.price);
+    if (req.body.unit !== undefined) updateData.unit = req.body.unit;
+    if (req.body.available !== undefined) updateData.available = parseInt(req.body.available);
+    if (req.body.images !== undefined) updateData.images = Array.isArray(req.body.images) ? req.body.images : [];
+    if (req.body.location !== undefined) updateData.location = req.body.location;
 
     const { data, error } = await supabase
       .from('products')
