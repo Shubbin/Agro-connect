@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { walletAPI, ordersAPI, productsAPI, statsAPI } from '@/services/api';
+import { walletAPI, ordersAPI, productsAPI, statsAPI, aiAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Plus, Package, ShoppingCart, Wallet, MessageCircle, ArrowRight, ShieldCheck, 
   TrendingUp, BarChart3, Activity, ArrowUpRight, ArrowDownRight, Globe, Info, 
   Database, Landmark, Building2, UserCheck, RefreshCw, FileText, Smartphone, 
-  ChevronRight, Clock, Star, Users, CheckCircle2, AlertCircle
+  ChevronRight, Clock, Star, Users, CheckCircle2, AlertCircle, Sparkles
 } from 'lucide-react';
 import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,9 @@ export const FarmerDashboardPage = () => {
     productListings: [],
     isLoading: true
   });
+  
+  const [farmerInsights, setFarmerInsights] = useState(null);
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -83,6 +86,23 @@ export const FarmerDashboardPage = () => {
       }
     };
     fetchData();
+  }, [user]);
+
+  useEffect(() => {
+    if (user && user.role === 'farmer') {
+      const loadInsights = async () => {
+        setIsInsightsLoading(true);
+        try {
+          const res = await aiAPI.getFarmerInsights().catch(() => null);
+          setFarmerInsights(res);
+        } catch (err) {
+          console.error("Failed to load farmer insights:", err);
+        } finally {
+          setIsInsightsLoading(false);
+        }
+      };
+      loadInsights();
+    }
   }, [user]);
 
   const formatPrice = (price) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(price || 0);
@@ -302,6 +322,59 @@ export const FarmerDashboardPage = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* AI Listing Yield Coach */}
+              <div className="bg-white p-5 rounded-2xl border border-primary/20 shadow-sm space-y-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none group-hover:scale-110 transition-transform duration-500" />
+                
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-xs">AI Listing Yield Coach</h4>
+                      <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider leading-none mt-0.5">Real-time Demand Analytics</p>
+                    </div>
+                  </div>
+                </div>
+
+                {isInsightsLoading ? (
+                  <div className="flex items-center justify-center py-4 gap-2 text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary animate-spin" />
+                    Analyzing Sales Catalog...
+                  </div>
+                ) : farmerInsights ? (
+                  <div className="space-y-3 text-[11px] font-semibold text-slate-600">
+                    <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100/50">
+                      <p className="text-emerald-800 leading-relaxed">
+                        📈 <strong>Demand Alert:</strong> {farmerInsights.demand_alert || "High demand spotted from Oyo B2B trade buyers for Cassava bulk loads this week."}
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                      <p className="text-slate-700 leading-relaxed">
+                        💡 <strong>Pricing Strategy:</strong> {farmerInsights.pricing_strategy || "Increase Oyo target sales by 5% to capture premium corporate margins."}
+                      </p>
+                    </div>
+
+                    {farmerInsights.actionable_tips && farmerInsights.actionable_tips.length > 0 && (
+                      <div className="space-y-1.5 pt-1">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Yield Booster Tips</p>
+                        <ul className="space-y-1 pl-1 list-disc list-inside text-slate-500">
+                          {farmerInsights.actionable_tips.map((tip, idx) => (
+                            <li key={idx} className="leading-snug">{tip}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center text-xs text-slate-400 font-semibold">
+                    Yield coaching active. List products to trigger local pricing tips.
+                  </div>
+                )}
               </div>
 
               {/* Direct message block */}

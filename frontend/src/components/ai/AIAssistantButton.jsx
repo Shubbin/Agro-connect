@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Sparkles, X, Send, ShieldCheck, Activity, RefreshCw, ChevronRight, Hash, Database, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { aiAPI } from '@/services/api';
 
 export const AIAssistantButton = () => {
+  const { isAuthenticated, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -13,6 +17,46 @@ export const AIAssistantButton = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef(null);
+
+  // Sync session and message history if authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const initSession = async () => {
+        try {
+          const sessionsList = await aiAPI.getSessions().catch(() => []);
+          if (sessionsList && sessionsList.length > 0) {
+            setSessionId(sessionsList[0].id);
+            const history = await aiAPI.getHistory(sessionsList[0].id).catch(() => []);
+            if (history && history.length > 0) {
+              setMessages(history.map(m => ({
+                role: m.role,
+                content: m.content
+              })));
+            }
+          }
+        } catch (err) {
+          console.error("Error initializing AI session:", err);
+        }
+      };
+      initSession();
+    } else {
+      setSessionId(null);
+      setMessages([
+        {
+          role: 'assistant',
+          content: "Hello! I am your Agro-Connect Assistant. I can help you find fresh products, check your orders, track escrow payments, or navigate the dashboard. What can I do for you today?",
+        },
+      ]);
+    }
+  }, [isAuthenticated, user]);
+
+  // Auto-scroll chat view to the bottom when messages or loading state changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!message.trim() || isLoading) return;
@@ -22,32 +66,23 @@ export const AIAssistantButton = () => {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
-    // Simulate AI response with clean, simple, helpful layman replies
-    setTimeout(() => {
-      const query = userMessage.toLowerCase();
-      const greetings = ["hi", "hello", "hey", "yo", "hola", "greetings", "good morning", "good afternoon", "good evening"];
-      const words = query.split(/[\s,?.!]+/);
-      const isGreeting = words.some(w => greetings.includes(w));
-
-      let reply = "";
-      if (isGreeting) {
-        reply = "Hello there! Welcome to Agro-Connect. How can I help you today?";
-      } else if (query.includes("payment") || query.includes("money") || query.includes("pay") || query.includes("escrow") || query.includes("secure")) {
-        reply = "Your payments are completely safe on Agro-Connect! We hold your money securely in escrow until you receive and check your farm products. Once you confirm delivery, the funds are released to the farmer.";
-      } else if (query.includes("shipping") || query.includes("deliver") || query.includes("track") || query.includes("order") || query.includes("receive")) {
-        reply = "Once a farmer ships your order and enters the tracking details, you will see all active shipping updates directly on your Orders page.";
-      } else if (query.includes("marketplace") || query.includes("crops") || query.includes("buy") || query.includes("sell") || query.includes("produce")) {
-        reply = "You can easily view and browse all active fresh farm produce, tools, and machinery on our Marketplace page. Prices are transparent and direct from local farmers.";
-      } else {
-        reply = "I am here to make farm trading easy for you! You can ask me about finding crops, checking your orders, tracking payments, or navigating your dashboard.";
-      }
+    try {
+      const res = await aiAPI.chat(userMessage, sessionId || 'new');
       
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: reply },
-      ]);
+      if (res && res.response) {
+        setMessages(prev => [...prev, { role: 'assistant', content: res.response }]);
+        if (res.sessionId && res.sessionId !== sessionId) {
+          setSessionId(res.sessionId);
+        }
+      } else {
+        throw new Error("Empty AI response received");
+      }
+    } catch (error) {
+      console.error("AI chat assistant error:", error);
+      setMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting right now. Please log in or check your connection and try again." }]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -96,7 +131,7 @@ export const AIAssistantButton = () => {
         </div>
 
         {/* Chat Logs */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scroll-smooth" ref={scrollRef}>
           {messages.map((msg, i) => (
             <div
               key={i}
