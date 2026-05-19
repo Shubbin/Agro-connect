@@ -58,39 +58,55 @@ const generateLocalFallback = (prompt, isJson) => {
     }
     return JSON.stringify({ message: "Analytics operational." });
   } else {
-    // Conversational assistant fallback matching exact personality requirements
+    // Extract raw user message
+    let userQuery = query.trim();
+    const userMsgMatch = prompt.match(/User Message:\s*"([^"]+)"/i) || 
+                         prompt.match(/guest user warmly.*:\s*"([^"]+)"/i) || 
+                         prompt.match(/Answer this question.*:\s*"([^"]+)"/i);
+    if (userMsgMatch && userMsgMatch[1]) {
+      userQuery = userMsgMatch[1].toLowerCase().trim();
+    }
+
     const greetings = ["hi", "hello", "hey", "yo", "hola", "greetings", "good morning", "good afternoon", "good evening"];
-    const containsGreeting = greetings.some(g => query.trim() === g || query.startsWith(g + ' ') || query.endsWith(' ' + g));
+    const containsGreeting = greetings.some(g => userQuery === g || userQuery.startsWith(g + ' ') || userQuery.endsWith(' ' + g));
 
     if (containsGreeting) {
       return "Hey 👋 How can I help you today?";
     }
     
-    if (query.includes("platform") || query.includes("what is this") || query.includes("about this")) {
+    if (userQuery.includes("name") || userQuery.includes("who are you")) {
+      return "I'm Ago, your Agro-Connect assistant! I'm here to make agricultural trade secure, fast, and simple for you.";
+    }
+
+    if (userQuery.includes("what can we do") || userQuery.includes("what can you do") || userQuery.includes("capabilities") || userQuery.includes("help me with")) {
+      return "I can help you search crop listings, track secure escrow payments, organize B2B logistics, verify your profile KYC, or generate API keys. What's on your mind?";
+    }
+
+    if (userQuery.includes("platform") || userQuery.includes("what is this") || userQuery.includes("about this") || userQuery.includes("overview")) {
       return "Agro-Connect is a platform that connects farmers, buyers, and suppliers in one marketplace. You can buy fresh agricultural products, track orders, use escrow payments for secure transactions, and manage farming-related business activities from the dashboard.";
     }
 
-    if (query.includes("where is my order") || query.includes("track my order") || (query.includes("order") && (query.includes("where") || query.includes("track")))) {
+    if (userQuery.includes("where is my order") || userQuery.includes("track my order") || (userQuery.includes("order") && (userQuery.includes("where") || userQuery.includes("track")))) {
       return "Sure — can you share your order ID so I can check the status for you?";
     }
 
-    if (query.includes("payment") || query.includes("money") || query.includes("escrow") || query.includes("pay") || query.includes("secure")) {
+    if (userQuery.includes("payment") || userQuery.includes("money") || userQuery.includes("escrow") || userQuery.includes("pay") || userQuery.includes("secure")) {
       return "Your payments are held securely in escrow by Agro-Connect. Once the crops are delivered and you verify the quality, you confirm the delivery, and the funds are released to the farmer immediately.";
     }
 
-    if (query.includes("logistic") || query.includes("ship") || query.includes("delivery")) {
+    if (userQuery.includes("logistic") || userQuery.includes("ship") || userQuery.includes("delivery")) {
       return "We offer reliable B2B direct logistics to transport crops from local farms straight to your hub. You can track shipping status and active delivery updates directly on your Orders page.";
     }
 
-    if (query.includes("kyc") || query.includes("verify") || query.includes("badge") || query.includes("identity")) {
+    if (userQuery.includes("kyc") || userQuery.includes("verify") || userQuery.includes("badge") || userQuery.includes("identity")) {
       return "You can verify your identity by uploading an official document (NIN, Voter's Card, or Passport) on your Profile settings page. This awards a Verified Badge, which boosts trust for potential trade partners.";
     }
 
-    if (query.includes("withdraw") || query.includes("wallet") || query.includes("payout")) {
+    if (userQuery.includes("withdraw") || userQuery.includes("wallet") || userQuery.includes("payout")) {
       return "Farmers can withdraw available wallet funds instantly into any Nigerian bank account. Head over to the Wallet page to request a withdrawal.";
     }
 
-    if (query.includes("api") || query.includes("b2b key") || query.includes("developer")) {
+    if (userQuery.includes("api") || userQuery.includes("b2b key") || userQuery.includes("developer")) {
       return "You can generate B2B API keys in your Account Settings. This allows you to integrate our bulk logistics or pricing indices directly into your own enterprise systems.";
     }
 
