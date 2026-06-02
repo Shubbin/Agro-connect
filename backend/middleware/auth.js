@@ -1,4 +1,4 @@
-import { supabase } from '../config/db.js';
+import { supabase, supabaseAdmin } from '../config/db.js';
 
 /**
  * Protect middleware: Forensic Audit Version
@@ -58,15 +58,15 @@ export const protect = async (req, res, next) => {
 
     // 5. Ensure the user exists in the public.users database table to prevent foreign key errors
     try {
-      const { data: dbUser } = await supabase
+      const { data: dbUser } = await supabaseAdmin
         .from('users')
         .select('id')
         .eq('id', data.user.id)
         .maybeSingle();
 
       if (!dbUser) {
-        console.log(`[AUTH] Syncing missing user ${data.user.id} into public.users table...`);
-        const { error: syncError } = await supabase
+        console.log(`[AUTH] Syncing missing user ${data.user.id} into public.users table using supabaseAdmin...`);
+        const { error: syncError } = await supabaseAdmin
           .from('users')
           .insert([{
             id: data.user.id,

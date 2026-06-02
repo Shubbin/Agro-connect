@@ -28,6 +28,15 @@ export const supabase = (supabaseUrl && supabaseKey)
     })
   : null;
 
+export const supabaseAdmin = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
+
 const connectDB = async () => {
   try {
     console.log('🚀 Supabase client initialized (Backend Mode)');

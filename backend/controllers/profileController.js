@@ -1,4 +1,4 @@
-import { supabase } from '../config/db.js';
+import { supabase, supabaseAdmin } from '../config/db.js';
 
 // Redundant helper removed - we now use req.user from the protect middleware
 
@@ -355,8 +355,8 @@ export const getProfile = async (req, res) => {
     if (error || !user) {
       // If the profile is for the currently logged-in user, auto-sync and create it!
       if (req.user && req.user.id === userId) {
-        console.log(`[PROFILE] Auto-syncing missing user ${userId} to database...`);
-        const { data: syncedUser, error: syncErr } = await supabase
+        console.log(`[PROFILE] Auto-syncing missing user ${userId} to database using supabaseAdmin...`);
+        const { data: syncedUser, error: syncErr } = await supabaseAdmin
           .from('users')
           .insert([{
             id: userId,
