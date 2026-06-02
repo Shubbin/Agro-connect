@@ -344,7 +344,9 @@ export const uploadAPI = {
     });
     
     if (!response.ok) {
-      throw new Error('Upload failed');
+      const errData = await response.json().catch(() => ({}));
+      console.error('❌ TRACE [UPLOAD]: Upload failed with status:', response.status, 'Error Details:', errData);
+      throw new Error(errData.error || errData.message || 'Upload failed');
     }
     
     return response.json();
