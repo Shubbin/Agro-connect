@@ -1,4 +1,4 @@
-import { supabase } from '../config/db.js';
+import { supabase, supabaseAdmin } from '../config/db.js';
 
 export const getAll = async (req, res) => {
   const { category = 'all', location = '', search = '' } = req.query;
@@ -64,7 +64,7 @@ export const create = async (req, res) => {
   try {
     const userId = req.user?.id;
     // Verify user role is farmer
-    const { data: dbUser } = await supabase
+    const { data: dbUser } = await supabaseAdmin
       .from('users')
       .select('role')
       .eq('id', userId)
@@ -90,7 +90,7 @@ export const create = async (req, res) => {
       min_order: parseInt(req.body.min_order !== undefined ? req.body.min_order : (req.body.minOrder || 1))
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .insert([productData])
       .select()
@@ -108,7 +108,7 @@ export const update = async (req, res) => {
     const userId = req.user?.id;
     
     // Check if product belongs to the requester
-    const { data: product, error: findError } = await supabase
+    const { data: product, error: findError } = await supabaseAdmin
       .from('products')
       .select('farmer_id')
       .eq('id', req.params.id)
@@ -139,7 +139,7 @@ export const update = async (req, res) => {
     const minOrder = req.body.min_order !== undefined ? req.body.min_order : req.body.minOrder;
     if (minOrder !== undefined) updateData.min_order = parseInt(minOrder) || 1;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .update(updateData)
       .eq('id', req.params.id)
@@ -157,7 +157,7 @@ export const remove = async (req, res) => {
     const userId = req.user?.id;
     
     // Check if product belongs to the requester
-    const { data: product, error: findError } = await supabase
+    const { data: product, error: findError } = await supabaseAdmin
       .from('products')
       .select('farmer_id')
       .eq('id', req.params.id)
@@ -171,7 +171,7 @@ export const remove = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized: This product does not belong to you' });
     }
 
-    await supabase.from('products').delete().eq('id', req.params.id);
+    await supabaseAdmin.from('products').delete().eq('id', req.params.id);
     return res.json({ success: true });
   } catch (err) {
     return res.status(500).json({ message: 'Delete failed' });
