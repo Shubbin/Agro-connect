@@ -48,7 +48,7 @@ export const ProductFormPage = () => {
     minOrder: '1',
     available: '',
     location: 'Lagos Regional Hub',
-    images: ['https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=2080&auto=format&fit=crop'],
+    images: [],
     coverImage: '',
   });
 
@@ -67,7 +67,7 @@ export const ProductFormPage = () => {
               minOrder: (product.min_order || product.minOrder || 1).toString(),
               available: product.available.toString(),
               location: product.location,
-              images: product.images || [formData.images[0]],
+              images: product.images || [],
               coverImage: product.cover_image || product.coverImage || '',
             });
           }

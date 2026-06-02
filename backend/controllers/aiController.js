@@ -524,6 +524,31 @@ export const handle = async (req, res) => {
       }
     }
 
+    case 'product-suggestions': {
+      const { name, category, price } = req.body;
+      try {
+        const response = await callGroq(
+          `Review this draft listing by a farmer:
+           - Draft Name: ${name}
+           - Category: ${category}
+           - Price: ${price} ₦
+           
+           Provide 2 to 3 highly tactical, actionable tips to optimize this product listing to attract bulk buyers or set optimal pricing relative to Nigerian regional market standards (Lagos, Oyo, Kano).
+           Return ONLY a JSON object:
+           {
+             "suggestions": [
+               { "field": "Name" | "Price" | "Description", "suggestion": "string" }
+             ]
+           }`,
+          true
+        );
+        return res.json(JSON.parse(response));
+      } catch (err) {
+        console.error('Product suggestions error:', err.message);
+        return res.status(500).json({ error: 'Failed to generate product suggestions' });
+      }
+    }
+
     default:
       return res.status(404).json({ message: 'Unknown AI action endpoint' });
   }
