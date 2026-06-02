@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS products (
   certifications TEXT[] DEFAULT ARRAY[]::TEXT[],
   rating DECIMAL DEFAULT 0,
   review_count INTEGER DEFAULT 0,
+  cover_image TEXT DEFAULT '',
+  min_order INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -173,3 +175,38 @@ DROP POLICY IF EXISTS "Admins can view all payouts" ON payouts;
 CREATE POLICY "Admins can view all payouts" ON payouts FOR SELECT USING (
   EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
 );
+
+-- AI Chat Sessions Table
+CREATE TABLE IF NOT EXISTS ai_chat_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT DEFAULT 'New Consultation',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- AI Chat Messages Table
+CREATE TABLE IF NOT EXISTS ai_chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES ai_chat_sessions(id) ON DELETE CASCADE NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for AI Chat Tables
+ALTER TABLE ai_chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_chat_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can manage their own AI sessions" ON ai_chat_sessions;
+CREATE POLICY "Users can manage their own AI sessions" ON ai_chat_sessions 
+  FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage messages in their own sessions" ON ai_chat_messages;
+CREATE POLICY "Users can manage messages in their own sessions" ON ai_chat_messages 
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM ai_chat_sessions 
+      WHERE ai_chat_sessions.id = session_id AND ai_chat_sessions.user_id = auth.uid()
+    )
+  );
