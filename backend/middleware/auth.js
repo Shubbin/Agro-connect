@@ -56,7 +56,40 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ error: 'Session expired or invalid. Please login again.' });
     }
 
-    // 5. Attach user to request
+    // 5. Ensure the user exists in the public.users database table to prevent foreign key errors
+    try {
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (!dbUser) {
+        console.log(`[AUTH] Syncing missing user ${data.user.id} into public.users table...`);
+        const { error: syncError } = await supabase
+          .from('users')
+          .insert([{
+            id: data.user.id,
+            name: data.user.user_metadata?.name || 'User',
+            email: data.user.email,
+            phone: data.user.user_metadata?.phone || '',
+            password: 'SUPABASE_AUTH_MANAGED',
+            role: data.user.user_metadata?.role || 'user',
+            is_verified: false,
+            verification_status: 'unverified'
+          }]);
+        
+        if (syncError) {
+          console.error('[AUTH] Failed to sync user to database:', syncError.message);
+        } else {
+          console.log('[AUTH] User successfully synced to database!');
+        }
+      }
+    } catch (syncErr) {
+      console.error('[AUTH] User database sync exception:', syncErr.message);
+    }
+
+    // 6. Attach user to request
     req.user = data.user;
     next();
   } catch (err) {

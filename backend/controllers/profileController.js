@@ -352,7 +352,45 @@ export const getProfile = async (req, res) => {
       .eq('id', userId)
       .single();
 
-    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    if (error || !user) {
+      // If the profile is for the currently logged-in user, auto-sync and create it!
+      if (req.user && req.user.id === userId) {
+        console.log(`[PROFILE] Auto-syncing missing user ${userId} to database...`);
+        const { data: syncedUser, error: syncErr } = await supabase
+          .from('users')
+          .insert([{
+            id: userId,
+            name: req.user.user_metadata?.name || 'User',
+            email: req.user.email,
+            phone: req.user.user_metadata?.phone || '',
+            password: 'SUPABASE_AUTH_MANAGED',
+            role: req.user.user_metadata?.role || 'user',
+            is_verified: false,
+            verification_status: 'unverified'
+          }])
+          .select('id, name, email, phone, role, is_verified, verification_status, created_at, agro_score, trust_badges')
+          .single();
+
+        if (!syncErr && syncedUser) {
+          const profile = { user: syncedUser };
+          if (syncedUser.role === 'farmer') {
+            profile.stats = { totalRevenue: 0, pendingRevenue: 0, totalOrders: 0, deliveredOrders: 0, productCount: 0, deliveryRate: 0 };
+            profile.topProducts = [];
+            profile.recentOrders = [];
+            profile.inventoryValue = 0;
+            profile.aiInsights = { profileScore: 50, insights: [] };
+            profile.badges = [];
+          } else {
+            profile.stats = { totalSpend: 0, totalOrders: 0, uniqueFarmers: 0 };
+            profile.recentOrders = [];
+            profile.aiInsights = { profileScore: 40, insights: [] };
+            profile.badges = [];
+          }
+          return res.json(profile);
+        }
+      }
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const profile = { user };
 

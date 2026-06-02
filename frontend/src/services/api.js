@@ -330,11 +330,16 @@ export const uploadAPI = {
     const formData = new FormData();
     formData.append('file', file);
     
+    const token = localStorage.getItem('agro_token');
+    
     // We use a separate fetch here instead of apiRequest because apiRequest 
     // forces JSON headers which breaks multipart/form-data
     const response = await fetch(`${API_BASE_URL}/upload`, {
       method: 'POST',
       body: formData,
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      }
       // No Content-Type header - browser will set it with boundary
     });
     
