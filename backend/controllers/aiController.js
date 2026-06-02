@@ -115,102 +115,139 @@ const generateLocalFallback = (prompt, isJson) => {
 };
 
 const callGroq = async (prompt, isJson = false, pastMessages = []) => {
-  const apiKey = process.env.GROQ_API_KEY;
-  const apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  const groqApiKey = process.env.GROQ_API_KEY;
 
-  if (!apiKey || apiKey === 'your_groq_api_key_here' || apiKey.startsWith('gsk_pT5V6C')) {
-    return generateLocalFallback(prompt, isJson);
-  }
-
-  const messages = [
-    {
-      role: 'system',
-      content: `You are Ago, the AI assistant for Agro-Connect.
+  const systemContent = `You are Ago, the AI assistant for Agro-Connect.
 
 PERSONALITY & BEHAVIOR GUIDELINES:
-- Sound natural, smart, conversational, and human-like.
-- Never repeat the same greeting or introduction twice.
-- Talk like a helpful modern assistant, not a robotic customer care bot.
+- Sound natural, smart, conversational, and highly empathetic.
+- Talk like a helpful, modern Nigerian agricultural trade advisor.
 - Keep responses concise unless the user asks for details.
-- Be interactive and adaptive based on the user's message.
-- Use friendly language naturally, but do NOT overuse phrases like "my friend", "welcome", or "Ah".
-- Avoid sounding scripted.
 - ALWAYS answer the user’s actual question directly first.
-- THEN optionally offer related help.
-- Do not repeat your capabilities in every reply.
 - Only introduce yourself once at the beginning of the conversation.
+- Use friendly, localized terms naturally, but do NOT overuse phrases.
 - Maintain memory within the conversation context.
-- Ask follow-up questions when appropriate.
-- Sound confident and intelligent.
 
 PLATFORM INFORMATION:
-1. Core Mission: Agro-Connect is Nigeria's premium digital marketplace that connects local farmers directly with buyers (individual and commercial) without middlemen. It guarantees fair pricing, secure escrow payments, and reliable B2B direct logistics.
-2. Escrow Protection (Secure Payments): Buyers pay securely via Paystack. Funds are NOT sent directly to the farmer. Instead, they are held in a secure digital escrow vault by Agro-Connect. Once the crops are delivered to the buyer and the buyer verifies the quality, the buyer clicks "Confirm Delivery" on the Orders page, which releases the escrow funds to the farmer's balance immediately.
-3. Wallet & Withdrawal: Farmers have a secure Wallet page showing their available balance, pending escrow balance, and transaction history. Farmers can instantly request direct bank withdrawals into any Nigerian bank account.
+1. Core Mission: Agro-Connect is Nigeria's premium digital marketplace that connects local farmers directly with buyers without middlemen. It guarantees fair pricing, secure escrow payments, and reliable B2B direct logistics.
+2. Escrow Protection (Secure Payments): Buyers pay securely via Paystack. Funds are held in a secure digital escrow vault. Once the crops are delivered and the buyer confirms quality, the buyer clicks "Confirm Delivery" on the Orders page to release funds.
+3. Wallet & Withdrawal: Farmers have a secure Wallet page showing their available balance, pending escrow balance, and transaction history. Farmers can instantly withdraw funds into any Nigerian bank account.
 4. KYC Verification & Trusted Badges:
-   - Users can upload an official identity document (NIN, Voter's Card, Driver's License, or International Passport) and select a verification category on their Profile settings page under "Identity Verification".
-   - This awards a "Verified Producer" badge for farmers, or "Verified Buyer" badge for buyers, significantly boosting platform trust indices.
-5. Interactive Agricultural Chat:
-   - Direct, high-speed, real-time chat between buyers and farmers.
-   - Fully interactive features: document upload attachments (e.g. crop certificates), voice message recording/playback, double checkmark ticks for delivery/read receipts, and automatic routing context to start chats directly from any marketplace listing (passing price, image, and crop details).
-6. B2B Enterprise Hub & API Integration:
-   - Under Account Settings, users can generate B2B API keys.
-   - Commercial commodity buyers can integrate our high-density freight logistics APIs, bulk pricing trackers, and automate large-scale bulk procurement.
-7. Account Upgrades & Roles: Users can request a seller upgrade to become a "Farmer" directly on their Profile page under "Become a Seller". This allows them to list farm products, access the Farmer Dashboard, track farm orders, and check wallet balance.
-8. Theme Customization: Agro-Connect features a full Premium Dark Mode toggle in Account Settings/Profile Page for comfortable night viewing.
-9. Navigation Guidelines:
-   - Marketplace: /marketplace
-   - Orders Page: /orders (buyers) or /farmer/orders (farmers)
-   - Wallet Page: /wallet
-   - User Profile / Account Settings: /profile
-   - AI Coaching & Market Prices: /ai-assistant
-10. Nigerian Crop Pricing Indices:
-    We compare and track prices across major regional trade hubs:
-    - Lagos (Mile 12 Market)
-    - Oyo (Bodija Market)
-    - Kano (Dawanau Market)
-    - Benue (Gboko Market)
-    Key crops tracked include Cassava, Maize, Yam, Tomatoes, Rice, and Cowpea.`,
-    },
-    ...pastMessages,
-    { role: 'user', content: prompt },
-  ];
+   - Users can upload an official identity document (NIN, Voter's Card, Driver's License, or Passport) and select a verification category on their Profile page under "Identity Verification".
+   - This awards a "Verified Producer" badge for farmers, or "Verified Buyer" for buyers.
+5. Interactive Agricultural Chat: Real-time chat with document attachments (crop certificates), voice message recording, double checkmark ticks, and automatic listing context routing.
+6. B2B Enterprise Hub: API keys for high-density freight logistics APIs, bulk pricing trackers, and B2B automated large-scale procurement.
+7. Account Upgrades: Users can request a seller upgrade to "Farmer" on their Profile page under "Become a Seller".
+8. Navigation Guidelines: /marketplace, /orders, /wallet, /profile, /ai-assistant
+9. Regional Nigerian Price Indices: Tracked across Lagos (Mile 12), Oyo (Bodija), Kano (Dawanau), Benue (Gboko) for Cassava, Maize, Yam, Tomatoes, Rice, and Cowpea.`;
 
-  const body = {
-    model: 'llama-3.3-70b-versatile',
-    messages,
-    temperature: 0.7,
-    max_tokens: 1000,
-  };
+  // 1. TRY GEMINI FIRST IF GEMINI_API_KEY IS AVAILABLE
+  if (geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' && !geminiApiKey.startsWith('your_')) {
+    try {
+      const model = 'gemini-2.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+      
+      const contents = [];
+      // Map history messages
+      for (const msg of pastMessages) {
+        contents.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        });
+      }
+      // Add current message
+      contents.push({
+        role: 'user',
+        parts: [{ text: prompt }]
+      });
 
-  if (isJson) body.response_format = { type: 'json_object' };
+      const body = {
+        contents,
+        systemInstruction: {
+          parts: [{ text: systemContent }]
+        },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000
+        }
+      };
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+      if (isJson) {
+        body.generationConfig.responseMimeType = 'application/json';
+      }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`❌ GROQ API ERROR [${response.status}]:`, errText);
-      return generateLocalFallback(prompt, isJson);
+      console.log(`🤖 [AI Engine] Calling Gemini 2.5 Flash for prompt: "${prompt.substring(0, 50)}..."`);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (content) {
+          return content;
+        }
+      } else {
+        const errText = await response.text();
+        console.error(`❌ [AI Engine] Gemini API Error [${response.status}]:`, errText);
+      }
+    } catch (err) {
+      console.error('❌ [AI Engine] Gemini Exception:', err.message);
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content || content === "Error") {
-      return generateLocalFallback(prompt, isJson);
-    }
-    return content;
-  } catch (err) {
-    console.error('❌ callGroq Exception:', err.message);
-    return generateLocalFallback(prompt, isJson);
   }
+
+  // 2. TRY GROQ SECOND IF GROQ_API_KEY IS AVAILABLE
+  if (groqApiKey && groqApiKey !== 'your_groq_api_key_here' && !groqApiKey.startsWith('gsk_pT5V6C')) {
+    try {
+      const apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      const messages = [
+        { role: 'system', content: systemContent },
+        ...pastMessages,
+        { role: 'user', content: prompt }
+      ];
+
+      const body = {
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature: 0.7,
+        max_tokens: 1000
+      };
+
+      if (isJson) body.response_format = { type: 'json_object' };
+
+      console.log(`🤖 [AI Engine] Calling Groq Llama-3.3-70b for prompt: "${prompt.substring(0, 50)}..."`);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${groqApiKey}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content && content !== "Error") {
+          return content;
+        }
+      } else {
+        const errText = await response.text();
+        console.error(`❌ [AI Engine] Groq API Error [${response.status}]:`, errText);
+      }
+    } catch (err) {
+      console.error('❌ [AI Engine] Groq Exception:', err.message);
+    }
+  }
+
+  // 3. FALLBACK TO LOCAL REGEX GENERATOR
+  console.log('🤖 [AI Engine] Using smart local fallback controller.');
+  return generateLocalFallback(prompt, isJson);
 };
 
 export const handle = async (req, res) => {

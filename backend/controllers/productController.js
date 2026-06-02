@@ -85,7 +85,9 @@ export const create = async (req, res) => {
       unit: req.body.unit || 'kg',
       available: parseInt(req.body.available) || 0,
       images: Array.isArray(req.body.images) ? req.body.images : [],
-      location: req.body.location || 'Lagos Regional Hub'
+      location: req.body.location || 'Lagos Regional Hub',
+      cover_image: req.body.cover_image !== undefined ? req.body.cover_image : (req.body.coverImage || ''),
+      min_order: parseInt(req.body.min_order !== undefined ? req.body.min_order : (req.body.minOrder || 1))
     };
 
     const { data, error } = await supabase
@@ -130,6 +132,12 @@ export const update = async (req, res) => {
     if (req.body.available !== undefined) updateData.available = parseInt(req.body.available);
     if (req.body.images !== undefined) updateData.images = Array.isArray(req.body.images) ? req.body.images : [];
     if (req.body.location !== undefined) updateData.location = req.body.location;
+    
+    const coverImage = req.body.cover_image !== undefined ? req.body.cover_image : req.body.coverImage;
+    if (coverImage !== undefined) updateData.cover_image = coverImage;
+    
+    const minOrder = req.body.min_order !== undefined ? req.body.min_order : req.body.minOrder;
+    if (minOrder !== undefined) updateData.min_order = parseInt(minOrder) || 1;
 
     const { data, error } = await supabase
       .from('products')
