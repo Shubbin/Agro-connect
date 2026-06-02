@@ -89,9 +89,24 @@ export const register = async (req, res) => {
       console.error('❌ TRACE [REGISTRATION]: public.users Upsert Error:', dbError.message);
     }
 
+    // Automatically log the user in after successful registration to avoid stale sessions
+    let token = null;
+    try {
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (!signInError && signInData?.session) {
+        token = signInData.session.access_token;
+      }
+    } catch (loginErr) {
+      console.warn('⚠️ Auto-login after registration failed:', loginErr.message);
+    }
+
     return res.json({ 
-      message: 'Registration successful. You can now log in.',
-      user: newUser || authData.user
+      message: 'Registration successful.',
+      user: newUser || authData.user,
+      token
     });
   } catch (err) {
     console.error('Registration Catch Error:', err);
